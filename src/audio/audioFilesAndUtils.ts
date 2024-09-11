@@ -14,28 +14,94 @@ import redLostBase from './red_team_lost_base.mp3';
 import redTeamWins from './red_team_wins.mp3';
 import spaceGunFiringRepeatedly from './space_gun_firing_repeatedly.mp3';
 
+interface AudioFile {
+  duration: number;
+  name: string;
+  src: string;
+}
+
 export const audioFilesChannelZero = {
-  blueCaptureBase: { src: blueCaptureBase, name: 'blue_team_capture_base.mp3', duration: 2037.50 },
-  blueLostBase: { src: blueLostBase, name: 'blue_team_lost_base.mp3', duration: 1854.69 },
-  blueTeamWins: { src: blueTeamWins, name: 'blue_team_wins.mp3', duration: 1384.44 },
-  newPlayerJoined: { src: newPlayerJoined, name: 'new_player_joined_the_game.mp3', duration: 2037.50 },
-  oneMinuteLeft: { src: oneMinuteLeft, name: 'one_minute_left.mp3', duration: 1253.88 },
-  playerHasLeftGame: { src: playerHasLeftGame, name: 'player_has_left_the_game.mp3', duration: 1697.94 },
-  redCaptureBase: { src: redCaptureBase, name: 'red_team_capture_base.mp3', duration: 2168.13 },
-  redLostBase: { src: redLostBase, name: 'red_team_lost_base.mp3', duration: 1906.94 },
-  redTeamWins: { src: redTeamWins, name: 'red_team_wins.mp3', duration: 1488.94 },
+  blueCaptureBase: {
+    duration: 2037.5,
+    name: 'blue_team_capture_base.mp3',
+    src: blueCaptureBase
+  },
+  blueLostBase: {
+    duration: 1854.69,
+    name: 'blue_team_lost_base.mp3',
+    src: blueLostBase
+  },
+  blueTeamWins: {
+    duration: 1384.44,
+    name: 'blue_team_wins.mp3',
+    src: blueTeamWins
+  },
+  newPlayerJoined: {
+    duration: 2037.5,
+    name: 'new_player_joined_the_game.mp3',
+    src: newPlayerJoined
+  },
+  oneMinuteLeft: {
+    duration: 1253.88,
+    name: 'one_minute_left.mp3',
+    src: oneMinuteLeft
+  },
+  playerHasLeftGame: {
+    duration: 1697.94,
+    name: 'player_has_left_the_game.mp3',
+    src: playerHasLeftGame
+  },
+  redCaptureBase: {
+    duration: 2168.13,
+    name: 'red_team_capture_base.mp3',
+    src: redCaptureBase
+  },
+  redLostBase: {
+    duration: 1906.94,
+    name: 'red_team_lost_base.mp3',
+    src: redLostBase
+  },
+  redTeamWins: {
+    duration: 1488.94,
+    name: 'red_team_wins.mp3',
+    src: redTeamWins
+  }
 };
 
 export const audioFilesChannelOne = {
-  laserGunFiring: { src: laserGunFiring, name: 'laser_gun_firing.mp3', duration: 5041.63 },
-  laserGunFiringRepeatedlyOne: { src: laserGunFiringRepeatedlyOne, name: 'laser_gun_firing_repeatedly.mp3', duration: 5041.63 },
-  longTeleportationOne: { src: longTeleportationOne, name: 'long_teleportation.mp3', duration: 14053.88 },
-  longTeleportationThree: { src: longTeleportationThree, name: 'long_teleportation_3.mp3', duration: 10057.13 },
-  longTeleportationTwo: { src: longTeleportationTwo, name: 'long_teleportation_2.mp3', duration: 14053.88 },
-  spaceGunFiringRepeatedly: { src: spaceGunFiringRepeatedly, name: 'space_gun_firing_repeatedly.mp3', duration: 5041.63 },
+  laserGunFiring: {
+    duration: 5041.63,
+    name: 'laser_gun_firing.mp3',
+    src: laserGunFiring
+  },
+  laserGunFiringRepeatedlyOne: {
+    duration: 5041.63,
+    name: 'laser_gun_firing_repeatedly.mp3',
+    src: laserGunFiringRepeatedlyOne
+  },
+  longTeleportationOne: {
+    duration: 14053.88,
+    name: 'long_teleportation.mp3',
+    src: longTeleportationOne
+  },
+  longTeleportationThree: {
+    duration: 10057.13,
+    name: 'long_teleportation_3.mp3',
+    src: longTeleportationThree
+  },
+  longTeleportationTwo: {
+    duration: 14053.88,
+    name: 'long_teleportation_2.mp3',
+    src: longTeleportationTwo
+  },
+  spaceGunFiringRepeatedly: {
+    duration: 5041.63,
+    name: 'space_gun_firing_repeatedly.mp3',
+    src: spaceGunFiringRepeatedly
+  }
 };
 
-export function getRandomAudioFile(audioFiles: Record<string, { src: string; name: string; duration: number }>) {
+export function getRandomAudioFile(audioFiles: Record<string, AudioFile>): AudioFile {
   const keys = Object.keys(audioFiles);
   const randomKey = keys[Math.floor(Math.random() * keys.length)];
   return audioFiles[randomKey];

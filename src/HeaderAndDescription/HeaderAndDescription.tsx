@@ -1,14 +1,17 @@
 import './HeaderAndDescription.css';
 
-function HeaderAndDescription(props: {
-  header: string[];
-  description: string[];
-}) {
+function HeaderAndDescription(props: { header: string[]; description: string[] }): JSX.Element {
   return (
     <div className="header-and-description-container">
-      { props.header.map((header) => <header key={header}>{ header }</header>)}
+      {props.header.map((header) => (
+        <header key={header}>{header}</header>
+      ))}
       <div className="description-container">
-        { props.description.map((description) => <p className="description" key={description}>{ description }</p>)}
+        {props.description.map((description) => (
+          <p className="description" key={description}>
+            {description}
+          </p>
+        ))}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export const queueAudio = async (audioUrl: string, channelNumber: number = 0): P
 
 const playAudioQueue = async (channelNumber: number): Promise<void> => {
   const channel: AudioChannel = audioChannels[channelNumber];
-  
+
   if (channel.queue.length === 0) return;
 
   const currentAudio: HTMLAudioElement = channel.queue[0];

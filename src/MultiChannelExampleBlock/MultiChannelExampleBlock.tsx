@@ -4,54 +4,50 @@ import './MultiChannelExampleBlock.css';
 
 export interface Example {
   buttonFunction: () => void;
-  buttonText: string; 
+  buttonText: string;
   codeExample: string;
   isDisabledWhenQueueIsEmpty: boolean;
 }
 
 interface MultiChannelExampleBlockProps {
   example: Example[];
-  isChannelZeroQueueEmpty: boolean;
-  isChannelOneQueueEmpty: boolean;
+  isChannelQueueEmpty: { [channelNumber: number]: boolean };
 }
 
-function MultiChannelExampleBlock({ example, isChannelZeroQueueEmpty, isChannelOneQueueEmpty }: MultiChannelExampleBlockProps) {
+function MultiChannelExampleBlock({ example, isChannelQueueEmpty }: MultiChannelExampleBlockProps): JSX.Element {
   return (
-    <div className='example-block'>
+    <div className="example-block">
       {example.map((item, index) => {
-        const isQueueEmpty = example.length === 1
-          ? (isChannelZeroQueueEmpty && isChannelOneQueueEmpty) // This is for Stop all Sounds In All Channels where if any channel is not empty the button is valid
-          : index === 0 
-            ? isChannelZeroQueueEmpty 
-            : isChannelOneQueueEmpty;
+        const isQueueEmpty =
+          example.length === 1
+            ? isChannelQueueEmpty[0] && isChannelQueueEmpty[1] // This is for Stop all Sounds In All Channels where if any channel is not empty the button is valid
+            : index === 0
+              ? isChannelQueueEmpty[0]
+              : isChannelQueueEmpty[1];
         const isDisabled = item.isDisabledWhenQueueIsEmpty && isQueueEmpty;
         const isLastItem = index === example.length - 1;
 
-        return(
-          <div className='example-block-section' key={item.buttonText}>
-            <button 
-              className={`button ${isDisabled ? 'disabled' : ''}`} 
-              onClick={() => item.buttonFunction()}
-              disabled={isDisabled}
-            >
+        return (
+          <div className="example-block-section" key={item.buttonText}>
+            <button className={`button ${isDisabled ? 'disabled' : ''}`} disabled={isDisabled} onClick={() => item.buttonFunction()}>
               {item.buttonText}
             </button>
-      
-            <SyntaxHighlighter 
-              language="typescript" 
-              style={vscDarkPlus} 
+
+            <SyntaxHighlighter
               customStyle={{
-                borderRadius: "10px",
-                padding: "20px 40px",
-                width: "250px"
+                borderRadius: '10px',
+                padding: '20px 40px',
+                width: '250px'
               }}
+              language="typescript"
+              style={vscDarkPlus}
             >
               {item.codeExample}
             </SyntaxHighlighter>
-      
-            { !isLastItem && <div className="divider"/> }
+
+            {!isLastItem && <div className="divider" />}
           </div>
-        )
+        );
       })}
     </div>
   );

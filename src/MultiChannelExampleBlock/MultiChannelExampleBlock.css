@@ -2,7 +2,7 @@
   background-color: #3498db;
   border-radius: 5px;
   border: 0px solid black;
-  box-shadow: 
+  box-shadow:
     0.3px 0.5px 0.7px hsl(220deg 21% 8%),
     0.8px 1.6px 2px -0.8px hsl(220deg 21% 8%);
   color: #ffffff;
@@ -10,7 +10,7 @@
   font-size: 16px;
   font-weight: 600;
   height: 66px;
-  margin: 0  0 10px;
+  margin: 0 0 10px;
   max-width: 300px;
   padding: 10px 20px;
 }
@@ -22,7 +22,7 @@
 }
 
 .divider {
-  border: 1px solid #FFF4;
+  border: 1px solid #fff4;
   margin: 13px 0 20px;
   width: 80%;
 }
@@ -31,7 +31,7 @@
   align-items: center;
   border-radius: 5px;
   border: 1px solid #61dafb;
-  box-shadow: 
+  box-shadow:
     0.3px 0.5px 0.7px hsl(220deg 21% 8%),
     0.8px 1.6px 2px -0.8px hsl(220deg 21% 8%),
     2.1px 4.1px 5.2px -1.7px hsl(220deg 21% 8%);
