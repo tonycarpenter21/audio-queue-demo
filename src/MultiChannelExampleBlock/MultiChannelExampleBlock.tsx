@@ -14,6 +14,9 @@ interface MultiChannelExampleBlockProps {
   isChannelQueueEmpty: { [channelNumber: number]: boolean };
 }
 
+const test: string = 'test';
+console.log('test', test);
+
 function MultiChannelExampleBlock({ example, isChannelQueueEmpty }: MultiChannelExampleBlockProps): JSX.Element {
   return (
     <div className="example-block">
