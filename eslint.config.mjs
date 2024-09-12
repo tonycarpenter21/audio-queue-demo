@@ -5,8 +5,8 @@ import pluginReact from 'eslint-plugin-react';
 
 export default [
   { 
-    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
-    ignores: ['eslint.config.mjs']
+    files: ['**/*.{ts,jsx,tsx}'],
+    ignores: ['eslint.config.mjs', '**/build/**', '**/dist/**', './src/audio']
   },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
@@ -45,12 +45,6 @@ export default [
       react: {
         version: 'detect'
       }
-    }
-  },
-  {
-    files: ['eslint.config.mjs'],
-    rules: {
-      'sort-keys': 'off'
     }
   }
 ];
