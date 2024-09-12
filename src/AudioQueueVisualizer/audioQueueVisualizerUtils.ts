@@ -1,5 +1,5 @@
 import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer';
-import { queueAudio, stopAllAudio, stopAllAudioInChannel, stopCurrentAudioInChannel } from './../audio';
+import { queueAudio, stopAllAudio, stopAllAudioInChannel, stopCurrentAudioInChannel } from 'audio-channel-queue';
 
 type AudioQueueFunction = ((src: string, channelNumber?: number) => Promise<void>) | ((channelNumber?: number) => void);
 
