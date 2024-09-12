@@ -28,7 +28,7 @@
     "format": "npx prettier . --write",
     "prepare": "husky install",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "node deploy.js"
   },
   "eslintConfig": {
     "extends": [
