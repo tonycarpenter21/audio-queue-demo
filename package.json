@@ -1,6 +1,7 @@
 {
   "name": "audio-queue",
   "version": "0.1.0",
+  "homepage": "https://tonycarpenter21.github.io/audio-queue-demo",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -25,7 +26,9 @@
     "eject": "react-scripts eject",
     "lint": "npx eslint . --ignore-pattern \"eslint.config.mjs\"",
     "format": "npx prettier . --write",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -50,6 +53,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.35.2",
+    "gh-pages": "^6.1.1",
     "globals": "^15.9.0",
     "prettier": "^3.3.3",
     "typescript-eslint": "^8.5.0"
