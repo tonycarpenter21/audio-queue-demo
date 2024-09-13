@@ -26,4 +26,4 @@ In the project directory, you can run:
 
 When running it locally, open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-To deploy this to GitHub pages run: `npm run deploy`
+To deploy this to GitHub pages, make sure you have the latest packages installed and run: `npm run deploy`
