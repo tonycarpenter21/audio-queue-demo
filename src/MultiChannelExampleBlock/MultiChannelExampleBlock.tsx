@@ -1,5 +1,6 @@
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import Divider from '../Divider/Divider';
 import './MultiChannelExampleBlock.css';
 
 export interface Example {
@@ -45,7 +46,7 @@ function MultiChannelExampleBlock({ example, isChannelQueueEmpty }: MultiChannel
               {item.codeExample}
             </SyntaxHighlighter>
 
-            {!isLastItem && <div className="divider" />}
+            {!isLastItem && <Divider />}
           </div>
         );
       })}

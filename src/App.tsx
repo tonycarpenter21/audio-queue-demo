@@ -1,9 +1,10 @@
+import { queueAudio, stopAllAudio, stopAllAudioInChannel, stopCurrentAudioInChannel } from 'audio-channel-queue';
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { queueAudio, stopAllAudio, stopAllAudioInChannel, stopCurrentAudioInChannel } from 'audio-channel-queue';
 import { audioFilesChannelOne, audioFilesChannelZero, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 import { createHandleAudioAndVisualizer, VisualizedAudioItem } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
+import Footer from './Footer/Footer';
 import HeaderAndDescription from './HeaderAndDescription/HeaderAndDescription';
 import MultiChannelExampleBlock, { Example } from './MultiChannelExampleBlock/MultiChannelExampleBlock';
 
@@ -121,6 +122,7 @@ function App(): JSX.Element {
           <AudioQueueVisualizer channelNumber={0} ref={visualizerRef0} />
           <AudioQueueVisualizer channelNumber={1} ref={visualizerRef1} />
         </div>
+        <Footer />
       </div>
     </div>
   );

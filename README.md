@@ -2,11 +2,15 @@
 
 This project is a demo for the NPM Package Audio Queue.
 
-Details about the package can be found at [NPM](https://www.npmjs.com/package/audio-channel-queue).
+Package and details can be found at [NPM](https://www.npmjs.com/package/audio-channel-queue).
+
+The audio-channel-queue package repo can be found at [GitHub NPM Package Repo](https://github.com/tonycarpenter21/audio-channel-queue).
+
+The demo repo can be found at [GitHub Demo Repo](https://github.com/tonycarpenter21/audio-queue-demo).
 
 This visual demo can be found [here](https://tonycarpenter21.github.io/audio-queue-demo/).
 
-This demo app requires Node v20+.
+This demo app repo requires Node v20+.
 
 ## Available Scripts
 
@@ -20,9 +24,9 @@ In the project directory, you can run:
 
 ### `npm deploy`
 
+When running it locally, open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+To deploy this to GitHub pages:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. Run `npm run build`
+2. Run `npm run deploy`

@@ -21,12 +21,6 @@
   cursor: not-allowed;
 }
 
-.divider {
-  border: 1px solid #fff4;
-  margin: 13px 0 20px;
-  width: 80%;
-}
-
 .example-block {
   align-items: center;
   border-radius: 5px;

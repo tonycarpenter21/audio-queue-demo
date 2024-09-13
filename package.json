@@ -24,7 +24,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "npx eslint . --ignore-pattern \"eslint.config.mjs\"",
+    "lint": "npx eslint src/ --ignore-pattern \"eslint.config.mjs\"",
     "format": "npx prettier . --write",
     "prepare": "husky install",
     "predeploy": "npm run build",
