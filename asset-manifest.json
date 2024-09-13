@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/audio-queue-demo/static/css/main.7bd2c3f3.css",
-    "main.js": "/audio-queue-demo/static/js/main.7c85802e.js",
+    "main.css": "/audio-queue-demo/static/css/main.df347d93.css",
+    "main.js": "/audio-queue-demo/static/js/main.7e1b93b7.js",
     "static/js/453.f87bf85a.chunk.js": "/audio-queue-demo/static/js/453.f87bf85a.chunk.js",
     "static/media/long_teleportation.mp3": "/audio-queue-demo/static/media/long_teleportation.80574d638658e56f0943.mp3",
     "static/media/long_teleportation_2.mp3": "/audio-queue-demo/static/media/long_teleportation_2.92c370011fe217fce3bf.mp3",
@@ -19,12 +19,12 @@
     "static/media/blue_team_wins.mp3": "/audio-queue-demo/static/media/blue_team_wins.4557d3299a9ceb069e99.mp3",
     "static/media/one_minute_left.mp3": "/audio-queue-demo/static/media/one_minute_left.031a3d43aa37fc2e9dec.mp3",
     "index.html": "/audio-queue-demo/index.html",
-    "main.7bd2c3f3.css.map": "/audio-queue-demo/static/css/main.7bd2c3f3.css.map",
-    "main.7c85802e.js.map": "/audio-queue-demo/static/js/main.7c85802e.js.map",
+    "main.df347d93.css.map": "/audio-queue-demo/static/css/main.df347d93.css.map",
+    "main.7e1b93b7.js.map": "/audio-queue-demo/static/js/main.7e1b93b7.js.map",
     "453.f87bf85a.chunk.js.map": "/audio-queue-demo/static/js/453.f87bf85a.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.7bd2c3f3.css",
-    "static/js/main.7c85802e.js"
+    "static/css/main.df347d93.css",
+    "static/js/main.7e1b93b7.js"
   ]
 }
