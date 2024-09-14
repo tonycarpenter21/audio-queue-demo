@@ -1,6 +1,9 @@
 {
   "cSpell.words": [
     "predeploy",
-    "tseslint"
-  ]
+    "stylelint",
+    "tseslint",
+    "unspaced"
+  ],
+  "stylelint.config": null,
 }

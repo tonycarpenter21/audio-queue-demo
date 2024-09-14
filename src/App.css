@@ -1,4 +1,4 @@
-.App {
+.app {
   align-items: center;
   background-color: #18191d;
   color: white;
@@ -9,16 +9,11 @@
   text-align: center;
 }
 
-.App-header {
-  font-size: calc(10px + 2vmin);
-  margin: 20px 0 40px;
-}
-
 .example-block-columns {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-evenly;
-  margin: 0 0 10px 0;
+  margin-bottom: 10px;
   width: 100%;
 }
 

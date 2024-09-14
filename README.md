@@ -18,11 +18,13 @@ In the project directory, you can run:
 
 ### `npm start`
 
-### `npm lint`
+### `npm run lint`
 
-### `npm format`
+### `npm run lint:styles`
 
-### `npm deploy`
+### `npm run format`
+
+### `npm run deploy`
 
 When running it locally, open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 

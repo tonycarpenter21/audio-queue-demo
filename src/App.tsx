@@ -109,7 +109,7 @@ function App(): JSX.Element {
   ];
 
   return (
-    <div className="App">
+    <div className="app">
       <div className="example-section">
         <HeaderAndDescription description={descriptionText} header={headerText} />
         <div className="example-block-columns">

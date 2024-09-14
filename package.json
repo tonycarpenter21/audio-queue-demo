@@ -25,6 +25,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "npx eslint src/ --ignore-pattern \"eslint.config.mjs\"",
+    "lint:styles": "npx stylelint \"**/*.css\"",
     "format": "npx prettier . --write",
     "prepare": "husky install",
     "predeploy": "npm run build",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.10.0",
+    "@stylistic/stylelint-plugin": "^3.0.1",
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.35.2",
@@ -57,10 +59,14 @@
     "globals": "^15.9.0",
     "husky": "^9.1.6",
     "prettier": "^3.3.3",
+    "stylelint": "^16.9.0",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-order": "^6.0.4",
     "typescript-eslint": "^8.5.0"
   },
   "lint-staged": {
     "*.js": "eslint --cache --fix",
+    "*.css": "npm run lint:styles",
     "*.{tsx,ts,js,css,md}": "prettier --write"
   }
 }

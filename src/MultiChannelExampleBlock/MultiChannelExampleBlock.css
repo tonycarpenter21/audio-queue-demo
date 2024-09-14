@@ -1,11 +1,11 @@
 .button {
   background-color: #3498db;
+  border: 0 solid black;
   border-radius: 5px;
-  border: 0px solid black;
   box-shadow:
     0.3px 0.5px 0.7px hsl(220deg 21% 8%),
     0.8px 1.6px 2px -0.8px hsl(220deg 21% 8%);
-  color: #ffffff;
+  color: #fff;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
@@ -16,15 +16,15 @@
 }
 
 .button.disabled {
-  background-color: #cccccc;
-  color: #666666;
+  background-color: #ccc;
+  color: #666;
   cursor: not-allowed;
 }
 
 .example-block {
   align-items: center;
-  border-radius: 5px;
   border: 1px solid #61dafb;
+  border-radius: 5px;
   box-shadow:
     0.3px 0.5px 0.7px hsl(220deg 21% 8%),
     0.8px 1.6px 2px -0.8px hsl(220deg 21% 8%),
