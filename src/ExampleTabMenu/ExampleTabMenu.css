@@ -1,10 +1,14 @@
 .example-tabs-container {
+  background-color: #61dafb;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .example-tab {
+  background-color: #454545;
   border: 1px solid #61dafb;
   cursor: pointer;
   padding: 5px 10px;
@@ -12,11 +16,17 @@
 }
 
 .example-tab:hover {
-  background-color: #61dafb;
-  color: #282c34;
+  background-color: #102227;
+  color: white;
 }
 
 .example-tab.active {
   background-color: #070707;
   color: white;
+}
+
+@media (1px <= width <= 1000px) {
+  .example-tab {
+    font-size: 12px;
+  }
 }

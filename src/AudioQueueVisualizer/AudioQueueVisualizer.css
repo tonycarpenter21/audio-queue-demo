@@ -6,7 +6,7 @@
     0.8px 1.6px 2px -0.8px hsl(220deg 21% 8%),
     2.1px 4.1px 5.2px -1.7px hsl(220deg 21% 8%);
   height: 200px;
-  margin: 20px auto;
+  margin: 10px;
   max-width: 500px;
   min-width: 300px;
   overflow-y: scroll;
@@ -36,4 +36,16 @@
   font-size: 16px;
   position: relative;
   z-index: 2;
+}
+
+@media (1px <= width <= 900px) {
+  .audio-file-text {
+    font-size: 12px;
+  }
+
+  .audio-queue-container {
+    height: 100px;
+    max-width: 400px;
+    min-width: 250px;
+  }
 }

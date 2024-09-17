@@ -66,8 +66,7 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
 
   return (
     <div>
-      <p>Visual Queue</p>
-      <p>Channel Number: {channelNumber}</p>
+      <p>Channel {channelNumber} Visual Queue</p>
       <div className="audio-queue-container">
         {queue.map((file, fileIndex) => (
           <div className="audio-file" key={fileIndex}>

@@ -23,10 +23,17 @@
 
 .visual-queue-container {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-evenly;
 }
 
 p {
   font-size: 18px;
   margin: 0;
+}
+
+@media (1px <= width <= 800px) {
+  .example-container {
+    width: 90%;
+  }
 }

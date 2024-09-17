@@ -37,8 +37,7 @@ function MultiChannelExampleBlock({ example, isChannelQueueEmpty }: MultiChannel
             <SyntaxHighlighter
               customStyle={{
                 borderRadius: '10px',
-                padding: '20px 40px',
-                width: '250px'
+                padding: '10px 20px'
               }}
               language="typescript"
               style={vscDarkPlus}

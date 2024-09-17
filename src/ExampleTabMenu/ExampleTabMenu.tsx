@@ -2,7 +2,7 @@ import './ExampleTabMenu.css';
 
 export enum ExampleTabs {
   ADD_SOUND = 'Add Sound To Queue',
-  STOP_CURRENT_SOUND = 'Stop Current Sound And Play Next In Queue',
+  STOP_CURRENT_SOUND = 'Stop Current Sound In Queue',
   STOP_ALL_SOUNDS_IN_QUEUE = 'Stop All Sounds In Queue',
   STOP_ALL_SOUNDS_IN_ALL_QUEUES = 'Stop All Sounds In All Queues'
 }

@@ -17,9 +17,9 @@ function ExampleTab(props: {
   const tabContent = {
     [ExampleTabs.ADD_SOUND]: {
       description: [
-        'The top examples in each block all default to channel 0 which will satisfy the majority of implementations. If you want your sounds to never overlap, this is what you want. ',
-        'Each audio queue channel will play sounds one after another which means they will never overlap within their given channel. The bottom example in each block all run in a second audio queue channel (channel 1) which means they will overlap with the audio played in the top examples (channel 0).',
-        'To test this functionality, click both the "Add Sound To End Of Queue (Channel 0)" button and the "Add Sound To End Of Queue (Channel 1)" button a few times. Below you can see a visual representation of each queue adding files each time the button is pressed.'
+        'This example shows how to add audio files to a given queue. The top examples in each block all default to channel 0 which will satisfy the majority of implementations. If you want your sounds to never overlap, this is what you want.',
+        'Audio files will never overlap within their given channel. The bottom example in each block all run in a second audio queue channel (channel 1) which means they will overlap with the audio played in the top examples (channel 0).',
+        'To test this functionality, click both of the "Add Sound To End Of Queue" buttons a few times. Below you can see a visual representation of each queue adding files each time the button is pressed.'
       ],
       examples: [{ example: addSoundToQueueExample, key: 'addSound' }]
     },

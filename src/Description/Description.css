@@ -1,12 +1,16 @@
-.description {
-  display: flex;
+.description-text {
   margin-bottom: 10px;
-  text-align: left;
 }
 
 .description-container {
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
-  width: 80%;
+  width: 70%;
+}
+
+@media (1px <= width <= 800px) {
+  .description-container {
+    width: 90%;
+  }
 }

@@ -6,3 +6,10 @@
   margin: 10px 0;
   width: 100%;
 }
+
+@media (1px <= width <= 800px) {
+  .header-container {
+    font-size: 28px;
+    margin: 10px 0 0;
+  }
+}
