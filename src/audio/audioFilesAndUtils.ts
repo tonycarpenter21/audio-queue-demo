@@ -1,6 +1,5 @@
 import blueCaptureBase from './blue_team_capture_base.mp3';
 import blueLostBase from './blue_team_lost_base.mp3';
-import blueTeamWins from './blue_team_wins.mp3';
 import laserGunFiring from './laser_gun_firing.mp3';
 import laserGunFiringRepeatedlyOne from './laser_gun_firing_repeatedly.mp3';
 import longTeleportationOne from './long_teleportation.mp3';
@@ -11,16 +10,15 @@ import oneMinuteLeft from './one_minute_left.mp3';
 import playerHasLeftGame from './player_has_left_the_game.mp3';
 import redCaptureBase from './red_team_capture_base.mp3';
 import redLostBase from './red_team_lost_base.mp3';
-import redTeamWins from './red_team_wins.mp3';
 import spaceGunFiringRepeatedly from './space_gun_firing_repeatedly.mp3';
 
-interface AudioFile {
+export interface AudioFile {
   duration: number;
   name: string;
   src: string;
 }
 
-export const audioFilesChannelZero = {
+export const audioFilesChannelZero: Record<string, AudioFile> = {
   blueCaptureBase: {
     duration: 2037.5,
     name: 'blue_team_capture_base.mp3',
@@ -30,11 +28,6 @@ export const audioFilesChannelZero = {
     duration: 1854.69,
     name: 'blue_team_lost_base.mp3',
     src: blueLostBase
-  },
-  blueTeamWins: {
-    duration: 1384.44,
-    name: 'blue_team_wins.mp3',
-    src: blueTeamWins
   },
   newPlayerJoined: {
     duration: 2037.5,
@@ -60,15 +53,10 @@ export const audioFilesChannelZero = {
     duration: 1906.94,
     name: 'red_team_lost_base.mp3',
     src: redLostBase
-  },
-  redTeamWins: {
-    duration: 1488.94,
-    name: 'red_team_wins.mp3',
-    src: redTeamWins
   }
 };
 
-export const audioFilesChannelOne = {
+export const audioFilesChannelOne: Record<string, AudioFile> = {
   laserGunFiring: {
     duration: 5041.63,
     name: 'laser_gun_firing.mp3',
@@ -106,6 +94,20 @@ export function getRandomAudioFile(audioFiles: Record<string, AudioFile>): Audio
   const randomKey = keys[Math.floor(Math.random() * keys.length)];
   return audioFiles[randomKey];
 }
+
+// Unused Audio Files:
+// import blueTeamWins from './blue_team_wins.mp3';
+// import redTeamWins from './red_team_wins.mp3';
+// redTeamWins: {
+//   duration: 1488.94,
+//   name: 'red_team_wins.mp3',
+//   src: redTeamWins
+// }
+// blueTeamWins: {
+//   duration: 1384.44,
+//   name: 'blue_team_wins.mp3',
+//   src: blueTeamWins
+// },
 
 // Depreciated utility functions for logging length of audio files:
 // function getAudioDuration(audioFile: { src: string; name: string }): Promise<number> {

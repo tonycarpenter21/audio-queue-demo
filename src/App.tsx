@@ -6,7 +6,8 @@ import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from './AudioQueueVi
 import { createHandleAudioAndVisualizer, VisualizedAudioItem } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
 import Footer from './Footer/Footer';
 import HeaderAndDescription from './HeaderAndDescription/HeaderAndDescription';
-import MultiChannelExampleBlock, { Example } from './MultiChannelExampleBlock/MultiChannelExampleBlock';
+import { createExamples } from './MultiChannelExampleBlock/exampleData';
+import MultiChannelExampleBlock from './MultiChannelExampleBlock/MultiChannelExampleBlock';
 
 function App(): JSX.Element {
   const visualizerRef0 = useRef<AudioQueueVisualizerHandle>(null);
@@ -57,56 +58,17 @@ function App(): JSX.Element {
   ];
   const headerText: string[] = ['Audio Queue', 'Single & Multi Channel Examples:'];
 
-  const addSoundToQueueExample: Example[] = [
-    {
-      buttonFunction: handleAudioAndVisualizer(queueAudio, 0, getRandomAudioFile(audioFilesChannelZero)),
-      buttonText: 'Add Sound To End Of Queue (Channel 0)',
-      codeExample: 'queueAudio(audioFileGoesHere);',
-      isDisabledWhenQueueIsEmpty: false
-    },
-    {
-      buttonFunction: handleAudioAndVisualizer(queueAudio, 1, getRandomAudioFile(audioFilesChannelOne)),
-      buttonText: 'Add Sound To End Of Queue (Channel 1)',
-      codeExample: 'queueAudio(audioFileGoesHere, 1);',
-      isDisabledWhenQueueIsEmpty: false
-    }
-  ];
-  const stopCurrentSoundAndPlayNextExample: Example[] = [
-    {
-      buttonFunction: handleAudioAndVisualizer(stopCurrentAudioInChannel, 0),
-      buttonText: 'Stop Current Sound And Play Next Sound (Channel 0)',
-      codeExample: 'stopCurrentAudioInChannel();',
-      isDisabledWhenQueueIsEmpty: true
-    },
-    {
-      buttonFunction: handleAudioAndVisualizer(stopCurrentAudioInChannel, 1),
-      buttonText: 'Stop Current Sound And Play Next Sound (Channel 1)',
-      codeExample: 'stopCurrentAudioInChannel(1);',
-      isDisabledWhenQueueIsEmpty: true
-    }
-  ];
-  const stopSoundAndEmptyQueueExample: Example[] = [
-    {
-      buttonFunction: handleAudioAndVisualizer(stopAllAudioInChannel, 0),
-      buttonText: 'Stop Sound And Empty Queue (Channel 0)',
-      codeExample: 'stopAllAudioInChannel();',
-      isDisabledWhenQueueIsEmpty: true
-    },
-    {
-      buttonFunction: handleAudioAndVisualizer(stopAllAudioInChannel, 1),
-      buttonText: 'Stop Sound And Empty Queue (Channel 1)',
-      codeExample: 'stopAllAudioInChannel(1);',
-      isDisabledWhenQueueIsEmpty: true
-    }
-  ];
-  const stopAllSoundsInAllChannelsExample: Example[] = [
-    {
-      buttonFunction: handleAudioAndVisualizer(stopAllAudio),
-      buttonText: 'Stop All Sounds In All Channels',
-      codeExample: 'stopAllAudio();',
-      isDisabledWhenQueueIsEmpty: true
-    }
-  ];
+  const { addSoundToQueueExample, stopAllSoundsInAllChannelsExample, stopCurrentSoundAndPlayNextExample, stopSoundAndEmptyQueueExample } =
+    createExamples(
+      handleAudioAndVisualizer,
+      queueAudio,
+      stopCurrentAudioInChannel,
+      stopAllAudioInChannel,
+      stopAllAudio,
+      getRandomAudioFile,
+      audioFilesChannelZero,
+      audioFilesChannelOne
+    );
 
   return (
     <div className="app">
