@@ -1,0 +1,12 @@
+.description {
+  display: flex;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.description-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  width: 80%;
+}

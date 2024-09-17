@@ -7,9 +7,10 @@
     2.1px 4.1px 5.2px -1.7px hsl(220deg 21% 8%);
   height: 200px;
   margin: 20px auto;
+  max-width: 500px;
+  min-width: 300px;
   overflow-y: scroll;
   padding: 10px;
-  width: 500px;
 }
 
 .audio-file {

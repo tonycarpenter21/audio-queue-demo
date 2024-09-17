@@ -1,18 +1,21 @@
 import { queueAudio, stopAllAudio, stopAllAudioInChannel, stopCurrentAudioInChannel } from 'audio-channel-queue';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import { audioFilesChannelOne, audioFilesChannelZero, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 import { createHandleAudioAndVisualizer, VisualizedAudioItem } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
 import Footer from './Footer/Footer';
-import HeaderAndDescription from './HeaderAndDescription/HeaderAndDescription';
+import Header from './Header/Header';
 import { createExamples } from './MultiChannelExampleBlock/exampleData';
-import MultiChannelExampleBlock from './MultiChannelExampleBlock/MultiChannelExampleBlock';
+import ExampleTabMenu, { ExampleTabs } from './ExampleTabMenu/ExampleTabMenu';
+import ExampleTab from './ExampleTab/ExampleTab';
+import { Example } from './MultiChannelExampleBlock/MultiChannelExampleBlock';
 
 function App(): JSX.Element {
   const visualizerRef0 = useRef<AudioQueueVisualizerHandle>(null);
   const visualizerRef1 = useRef<AudioQueueVisualizerHandle>(null);
 
+  const [currentExampleTab, setCurrentExampleTab] = useState<ExampleTabs>(ExampleTabs.ADD_SOUND);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<{
     [channelNumber: number]: VisualizedAudioItem | null;
   }>({});
@@ -27,6 +30,15 @@ function App(): JSX.Element {
     setCurrentlyPlaying,
     setQueueState
   );
+
+  const handleTabChange = useCallback((newTab: ExampleTabs) => {
+    stopAllAudio();
+    setCurrentExampleTab(newTab);
+    visualizerRef0.current?.clearQueue();
+    visualizerRef1.current?.clearQueue();
+    setCurrentlyPlaying({});
+    setQueueState({ 0: true, 1: true });
+  }, []);
 
   useEffect(() => {
     const updateVisualizer = (channelNumber: number): void => {
@@ -49,37 +61,23 @@ function App(): JSX.Element {
     return (): void => clearInterval(intervalId);
   }, [currentlyPlaying]);
 
-  const descriptionText: string[] = [
-    'The top examples in each block all default to channel 0 which will satisfy the majority of implementations. If you want your sounds to never overlap, this is what you want. ',
-    'Each audio queue channel will play sounds one after another which means they will never overlap within their given channel. The bottom example in each block all run in a second audio queue channel (channel 1) which means they will overlap with the audio played in the top examples (channel 0).',
-    'To test this functionality, click both the "Add Sound To End Of Queue (Channel 0)" button and the "Add Sound To End Of Queue (Channel 1)" button a few times. Below you can see a visual representation of each queue adding files each time the button is pressed.',
-    'Once audio files are playing, you can click the buttons in the next examples to either stop the current sound and continue the queue for a given channel, stop the sound and empty the queue for a given channel, or stop all sounds and empty all queues for all channels.',
-    'This package supports an infinite number of audio queue channels, but this example only shows two.'
-  ];
-  const headerText: string[] = ['Audio Queue', 'Single & Multi Channel Examples:'];
-
-  const { addSoundToQueueExample, stopAllSoundsInAllChannelsExample, stopCurrentSoundAndPlayNextExample, stopSoundAndEmptyQueueExample } =
-    createExamples(
-      handleAudioAndVisualizer,
-      queueAudio,
-      stopCurrentAudioInChannel,
-      stopAllAudioInChannel,
-      stopAllAudio,
-      getRandomAudioFile,
-      audioFilesChannelZero,
-      audioFilesChannelOne
-    );
+  const examples: Record<string, Example[]> = createExamples(
+    handleAudioAndVisualizer,
+    queueAudio,
+    stopCurrentAudioInChannel,
+    stopAllAudioInChannel,
+    stopAllAudio,
+    getRandomAudioFile,
+    audioFilesChannelZero,
+    audioFilesChannelOne
+  );
 
   return (
     <div className="app">
-      <div className="example-section">
-        <HeaderAndDescription description={descriptionText} header={headerText} />
-        <div className="example-block-columns">
-          <MultiChannelExampleBlock example={addSoundToQueueExample} isChannelQueueEmpty={queueState} />
-          <MultiChannelExampleBlock example={stopCurrentSoundAndPlayNextExample} isChannelQueueEmpty={queueState} />
-          <MultiChannelExampleBlock example={stopSoundAndEmptyQueueExample} isChannelQueueEmpty={queueState} />
-          <MultiChannelExampleBlock example={stopAllSoundsInAllChannelsExample} isChannelQueueEmpty={queueState} />
-        </div>
+      <Header />
+      <div className="example-container">
+        <ExampleTabMenu currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
+        <ExampleTab currentExampleTab={currentExampleTab} examples={examples} queueState={queueState} />
         <div className="visual-queue-container">
           <AudioQueueVisualizer channelNumber={0} ref={visualizerRef0} />
           <AudioQueueVisualizer channelNumber={1} ref={visualizerRef1} />

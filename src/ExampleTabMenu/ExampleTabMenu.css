@@ -1,0 +1,22 @@
+.example-tabs-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.example-tab {
+  border: 1px solid #61dafb;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: background-color 0.3s;
+}
+
+.example-tab:hover {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+.example-tab.active {
+  background-color: #070707;
+  color: white;
+}
