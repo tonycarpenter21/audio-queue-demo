@@ -18,6 +18,7 @@ export interface AudioQueueVisualizerHandle {
   isQueueEmpty: () => boolean;
   removeAudioFile: () => void;
   setPlayingState: (playing: boolean) => void;
+  updateCurrentFileDuration: (duration: number) => void;
   updateProgress: (currentTime: number) => void;
 }
 
@@ -54,6 +55,17 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
     setCurrentPlayingPercentage(currentPercent);
   };
 
+  const updateCurrentFileDuration = useCallback((duration: number) => {
+    setQueue((prevQueue) => {
+      if (prevQueue.length > 0) {
+        const updatedQueue = [...prevQueue];
+        updatedQueue[0] = { ...updatedQueue[0], duration };
+        return updatedQueue;
+      }
+      return prevQueue;
+    });
+  }, []);
+
   useImperativeHandle(ref, () => ({
     addAudioFile,
     clearQueue,
@@ -61,6 +73,7 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
     isQueueEmpty,
     removeAudioFile,
     setPlayingState,
+    updateCurrentFileDuration,
     updateProgress
   }));
 

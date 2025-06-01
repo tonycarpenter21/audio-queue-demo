@@ -1,65 +1,145 @@
-import { queueAudio, stopAllAudio, stopAllAudioInChannel, stopCurrentAudioInChannel } from 'audio-channel-queue';
+import {
+  queueAudio,
+  stopAllAudio,
+  stopAllAudioInChannel,
+  stopCurrentAudioInChannel,
+  onQueueChange,
+  offQueueChange,
+  onAudioStart,
+  onAudioComplete,
+  QueueSnapshot,
+  AudioStartInfo,
+  AudioCompleteInfo,
+  QueueItem,
+  cleanWebpackFilename
+} from 'audio-channel-queue';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import { audioFilesChannelOne, audioFilesChannelZero, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
-import { createHandleAudioAndVisualizer, VisualizedAudioItem } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
+import { createHandleAudioAndVisualizer } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
 import Footer from './Footer/Footer';
 import Header from './Header/Header';
-import { createExamples } from './MultiChannelExampleBlock/exampleData';
+import { createExamples, HandleAudioAndVisualizer } from './MultiChannelExampleBlock/exampleData';
 import ExampleTabMenu, { ExampleTabs } from './ExampleTabMenu/ExampleTabMenu';
 import ExampleTab from './ExampleTab/ExampleTab';
 import { Example } from './MultiChannelExampleBlock/MultiChannelExampleBlock';
 
+interface ProgressTracking {
+  duration: number;
+  isPlaying: boolean;
+  startTime: number;
+}
+
 function App(): JSX.Element {
-  const visualizerRef0 = useRef<AudioQueueVisualizerHandle>(null);
-  const visualizerRef1 = useRef<AudioQueueVisualizerHandle>(null);
+  const visualizerRefs = [useRef<AudioQueueVisualizerHandle>(null), useRef<AudioQueueVisualizerHandle>(null)];
+  const progressTrackingRef = useRef<{ [channelNumber: number]: ProgressTracking }>({});
+
+  const getVisualizer = (channelNumber: number): AudioQueueVisualizerHandle | null => visualizerRefs[channelNumber].current;
 
   const [currentExampleTab, setCurrentExampleTab] = useState<ExampleTabs>(ExampleTabs.ADD_SOUND);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState<{
-    [channelNumber: number]: VisualizedAudioItem | null;
-  }>({});
-  const [queueState, setQueueState] = useState<{
-    [channelNumber: number]: boolean;
-  }>({ 0: true, 1: true });
+  const [queueState, setQueueState] = useState<{ [channelNumber: number]: boolean }>({ 0: true, 1: true });
 
-  const handleAudioAndVisualizer = createHandleAudioAndVisualizer(
-    visualizerRef0,
-    visualizerRef1,
-    currentlyPlaying,
-    setCurrentlyPlaying,
-    setQueueState
-  );
+  const handleAudioAndVisualizer: HandleAudioAndVisualizer = createHandleAudioAndVisualizer();
 
   const handleTabChange = useCallback((newTab: ExampleTabs) => {
     stopAllAudio();
     setCurrentExampleTab(newTab);
-    visualizerRef0.current?.clearQueue();
-    visualizerRef1.current?.clearQueue();
-    setCurrentlyPlaying({});
+    visualizerRefs.forEach((ref) => ref.current?.clearQueue());
     setQueueState({ 0: true, 1: true });
+    progressTrackingRef.current = {};
+  }, []);
+
+  const handleQueueChange = useCallback(
+    (channelNumber: number) =>
+      (snapshot: QueueSnapshot): void => {
+        const visualizer = getVisualizer(channelNumber);
+        if (!visualizer) return;
+
+        visualizer.clearQueue();
+
+        snapshot.items.forEach((item: QueueItem) => {
+          const cleanFileName = cleanWebpackFilename(item.fileName);
+          visualizer.addAudioFile(cleanFileName, item.duration);
+        });
+
+        const hasItems = snapshot.totalItems > 0;
+        const isPlaying = snapshot.items[0]?.isCurrentlyPlaying || false;
+
+        visualizer.setPlayingState(isPlaying);
+        setQueueState((prev) => ({ ...prev, [channelNumber]: !hasItems }));
+      },
+    []
+  );
+
+  const handleAudioStart = useCallback(
+    (channelNumber: number) =>
+      (info: AudioStartInfo): void => {
+        const visualizer = getVisualizer(channelNumber);
+
+        progressTrackingRef.current[channelNumber] = {
+          duration: info.duration,
+          isPlaying: true,
+          startTime: Date.now()
+        };
+
+        visualizer?.setPlayingState(true);
+        setQueueState((prev) => ({ ...prev, [channelNumber]: false }));
+      },
+    []
+  );
+
+  const handleAudioComplete = useCallback(
+    (channelNumber: number) =>
+      (info: AudioCompleteInfo): void => {
+        const visualizer = getVisualizer(channelNumber);
+
+        delete progressTrackingRef.current[channelNumber];
+
+        if (info.remainingInQueue === 0) {
+          visualizer?.setPlayingState(false);
+          setQueueState((prev) => ({ ...prev, [channelNumber]: true }));
+        }
+      },
+    []
+  );
+
+  const calculateProgress = useCallback((): void => {
+    [0, 1].forEach((channelNumber) => {
+      const trackingInfo = progressTrackingRef.current[channelNumber];
+      const visualizer = getVisualizer(channelNumber);
+
+      if (trackingInfo?.isPlaying && visualizer && trackingInfo.duration > 0) {
+        const elapsed = Date.now() - trackingInfo.startTime;
+        const progress = Math.min(1.0, elapsed / trackingInfo.duration);
+        visualizer.updateProgress(progress);
+      }
+    });
   }, []);
 
   useEffect(() => {
-    const updateVisualizer = (channelNumber: number): void => {
-      const visualizer = channelNumber === 0 ? visualizerRef0 : visualizerRef1;
-      const currentlyPlayingItem = currentlyPlaying[channelNumber];
+    const channels: number[] = [0, 1];
 
-      if (currentlyPlayingItem) {
-        const now = Date.now();
-        const elapsedTime = now - currentlyPlayingItem.startTime;
-        if (elapsedTime < currentlyPlayingItem.duration) {
-          visualizer.current?.updateProgress(elapsedTime / currentlyPlayingItem.duration);
-        }
-      }
+    channels.forEach((channel) => {
+      onQueueChange(channel, handleQueueChange(channel));
+      onAudioStart(channel, handleAudioStart(channel));
+      onAudioComplete(channel, handleAudioComplete(channel));
+    });
+
+    let animationFrameId: number;
+
+    const animationLoop = (): void => {
+      calculateProgress();
+      animationFrameId = requestAnimationFrame(animationLoop);
     };
 
-    const intervalId = setInterval(() => {
-      [0, 1].forEach(updateVisualizer);
-    }, 10);
+    animationFrameId = requestAnimationFrame(animationLoop);
 
-    return (): void => clearInterval(intervalId);
-  }, [currentlyPlaying]);
+    return (): void => {
+      channels.forEach((channel) => offQueueChange(channel));
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [handleQueueChange, handleAudioStart, handleAudioComplete, calculateProgress]);
 
   const examples: Record<string, Example[]> = createExamples(
     handleAudioAndVisualizer,
@@ -79,8 +159,9 @@ function App(): JSX.Element {
         <ExampleTabMenu currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
         <ExampleTab currentExampleTab={currentExampleTab} examples={examples} queueState={queueState} />
         <div className="visual-queue-container">
-          <AudioQueueVisualizer channelNumber={0} ref={visualizerRef0} />
-          <AudioQueueVisualizer channelNumber={1} ref={visualizerRef1} />
+          {visualizerRefs.map((ref, index) => (
+            <AudioQueueVisualizer channelNumber={index} key={index} ref={ref} />
+          ))}
         </div>
         <Footer />
       </div>

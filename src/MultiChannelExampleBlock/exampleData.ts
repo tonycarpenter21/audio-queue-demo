@@ -2,13 +2,12 @@ import { AudioFile } from '../audio/audioFilesAndUtils';
 import { AudioQueueFunction } from '../AudioQueueVisualizer/audioQueueVisualizerUtils';
 import { Example } from './MultiChannelExampleBlock';
 
-type HandleAudioAndVisualizer = (
+export type HandleAudioAndVisualizer = (
   audioQueueFunction: AudioQueueFunction,
   channelNumber?: number,
   audioFile?: {
     src: string;
     name: string;
-    duration: number;
   }
 ) => () => void;
 type QueueAudio = (audioUrl: string, channelNumber?: number) => Promise<void>;

@@ -1,0 +1,31 @@
+# Cursor Rules for audio-channel-queue-demo
+
+## Project Overview
+This is a demo frontend website for a TypeScript npm package for audio queue management with real-time progress tracking and event handling.
+
+## Code Standards
+- Use TypeScript with strict mode enabled
+- All public functions must have comprehensive JSDoc documentation with examples
+- All variables and functions should show a return type
+- Object keys and imports should be alphabetically sorted
+- Interfaces and types should be alphabetically sorted
+- CSS rules should be alphabetically sorted
+- CSS styling should be accomplished with as few rules as possible
+- Use modular architecture - keep concerns separated across files
+- Return all time values in milliseconds for consistency
+- Use consistent error handling with try/catch blocks
+- Export interfaces and types from src/types.ts
+
+## Documentation
+- Keep README.md examples current and functional
+
+## Naming Conventions
+- Use camelCase for functions and variables
+- Use PascalCase for interfaces and types
+- Use descriptive names that clearly indicate purpose
+- Prefix callback types with the event name (e.g., ProgressCallback)
+
+## Dependencies
+- Minimize external dependencies
+- Justify any new dependencies in commit messages
+- Prefer native JavaScript/TypeScript solutions when possible
