@@ -1,7 +1,10 @@
 import Description from '../Description/Description';
 import { ExampleTabs } from '../ExampleTabMenu/ExampleTabMenu';
-import MultiChannelExampleBlock, { Example } from '../MultiChannelExampleBlock/MultiChannelExampleBlock';
+import { Example } from '../types';
 import './ExampleTab.css';
+import { MutableRefObject } from 'react';
+import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
+import ChannelGroupedLayout from '../ChannelGroupedLayout/ChannelGroupedLayout';
 
 function ExampleTab(props: {
   currentExampleTab: ExampleTabs;
@@ -9,8 +12,9 @@ function ExampleTab(props: {
   queueState: {
     [channelNumber: number]: boolean;
   };
+  visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
 }): JSX.Element {
-  const { currentExampleTab, examples, queueState } = props;
+  const { currentExampleTab, examples, queueState, visualizerRefs } = props;
   const { addSoundToQueueExample, stopAllSoundsInAllChannelsExample, stopCurrentSoundAndPlayNextExample, stopSoundAndEmptyQueueExample } =
     examples;
 
@@ -21,7 +25,8 @@ function ExampleTab(props: {
         'Audio files will never overlap within their given channel. The bottom example in each block all run in a second audio queue channel (channel 1) which means they will overlap with the audio played in the top examples (channel 0).',
         'To test this functionality, click both of the "Add Sound To End Of Queue" buttons a few times. Below you can see a visual representation of each queue adding files each time the button is pressed.'
       ],
-      examples: [{ example: addSoundToQueueExample, key: 'addSound' }]
+      examples: [{ example: addSoundToQueueExample, key: 'addSound' }],
+      hasGlobalControls: false
     },
     [ExampleTabs.STOP_CURRENT_SOUND]: {
       description: [
@@ -31,7 +36,8 @@ function ExampleTab(props: {
       examples: [
         { example: addSoundToQueueExample, key: 'addSound' },
         { example: stopCurrentSoundAndPlayNextExample, key: 'stopCurrent' }
-      ]
+      ],
+      hasGlobalControls: false
     },
     [ExampleTabs.STOP_ALL_SOUNDS_IN_QUEUE]: {
       description: [
@@ -41,7 +47,8 @@ function ExampleTab(props: {
       examples: [
         { example: addSoundToQueueExample, key: 'addSound' },
         { example: stopSoundAndEmptyQueueExample, key: 'stopAllInQueue' }
-      ]
+      ],
+      hasGlobalControls: false
     },
     [ExampleTabs.STOP_ALL_SOUNDS_IN_ALL_QUEUES]: {
       description: [
@@ -51,7 +58,8 @@ function ExampleTab(props: {
       examples: [
         { example: addSoundToQueueExample, key: 'addSound' },
         { example: stopAllSoundsInAllChannelsExample, key: 'stopAllInAllQueues' }
-      ]
+      ],
+      hasGlobalControls: true
     }
   };
 
@@ -60,11 +68,12 @@ function ExampleTab(props: {
   return (
     <div className="description-and-channel-example-container">
       <Description description={currentContent.description} />
-      <div className="example-block-columns">
-        {currentContent.examples.map(({ example, key }) => (
-          <MultiChannelExampleBlock example={example} isChannelQueueEmpty={queueState} key={key} />
-        ))}
-      </div>
+      <ChannelGroupedLayout
+        examples={currentContent.examples}
+        hasGlobalControls={currentContent.hasGlobalControls}
+        queueState={queueState}
+        visualizerRefs={visualizerRefs}
+      />
     </div>
   );
 }

@@ -1,0 +1,26 @@
+.global-control-item {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-4);
+  width: 100%;
+}
+
+.global-control-item:last-child {
+  margin-bottom: 0;
+}
+
+.global-controls-container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+@media (width <= 800px) {
+  .global-controls {
+    max-width: none;
+    min-width: unset;
+    width: 100%;
+  }
+}

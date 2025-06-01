@@ -10,6 +10,7 @@ This is a demo frontend website for a TypeScript npm package for audio queue man
 - Object keys and imports should be alphabetically sorted
 - Interfaces and types should be alphabetically sorted
 - CSS rules should be alphabetically sorted
+- CSS classes should be alphabetically sorted
 - CSS styling should be accomplished with as few rules as possible
 - Use modular architecture - keep concerns separated across files
 - Return all time values in milliseconds for consistency

@@ -1,6 +1,6 @@
 import { AudioFile } from '../audio/audioFilesAndUtils';
 import { AudioQueueFunction } from '../AudioQueueVisualizer/audioQueueVisualizerUtils';
-import { Example } from './MultiChannelExampleBlock';
+import { Example } from '../types';
 
 export type HandleAudioAndVisualizer = (
   audioQueueFunction: AudioQueueFunction,

@@ -2,14 +2,27 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  font-size: 36px;
-  margin: 10px 0;
+  margin-bottom: var(--space-10);
+  text-align: center;
   width: 100%;
 }
 
-@media (1px <= width <= 800px) {
+.header-container h1 {
+  color: white;
+  font-family: var(--font-sans);
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  text-align: center;
+}
+
+@media (width <= 800px) {
   .header-container {
-    font-size: 28px;
-    margin: 10px 0 0;
+    margin-bottom: var(--space-8);
+  }
+
+  .header-container h1 {
+    font-size: 2.5rem;
   }
 }

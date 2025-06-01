@@ -13,17 +13,18 @@ import {
   QueueItem,
   cleanWebpackFilename
 } from 'audio-channel-queue';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
+import './shared.css';
 import { audioFilesChannelOne, audioFilesChannelZero, getRandomAudioFile } from './audio/audioFilesAndUtils';
-import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
+import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 import { createHandleAudioAndVisualizer } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
 import Footer from './Footer/Footer';
 import Header from './Header/Header';
 import { createExamples, HandleAudioAndVisualizer } from './MultiChannelExampleBlock/exampleData';
 import ExampleTabMenu, { ExampleTabs } from './ExampleTabMenu/ExampleTabMenu';
 import ExampleTab from './ExampleTab/ExampleTab';
-import { Example } from './MultiChannelExampleBlock/MultiChannelExampleBlock';
+import { Example } from './types';
 
 interface ProgressTracking {
   duration: number;
@@ -32,23 +33,32 @@ interface ProgressTracking {
 }
 
 function App(): JSX.Element {
-  const visualizerRefs = [useRef<AudioQueueVisualizerHandle>(null), useRef<AudioQueueVisualizerHandle>(null)];
+  const visualizerRef0 = useRef<AudioQueueVisualizerHandle>(null);
+  const visualizerRef1 = useRef<AudioQueueVisualizerHandle>(null);
   const progressTrackingRef = useRef<{ [channelNumber: number]: ProgressTracking }>({});
 
-  const getVisualizer = (channelNumber: number): AudioQueueVisualizerHandle | null => visualizerRefs[channelNumber].current;
+  const visualizerRefs = useMemo(() => [visualizerRef0, visualizerRef1], []);
+
+  const getVisualizer = useCallback(
+    (channelNumber: number): AudioQueueVisualizerHandle | null => visualizerRefs[channelNumber].current,
+    [visualizerRefs]
+  );
 
   const [currentExampleTab, setCurrentExampleTab] = useState<ExampleTabs>(ExampleTabs.ADD_SOUND);
   const [queueState, setQueueState] = useState<{ [channelNumber: number]: boolean }>({ 0: true, 1: true });
 
   const handleAudioAndVisualizer: HandleAudioAndVisualizer = createHandleAudioAndVisualizer();
 
-  const handleTabChange = useCallback((newTab: ExampleTabs) => {
-    stopAllAudio();
-    setCurrentExampleTab(newTab);
-    visualizerRefs.forEach((ref) => ref.current?.clearQueue());
-    setQueueState({ 0: true, 1: true });
-    progressTrackingRef.current = {};
-  }, []);
+  const handleTabChange = useCallback(
+    (newTab: ExampleTabs) => {
+      stopAllAudio();
+      setCurrentExampleTab(newTab);
+      visualizerRefs.forEach((ref) => ref.current?.clearQueue());
+      setQueueState({ 0: true, 1: true });
+      progressTrackingRef.current = {};
+    },
+    [visualizerRefs]
+  );
 
   const handleQueueChange = useCallback(
     (channelNumber: number) =>
@@ -69,7 +79,7 @@ function App(): JSX.Element {
         visualizer.setPlayingState(isPlaying);
         setQueueState((prev) => ({ ...prev, [channelNumber]: !hasItems }));
       },
-    []
+    [getVisualizer]
   );
 
   const handleAudioStart = useCallback(
@@ -86,7 +96,7 @@ function App(): JSX.Element {
         visualizer?.setPlayingState(true);
         setQueueState((prev) => ({ ...prev, [channelNumber]: false }));
       },
-    []
+    [getVisualizer]
   );
 
   const handleAudioComplete = useCallback(
@@ -101,7 +111,7 @@ function App(): JSX.Element {
           setQueueState((prev) => ({ ...prev, [channelNumber]: true }));
         }
       },
-    []
+    [getVisualizer]
   );
 
   const calculateProgress = useCallback((): void => {
@@ -115,7 +125,7 @@ function App(): JSX.Element {
         visualizer.updateProgress(progress);
       }
     });
-  }, []);
+  }, [getVisualizer]);
 
   useEffect(() => {
     const channels: number[] = [0, 1];
@@ -154,15 +164,10 @@ function App(): JSX.Element {
 
   return (
     <div className="app">
-      <Header />
       <div className="example-container">
+        <Header />
         <ExampleTabMenu currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
-        <ExampleTab currentExampleTab={currentExampleTab} examples={examples} queueState={queueState} />
-        <div className="visual-queue-container">
-          {visualizerRefs.map((ref, index) => (
-            <AudioQueueVisualizer channelNumber={index} key={index} ref={ref} />
-          ))}
-        </div>
+        <ExampleTab currentExampleTab={currentExampleTab} examples={examples} queueState={queueState} visualizerRefs={visualizerRefs} />
         <Footer />
       </div>
     </div>

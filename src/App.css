@@ -1,24 +1,59 @@
+* {
+  box-sizing: border-box;
+}
+
 .app {
   align-items: center;
-  background-color: #18191d;
-  color: white;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #101c30 25%, #1a242e 50%, #081b40 75%, var(--bg-secondary) 100%);
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
-  font-size: 18px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
   min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
   text-align: center;
+  width: 100%;
+}
+
+.app::before {
+  background:
+    radial-gradient(circle at 20% 80%, rgb(59 130 246 / 8%) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgb(168 85 247 / 5%) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgb(16 185 129 / 3%) 0%, transparent 50%);
+  content: '';
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: -1;
 }
 
 .example-container {
-  background-color: #282c34;
-  border: 1px solid #61dafb;
-  border-radius: 5px;
+  backdrop-filter: blur(40px);
+  background: rgb(26 31 46 / 70%);
+  border: 1px solid rgb(59 130 246 / 25%);
+  border-radius: var(--radius-2xl);
   box-shadow:
-    0.3px 0.5px 0.7px hsl(220deg 21% 8%),
-    0.8px 1.6px 2px -0.8px hsl(220deg 21% 8%),
-    2.1px 4.1px 5.2px -1.7px hsl(220deg 21% 8%);
-  margin: 20px;
-  width: 80%;
+    var(--shadow-xl),
+    0 0 60px rgb(59 130 246 / 8%);
+  margin: var(--space-8);
+  max-width: calc(100vw - 2 * var(--space-8));
+  padding: var(--space-10) var(--space-8) var(--space-8);
+  position: relative;
+  width: 85%;
+  z-index: 1;
+}
+
+.example-container::before {
+  background: linear-gradient(135deg, rgb(59 130 246 / 5%) 0%, rgb(168 85 247 / 3%) 100%);
+  border-radius: inherit;
+  content: '';
+  inset: 0;
+  position: absolute;
+  z-index: -1;
 }
 
 .visual-queue-container {
@@ -28,12 +63,17 @@
 }
 
 p {
-  font-size: 18px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
   margin: 0;
 }
 
-@media (1px <= width <= 800px) {
+@media (width <= 800px) {
   .example-container {
-    width: 90%;
+    margin: var(--space-2);
+    max-width: calc(100vw - 2 * var(--space-2));
+    padding: var(--space-6) var(--space-4);
+    width: calc(100% - 2 * var(--space-2));
   }
 }
