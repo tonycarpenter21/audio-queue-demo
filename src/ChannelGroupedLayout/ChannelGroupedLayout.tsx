@@ -9,20 +9,28 @@ interface ChannelGroupedLayoutProps {
   examples: { example: Example[]; key: string }[];
   hasGlobalControls: boolean;
   queueState: { [channelNumber: number]: boolean };
+  pauseState: { [channelNumber: number]: boolean };
   visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
 }
 
-function ChannelGroupedLayout({ examples, queueState, visualizerRefs, hasGlobalControls }: ChannelGroupedLayoutProps): JSX.Element {
+function ChannelGroupedLayout({
+  examples,
+  queueState,
+  pauseState,
+  visualizerRefs,
+  hasGlobalControls
+}: ChannelGroupedLayoutProps): JSX.Element {
   // Group examples by channel based on the actual structure
   const getChannelExamples = (channelNumber: number): Example[] => {
     const channelExamples: Example[] = [];
 
     examples.forEach(({ example }) => {
-      if (example.length === 2) {
-        // Two-item arrays: index 0 = Channel 0, index 1 = Channel 1
-        channelExamples.push(example[channelNumber]);
-      }
-      // Skip single-item arrays (global controls)
+      example.forEach((ex) => {
+        const text: string = ex.buttonText.toLowerCase();
+        if (text.includes(`channel ${channelNumber}`)) {
+          channelExamples.push(ex);
+        }
+      });
     });
 
     return channelExamples;
@@ -32,18 +40,20 @@ function ChannelGroupedLayout({ examples, queueState, visualizerRefs, hasGlobalC
     const globalExamples: Example[] = [];
 
     examples.forEach(({ example }) => {
-      if (example.length === 1) {
-        // Single-item arrays are global controls
-        globalExamples.push(example[0]);
-      }
+      example.forEach((ex) => {
+        const text: string = ex.buttonText.toLowerCase();
+        if (text.includes('all channels') || text.includes('all sounds')) {
+          globalExamples.push(ex);
+        }
+      });
     });
 
     return globalExamples;
   };
 
-  const channel0Examples = getChannelExamples(0);
-  const channel1Examples = getChannelExamples(1);
-  const globalExamples = hasGlobalControls ? getGlobalExamples() : [];
+  const channel0Examples: Example[] = getChannelExamples(0);
+  const channel1Examples: Example[] = getChannelExamples(1);
+  const globalExamples: Example[] = hasGlobalControls ? getGlobalExamples() : [];
 
   return (
     <div className="channel-grouped-layout">
@@ -52,16 +62,20 @@ function ChannelGroupedLayout({ examples, queueState, visualizerRefs, hasGlobalC
           channelNumber={0}
           examples={channel0Examples}
           isChannelQueueEmpty={queueState[0]}
+          pauseState={pauseState[0]}
           visualizerRef={visualizerRefs[0]}
         />
         <ChannelSection
           channelNumber={1}
           examples={channel1Examples}
           isChannelQueueEmpty={queueState[1]}
+          pauseState={pauseState[1]}
           visualizerRef={visualizerRefs[1]}
         />
       </div>
-      {hasGlobalControls && globalExamples.length > 0 && <GlobalControls examples={globalExamples} queueState={queueState} />}
+      {hasGlobalControls && globalExamples.length > 0 && (
+        <GlobalControls examples={globalExamples} pauseState={pauseState} queueState={queueState} />
+      )}
     </div>
   );
 }

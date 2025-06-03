@@ -1,5 +1,14 @@
 .divider {
-  border: 1px solid #fff4;
-  margin: 13px 0 20px;
-  width: 80%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(59 130 246 / 30%) 20%,
+    rgb(59 130 246 / 40%) 50%,
+    rgb(59 130 246 / 30%) 80%,
+    transparent 100%
+  );
+  border: none;
+  height: 1px;
+  margin: var(--space-4) 0;
+  width: 100%;
 }

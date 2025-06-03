@@ -121,6 +121,33 @@
   cursor: not-allowed;
 }
 
+/* Priority Button - Urgent Red Styling */
+.button.priority {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-color: #ef4444;
+  box-shadow:
+    var(--shadow-md),
+    0 0 20px rgb(239 68 68 / 15%);
+}
+
+/* Pause Button - Warning Orange Styling */
+.button.pause {
+  background: linear-gradient(135deg, var(--warning-500) 0%, #d97706 100%);
+  border-color: var(--warning-400);
+  box-shadow:
+    var(--shadow-md),
+    0 0 20px rgb(251 191 36 / 15%);
+}
+
+/* Resume Button - Success Green Styling */
+.button.resume {
+  background: linear-gradient(135deg, var(--success-500) 0%, #059669 100%);
+  border-color: var(--success-400);
+  box-shadow:
+    var(--shadow-md),
+    0 0 20px rgb(52 211 153 / 15%);
+}
+
 /* Mobile button adjustments */
 @media (width <= 800px) {
   .button {
@@ -169,70 +196,13 @@
 }
 
 .global-container {
-  border-color: rgb(168 85 247 / 40%);
-  max-width: 600px;
+  border-color: rgb(59 130 246 / 40%);
+  max-width: 800px;
   width: 100%;
 }
 
 .global-container::before {
-  background: linear-gradient(180deg, rgb(168 85 247 / 8%) 0%, rgb(168 85 247 / 12%) 100%);
-}
-
-/* Premium Typography */
-.text-heading-1 {
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-300) 100%);
-  background-clip: text;
-  color: transparent;
-  font-size: 3.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  text-align: center;
-}
-
-.text-heading-3 {
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.text-body {
-  color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.text-accent {
-  color: var(--primary-400);
-}
-
-/* Layout Utilities */
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.gap-4 {
-  gap: var(--space-4);
-}
-
-.gap-6 {
-  gap: var(--space-6);
-}
-
-.gap-8 {
-  gap: var(--space-8);
+  background: linear-gradient(180deg, rgb(59 130 246 / 8%) 0%, rgb(59 130 246 / 12%) 100%);
 }
 
 /* Section Title - Premium styling */
@@ -248,26 +218,4 @@
   background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-300) 100%);
   background-clip: text;
   color: transparent;
-}
-
-.section-title-accent {
-  background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-400) 100%);
-  background-clip: text;
-  color: transparent;
-}
-
-/* Floating Animation Keyframes */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.floating {
-  animation: float 3s ease-in-out infinite;
 }

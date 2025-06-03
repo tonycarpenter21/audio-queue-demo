@@ -6,16 +6,21 @@ This is a demo frontend website for a TypeScript npm package for audio queue man
 ## Code Standards
 - Use TypeScript with strict mode enabled
 - All public functions must have comprehensive JSDoc documentation with examples
-- All variables and functions should show a return type
+- All functions should show a return type
+- All variable declarations (const and let) should show a return type (even basic ones like string or boolean)
 - Object keys and imports should be alphabetically sorted
 - Interfaces and types should be alphabetically sorted
+- Interfaces that have the export prefix should be used in another file otherwise remove the export prefix if it's just used in it's own file
+- Interfaces and types should be used at least one place in the repo and removed if they are not used
 - CSS rules should be alphabetically sorted
 - CSS classes should be alphabetically sorted
 - CSS styling should be accomplished with as few rules as possible
+- CSS classes that are not used should be removed unless they are color pallettes or part of a global ruleset
 - Use modular architecture - keep concerns separated across files
 - Return all time values in milliseconds for consistency
 - Use consistent error handling with try/catch blocks
 - Export interfaces and types from src/types.ts
+- Remove all console.log() after you are done troubleshooting an issue
 
 ## Documentation
 - Keep README.md examples current and functional

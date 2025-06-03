@@ -1,10 +1,10 @@
 import './ExampleTabMenu.css';
 
 export enum ExampleTabs {
-  ADD_SOUND = 'Add Sound To Queue',
-  STOP_CURRENT_SOUND = 'Stop Current Sound In Queue',
-  STOP_ALL_SOUNDS_IN_QUEUE = 'Stop All Sounds In Queue',
-  STOP_ALL_SOUNDS_IN_ALL_QUEUES = 'Stop All Sounds In All Queues'
+  BASIC_QUEUE = 'Add & Remove From Queue',
+  PAUSE_RESUME = 'Pause & Resume',
+  VOLUME_CONTROL = 'Volume Control',
+  ADVANCED_FEATURES = 'Advanced Features'
 }
 
 interface ExampleTabMenuProps {
@@ -13,12 +13,19 @@ interface ExampleTabMenuProps {
 }
 
 function ExampleTabMenu({ currentExampleTab, onTabChange }: ExampleTabMenuProps): JSX.Element {
+  const tabs: ExampleTabs[] = Object.values(ExampleTabs);
+
   return (
     <div className="example-tabs-container">
-      {Object.values(ExampleTabs).map((tab) => (
-        <div className={`example-tab ${currentExampleTab === tab ? 'active' : ''}`} key={tab} onClick={() => onTabChange(tab)}>
+      {tabs.map((tab) => (
+        <button
+          className={`example-tab ${currentExampleTab === tab ? 'active' : ''}`}
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          type="button"
+        >
           {tab}
-        </div>
+        </button>
       ))}
     </div>
   );

@@ -4,6 +4,7 @@ import './AudioQueueVisualizer.css';
 interface AudioFile {
   currentTime: number;
   duration: number;
+  isLooping?: boolean;
   name: string;
 }
 
@@ -12,9 +13,9 @@ interface AudioQueueVisualizerProps {
 }
 
 export interface AudioQueueVisualizerHandle {
-  addAudioFile: (name: string, duration: number) => void;
+  addAudioFile: (name: string, duration: number, isLooping?: boolean) => void;
   clearQueue: () => void;
-  getNextAudio: () => { name: string; duration: number } | null;
+  getNextAudio: () => { name: string; duration: number; isLooping?: boolean } | null;
   isQueueEmpty: () => boolean;
   removeAudioFile: () => void;
   setPlayingState: (playing: boolean) => void;
@@ -22,13 +23,35 @@ export interface AudioQueueVisualizerHandle {
   updateProgress: (currentTime: number) => void;
 }
 
+// Helper function to truncate filename while preserving extension
+const truncateFilename = (filename: string, maxLength: number = 25): string => {
+  if (filename.length <= maxLength) return filename;
+
+  const parts: string[] = filename.split('.');
+
+  if (parts.length === 1) {
+    // No extension, just truncate
+    return filename.substring(0, maxLength - 3) + '...';
+  }
+
+  const extension: string = parts.pop() || '';
+  const nameWithoutExt: string = parts.join('.');
+  const availableLength: number = maxLength - extension.length - 4; // -4 for "..." + "."
+
+  if (availableLength <= 0) {
+    return filename.substring(0, maxLength - 3) + '...';
+  }
+
+  return nameWithoutExt.substring(0, availableLength) + '...' + '.' + extension;
+};
+
 const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelNumber }: AudioQueueVisualizerProps, ref) {
   const [currentPlayingPercentage, setCurrentPlayingPercentage] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<AudioFile[]>([]);
 
-  const addAudioFile = useCallback((name: string, duration: number) => {
-    setQueue((prevQueue) => [...prevQueue, { currentTime: 0, duration, name }]);
+  const addAudioFile = useCallback((name: string, duration: number, isLooping?: boolean) => {
+    setQueue((prevQueue) => [...prevQueue, { currentTime: 0, duration, isLooping, name }]);
   }, []);
 
   const clearQueue = useCallback(() => {
@@ -36,7 +59,7 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
   }, []);
 
   const getNextAudio = useCallback(() => {
-    return queue.length > 0 ? { duration: queue[0].duration, name: queue[0].name } : null;
+    return queue.length > 0 ? { duration: queue[0].duration, isLooping: queue[0].isLooping, name: queue[0].name } : null;
   }, [queue]);
 
   const isQueueEmpty = useCallback(() => {
@@ -57,12 +80,11 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
 
   const updateCurrentFileDuration = useCallback((duration: number) => {
     setQueue((prevQueue) => {
-      if (prevQueue.length > 0) {
-        const updatedQueue = [...prevQueue];
-        updatedQueue[0] = { ...updatedQueue[0], duration };
-        return updatedQueue;
-      }
-      return prevQueue;
+      if (prevQueue.length === 0) return prevQueue;
+
+      const updatedQueue: AudioFile[] = [...prevQueue];
+      updatedQueue[0] = { ...updatedQueue[0], duration };
+      return updatedQueue;
     });
   }, []);
 
@@ -86,7 +108,10 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
             {fileIndex === 0 && isPlaying && (
               <div className="audio-file-progress" style={{ width: `${currentPlayingPercentage * 100}%` }} />
             )}
-            <span className="audio-file-text">{file.name}</span>
+            <span className="audio-file-text">
+              {file.isLooping && <span>🔁 </span>}
+              {truncateFilename(file.name)}
+            </span>
           </div>
         ))}
       </div>
