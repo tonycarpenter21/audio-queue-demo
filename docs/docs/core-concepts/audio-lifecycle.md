@@ -1133,6 +1133,6 @@ class AudioLifecycleManager {
 Now that you understand the complete audio lifecycle, explore:
 
 - **[Performance & Memory](./performance-memory.md)** - Optimization strategies for the entire lifecycle
-- **[API Reference](../api-reference/)** - Detailed function documentation  
-- **[Examples](../examples/)** - Real-world lifecycle management patterns
-- **[Advanced Features](../advanced-features/)** - Complex lifecycle scenarios 
+- **[API Reference](../api-reference/queue-management)** - Detailed function documentation
+- **[Examples](../examples/basic-usage)** - Real-world lifecycle management patterns
+- **[Advanced Features](../advanced/volume-ducking)** - Complex lifecycle scenarios 
