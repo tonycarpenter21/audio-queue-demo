@@ -787,4 +787,4 @@ Now that you understand performance and memory management, explore:
 - **[API Reference](../api-reference/)** - Complete function documentation
 - **[Examples](../examples/)** - Performance-optimized real-world examples  
 - **[Advanced Features](../advanced-features/)** - Complex optimization scenarios
-- **[Migration & Help](../migration-help/)** - Upgrading and troubleshooting guides 
+- **[Migration & Help](../migration/troubleshooting)** - Upgrading and troubleshooting guides 

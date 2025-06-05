@@ -52,7 +52,7 @@ setChannelVolume(1, 0.8); // Sound effects at 80%
 ### 🚀 **[Getting Started](./getting-started/installation)**
 Installation, setup, and your first audio queue
 
-### 💡 **[Core Concepts](./core-concepts/channels-and-queues)**  
+### 💡 **[Core Concepts](./core-concepts/audio-channels)**  
 Understanding channels, queues, and audio lifecycle
 
 ### 📚 **[API Reference](./api-reference/queue-management)**

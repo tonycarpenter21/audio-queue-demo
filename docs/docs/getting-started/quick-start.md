@@ -253,7 +253,7 @@ setTimeout(() => gameAudio.gameOver(), 3000);
 
 Congratulations! You now have a solid foundation with Audio Channel Queue. Here's what to explore next:
 
-### 📚 **[Core Concepts](../core-concepts/channels-and-queues)**
+### 📚 **[Core Concepts](../core-concepts/audio-channels)**
 Understand how channels, queues, and the audio lifecycle work
 
 ### 📖 **[API Reference](../api-reference/queue-management)**  
