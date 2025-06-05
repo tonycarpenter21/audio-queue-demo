@@ -1,8 +1,9 @@
 {
   "files": {
-    "main.css": "/audio-queue-demo/static/css/main.035fe26a.css",
-    "main.js": "/audio-queue-demo/static/js/main.36735b1f.js",
+    "main.css": "/audio-queue-demo/static/css/main.b526eda7.css",
+    "main.js": "/audio-queue-demo/static/js/main.aa17542f.js",
     "static/js/845.9aafcbe9.chunk.js": "/audio-queue-demo/static/js/845.9aafcbe9.chunk.js",
+    "static/media/background_music.mp3": "/audio-queue-demo/static/media/background_music.cae1a9d634ae5e05b290.mp3",
     "static/media/long_teleportation.mp3": "/audio-queue-demo/static/media/long_teleportation.80574d638658e56f0943.mp3",
     "static/media/long_teleportation_2.mp3": "/audio-queue-demo/static/media/long_teleportation_2.92c370011fe217fce3bf.mp3",
     "static/media/long_teleportation_3.mp3": "/audio-queue-demo/static/media/long_teleportation_3.ff5ba38775a3d7b5f76e.mp3",
@@ -16,12 +17,12 @@
     "static/media/player_has_left_the_game.mp3": "/audio-queue-demo/static/media/player_has_left_the_game.80ef11adf98d421748c1.mp3",
     "static/media/one_minute_left.mp3": "/audio-queue-demo/static/media/one_minute_left.031a3d43aa37fc2e9dec.mp3",
     "index.html": "/audio-queue-demo/index.html",
-    "main.035fe26a.css.map": "/audio-queue-demo/static/css/main.035fe26a.css.map",
-    "main.36735b1f.js.map": "/audio-queue-demo/static/js/main.36735b1f.js.map",
+    "main.b526eda7.css.map": "/audio-queue-demo/static/css/main.b526eda7.css.map",
+    "main.aa17542f.js.map": "/audio-queue-demo/static/js/main.aa17542f.js.map",
     "845.9aafcbe9.chunk.js.map": "/audio-queue-demo/static/js/845.9aafcbe9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.035fe26a.css",
-    "static/js/main.36735b1f.js"
+    "static/css/main.b526eda7.css",
+    "static/js/main.aa17542f.js"
   ]
 }
