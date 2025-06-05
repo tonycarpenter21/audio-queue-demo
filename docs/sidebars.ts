@@ -1,4 +1,4 @@
-import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -17,17 +17,15 @@ const sidebars: SidebarsConfig = {
   tutorialSidebar: [
     'intro',
     {
-      type: 'category',
-      label: 'Getting Started',
       items: [
         'getting-started/installation',
         'getting-started/quick-start',
         'getting-started/browser-compatibility',
       ],
+      label: 'Getting Started',
+      type: 'category'
     },
     {
-      type: 'category',
-      label: 'Core Concepts',
       items: [
         'core-concepts/audio-channels',
         'core-concepts/queue-system',
@@ -35,20 +33,43 @@ const sidebars: SidebarsConfig = {
         'core-concepts/audio-lifecycle',
         'core-concepts/performance-memory',
       ],
+      label: 'Core Concepts',
+      type: 'category'
     },
     {
-      type: 'category',
-      label: 'API Reference',
       items: [
         'api-reference/queue-management',
         'api-reference/volume-control',
         'api-reference/pause-resume',
         'api-reference/event-listeners',
         'api-reference/audio-information',
-        'api-reference/types-interfaces',
+        'api-reference/types-interfaces'
       ],
+      label: 'API Reference',
+      type: 'category'
     },
-  ],
+    {
+      items: [
+        'examples/basic-usage'
+      ],
+      label: 'Examples',
+      type: 'category'
+    },
+    {
+      items: [
+        'advanced/volume-ducking'
+      ],
+      label: 'Advanced',
+      type: 'category'
+    },
+    {
+      items: [
+        'migration/troubleshooting',
+      ],
+      label: 'Migration & Help',
+      type: 'category'
+    }
+  ]
 
   // But you can create a sidebar manually
   /*
