@@ -1,5 +1,6 @@
 import blueCaptureBase from './blue_team_capture_base.mp3';
 import blueLostBase from './blue_team_lost_base.mp3';
+import backgroundMusic from './background_music.mp3';
 import laserGunFiring from './laser_gun_firing.mp3';
 import laserGunFiringRepeatedlyOne from './laser_gun_firing_repeatedly.mp3';
 import longTeleportationOne from './long_teleportation.mp3';
@@ -29,6 +30,9 @@ export const audioFilesChannelOne: string[] = [
   longTeleportationTwo,
   longTeleportationThree
 ];
+
+// Export background music separately for specific use cases
+export { backgroundMusic };
 
 export function getRandomAudioFile(audioFiles: string[]): string {
   return audioFiles[Math.floor(Math.random() * audioFiles.length)];

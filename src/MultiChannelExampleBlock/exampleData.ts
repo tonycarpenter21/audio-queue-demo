@@ -26,6 +26,7 @@ export function createExamples(
   getRandomAudioFile: (files: string[]) => string,
   audioFilesChannelZero: string[],
   audioFilesChannelOne: string[],
+  backgroundMusic: string,
   selectedFadeOption: FadeOption
 ): Record<string, Example[]> {
   // Helper function to get fade code example
@@ -163,9 +164,9 @@ if (isChannelPaused(${channelParam})) {
         isDisabledWhenQueueIsEmpty: false
       },
       {
+        // Use background music specifically for Pause & Resume Channel 1
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
-          handleAudioAndVisualizer(fileName, 1, queueAudio);
+          handleAudioAndVisualizer(backgroundMusic, 1, queueAudio);
         },
         buttonText: 'Add Sound To Queue (Channel 1)',
         buttonType: 'default',
@@ -285,13 +286,8 @@ if (isChannelPaused(${channelParam})) {
       // Channel 1 looping audio
       {
         buttonFunction: (): void => {
-          // Use a specific long audio file for Channel 1 (long teleportation)
-          handleAudioAndVisualizer(
-            audioFilesChannelOne[2],
-            1,
-            (url: string, channel: number) => queueAudio(url, channel, { loop: true }),
-            true
-          ); // Pass isLooping = true
+          // Use background music for Channel 1 volume demonstration
+          handleAudioAndVisualizer(backgroundMusic, 1, (url: string, channel: number) => queueAudio(url, channel, { loop: true }), true); // Pass isLooping = true
         },
         buttonText: 'Start Looping Audio (Channel 1)',
         buttonType: 'default',

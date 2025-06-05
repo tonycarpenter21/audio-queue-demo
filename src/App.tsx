@@ -27,7 +27,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import './shared.css';
-import { audioFilesChannelOne, audioFilesChannelZero, getRandomAudioFile } from './audio/audioFilesAndUtils';
+import { audioFilesChannelOne, audioFilesChannelZero, backgroundMusic, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 import { createHandleAudioAndVisualizer, isAudioFileLooping, clearLoopingTracker } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
 import BackgroundVisualizer from './BackgroundVisualizer/BackgroundVisualizer';
@@ -110,6 +110,9 @@ function App(): JSX.Element {
 
   const pauseChannelWithFade = useCallback(
     async (channelNumber: number = 0): Promise<void> => {
+      // Immediately update UI state for responsive feedback
+      setPauseState((prev) => ({ ...prev, [channelNumber]: true }));
+
       if (selectedFadeOption === 'none') {
         pauseChannel(channelNumber);
         return;
@@ -125,6 +128,9 @@ function App(): JSX.Element {
 
   const resumeChannelWithFade = useCallback(
     async (channelNumber: number = 0): Promise<void> => {
+      // Immediately update UI state for responsive feedback
+      setPauseState((prev) => ({ ...prev, [channelNumber]: false }));
+
       if (selectedFadeOption === 'none') {
         resumeChannel(channelNumber);
         return;
@@ -151,6 +157,9 @@ function App(): JSX.Element {
   );
 
   const pauseAllChannelsWithFade = useCallback(async (): Promise<void> => {
+    // Immediately update UI state for responsive feedback
+    setPauseState({ 0: true, 1: true });
+
     if (selectedFadeOption === 'none') {
       pauseAllChannels();
       return;
@@ -176,6 +185,9 @@ function App(): JSX.Element {
   }, [selectedFadeOption, fadeVolume]);
 
   const resumeAllChannelsWithFade = useCallback(async (): Promise<void> => {
+    // Immediately update UI state for responsive feedback
+    setPauseState({ 0: false, 1: false });
+
     if (selectedFadeOption === 'none') {
       resumeAllChannels();
       return;
@@ -214,10 +226,13 @@ function App(): JSX.Element {
         trackingInfo.pausedAt = Date.now();
       }
 
-      // Update pause state
-      setPauseState((prev) => ({ ...prev, [channelNumber]: true }));
+      // Only update pause state if no fade is selected (for direct API calls)
+      // When fade is selected, we handle state updates optimistically to remove a perceived visual delay
+      if (selectedFadeOption === 'none') {
+        setPauseState((prev) => ({ ...prev, [channelNumber]: true }));
+      }
     },
-    []
+    [selectedFadeOption]
   );
 
   const handleAudioResume = useCallback(
@@ -231,10 +246,13 @@ function App(): JSX.Element {
         delete trackingInfo.pausedAt;
       }
 
-      // Update pause state
-      setPauseState((prev) => ({ ...prev, [channelNumber]: false }));
+      // Only update pause state if no fade is selected (for direct API calls)
+      // When fade is selected, we handle state updates optimistically to remove a perceived visual delay
+      if (selectedFadeOption === 'none') {
+        setPauseState((prev) => ({ ...prev, [channelNumber]: false }));
+      }
     },
-    []
+    [selectedFadeOption]
   );
 
   const handleTabChange = useCallback(
@@ -395,6 +413,7 @@ function App(): JSX.Element {
     getRandomAudioFile,
     audioFilesChannelZero,
     audioFilesChannelOne,
+    backgroundMusic,
     selectedFadeOption
   );
 
