@@ -1,6 +1,12 @@
 /* Import modern font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+body {
+  background: var(--bg-primary);
+  margin: 0;
+  padding: 0;
+}
+
 :root {
   /* Primary palette */
   --primary-50: #eff6ff;
@@ -197,7 +203,7 @@
 
 .global-container {
   border-color: rgb(59 130 246 / 40%);
-  max-width: 800px;
+  max-width: 1000px;
   width: 100%;
 }
 

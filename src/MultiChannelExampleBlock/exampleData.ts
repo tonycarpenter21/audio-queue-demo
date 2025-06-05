@@ -1,5 +1,7 @@
 import { Example } from '../types';
-import { ExampleTabs } from '../ExampleTabMenu/ExampleTabMenu';
+import { ExampleTabs } from '../types';
+
+export type FadeOption = 'none' | 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
 
 type HandleAudioAndVisualizer = (
   fileName: string,
@@ -14,19 +16,61 @@ export function createExamples(
   stopCurrentAudioInChannel: (channelNumber?: number) => void,
   stopAllAudioInChannel: (channelNumber?: number) => void,
   stopAllAudio: () => void,
-  pauseChannel: (channelNumber?: number) => void,
-  resumeChannel: (channelNumber?: number) => void,
-  togglePauseChannel: (channelNumber?: number) => void,
-  pauseAllChannels: () => void,
-  resumeAllChannels: () => void,
-  togglePauseAllChannels: () => void,
+  pauseChannelWithFade: (channelNumber?: number) => Promise<void>,
+  resumeChannelWithFade: (channelNumber?: number) => Promise<void>,
+  togglePauseChannelWithFade: (channelNumber?: number) => Promise<void>,
+  pauseAllChannelsWithFade: () => Promise<void>,
+  resumeAllChannelsWithFade: () => Promise<void>,
+  togglePauseAllChannelsWithFade: () => Promise<void>,
   queueAudioPriority: (url: string, channelNumber?: number, options?: Record<string, unknown>) => void,
   getRandomAudioFile: (files: string[]) => string,
   audioFilesChannelZero: string[],
-  audioFilesChannelOne: string[]
+  audioFilesChannelOne: string[],
+  selectedFadeOption: FadeOption
 ): Record<string, Example[]> {
+  // Helper function to get fade code example
+  const getFadeCodeExample = (action: string, channel: string = ''): string => {
+    if (selectedFadeOption === 'none') {
+      return `${action}${channel ? `(${channel})` : '()'}`;
+    }
+
+    const channelParam = channel || '0';
+
+    if (action.includes('pause')) {
+      return `// First fade volume to 0
+await setChannelVolume(
+  ${channelParam}, 0, 800, '${selectedFadeOption}'
+);
+// Then pause the audio
+await ${action}${channel ? `(${channel})` : '()'}`;
+    } else if (action.includes('resume')) {
+      return `// First resume at 0 volume
+await setChannelVolume(${channelParam}, 0);
+await ${action}${channel ? `(${channel})` : '()'};
+// Then fade volume to 1.0
+await setChannelVolume(
+  ${channelParam}, 1.0, 800, '${selectedFadeOption}'
+)`;
+    } else {
+      // For toggle functions
+      return `// Smart toggle with fade
+if (isChannelPaused(${channelParam})) {
+  await setChannelVolume(${channelParam}, 0);
+  await ${action}${channel ? `(${channel})` : '()'};
+  await setChannelVolume(
+    ${channelParam}, 1.0, 800, '${selectedFadeOption}'
+  );
+} else {
+  await setChannelVolume(
+    ${channelParam}, 0, 800, '${selectedFadeOption}'
+  );
+  await ${action}${channel ? `(${channel})` : '()'};
+}`;
+    }
+  };
+
   return {
-    [ExampleTabs.BASIC_QUEUE]: [
+    [ExampleTabs.QUEUE_MANAGEMENT]: [
       // Channel 0 examples
       {
         buttonFunction: (): void => {
@@ -36,6 +80,16 @@ export function createExamples(
         buttonText: 'Add Sound To End Of Queue (Channel 0)',
         buttonType: 'default',
         codeExample: 'queueAudio(audioFile);',
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
+        },
+        buttonText: 'Add Priority Sound (Channel 0)',
+        buttonType: 'priority',
+        codeExample: 'queueAudioPriority(audioFile);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -61,6 +115,16 @@ export function createExamples(
         buttonText: 'Add Sound To End Of Queue (Channel 1)',
         buttonType: 'default',
         codeExample: 'queueAudio(audioFile, 1);',
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
+        },
+        buttonText: 'Add Priority Sound (Channel 1)',
+        buttonType: 'priority',
+        codeExample: 'queueAudioPriority(audioFile, 1);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -111,83 +175,83 @@ export function createExamples(
       // Channel 0 pause/resume
       {
         buttonFunction: (): void => {
-          pauseChannel();
+          pauseChannelWithFade();
         },
         buttonText: 'Pause Channel 0',
         buttonType: 'pause',
-        codeExample: 'pauseChannel();',
+        codeExample: getFadeCodeExample('pauseChannel'),
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => {
-          resumeChannel();
+          resumeChannelWithFade();
         },
         buttonText: 'Resume Channel 0',
         buttonType: 'resume',
-        codeExample: 'resumeChannel();',
+        codeExample: getFadeCodeExample('resumeChannel'),
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => {
-          togglePauseChannel();
+          togglePauseChannelWithFade();
         },
         buttonText: 'Toggle Pause Channel 0',
         buttonType: 'default',
-        codeExample: 'togglePauseChannel();',
+        codeExample: getFadeCodeExample('togglePauseChannel'),
         isDisabledWhenQueueIsEmpty: true
       },
       // Channel 1 pause/resume
       {
         buttonFunction: (): void => {
-          pauseChannel(1);
+          pauseChannelWithFade(1);
         },
         buttonText: 'Pause Channel 1',
         buttonType: 'pause',
-        codeExample: 'pauseChannel(1);',
+        codeExample: getFadeCodeExample('pauseChannel', '1'),
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => {
-          resumeChannel(1);
+          resumeChannelWithFade(1);
         },
         buttonText: 'Resume Channel 1',
         buttonType: 'resume',
-        codeExample: 'resumeChannel(1);',
+        codeExample: getFadeCodeExample('resumeChannel', '1'),
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => {
-          togglePauseChannel(1);
+          togglePauseChannelWithFade(1);
         },
         buttonText: 'Toggle Pause Channel 1',
         buttonType: 'default',
-        codeExample: 'togglePauseChannel(1);',
+        codeExample: getFadeCodeExample('togglePauseChannel', '1'),
         isDisabledWhenQueueIsEmpty: true
       },
       // Global pause/resume
       {
         buttonFunction: (): void => {
-          pauseAllChannels();
+          pauseAllChannelsWithFade();
         },
         buttonText: 'Pause All Channels',
         buttonType: 'pause',
-        codeExample: 'pauseAllChannels();',
+        codeExample: getFadeCodeExample('pauseAllChannels'),
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => {
-          resumeAllChannels();
+          resumeAllChannelsWithFade();
         },
         buttonText: 'Resume All Channels',
         buttonType: 'resume',
-        codeExample: 'resumeAllChannels();',
+        codeExample: getFadeCodeExample('resumeAllChannels'),
         isDisabledWhenQueueIsEmpty: true
       },
       {
-        buttonFunction: togglePauseAllChannels,
+        buttonFunction: togglePauseAllChannelsWithFade,
         buttonText: 'Toggle All Channels',
         buttonType: 'default',
-        codeExample: 'togglePauseAllChannels();',
+        codeExample: getFadeCodeExample('togglePauseAllChannels'),
         isDisabledWhenQueueIsEmpty: true
       }
     ],
@@ -205,7 +269,9 @@ export function createExamples(
         },
         buttonText: 'Start Looping Audio (Channel 0)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 0, { loop: true });',
+        codeExample: `queueAudio(audioFile, 0, {
+  loop: true
+});`,
         isDisabledWhenChannelPlaying: true,
         isDisabledWhenQueueIsEmpty: false
       },
@@ -229,7 +295,9 @@ export function createExamples(
         },
         buttonText: 'Start Looping Audio (Channel 1)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 1, { loop: true });',
+        codeExample: `queueAudio(audioFile, 1, {
+  loop: true
+});`,
         isDisabledWhenChannelPlaying: true,
         isDisabledWhenQueueIsEmpty: false
       },
@@ -239,61 +307,6 @@ export function createExamples(
         buttonType: 'default',
         codeExample: 'stopAllAudioInChannel(1);',
         isDisabledWhenQueueIsEmpty: true
-      }
-    ],
-    [ExampleTabs.ADVANCED_FEATURES]: [
-      // Priority queueing
-      {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
-          handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
-        },
-        buttonText: 'Add Priority Sound (Channel 0)',
-        buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile);',
-        isDisabledWhenQueueIsEmpty: false
-      },
-      {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
-          handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
-        },
-        buttonText: 'Add Priority Sound (Channel 1)',
-        buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile, 1);',
-        isDisabledWhenQueueIsEmpty: false
-      },
-      // Looping examples
-      {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
-          handleAudioAndVisualizer(fileName, 0, (url: string, channel: number) => queueAudio(url, channel, { loop: true }), true);
-        },
-        buttonText: 'Add Looping Sound (Channel 0)',
-        buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 0, { loop: true });',
-        isDisabledWhenQueueIsEmpty: false
-      },
-      {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
-          handleAudioAndVisualizer(fileName, 1, (url: string, channel: number) => queueAudio(url, channel, { loop: true }), true);
-        },
-        buttonText: 'Add Looping Sound (Channel 1)',
-        buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 1, { loop: true });',
-        isDisabledWhenQueueIsEmpty: false
-      },
-      // Priority + Loop combination
-      {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
-          handleAudioAndVisualizer(fileName, 0, (url: string, channel: number) => queueAudioPriority(url, channel, { loop: true }), true);
-        },
-        buttonText: 'Add Priority Looping Sound (Channel 0)',
-        buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile, 0, { loop: true });',
-        isDisabledWhenQueueIsEmpty: false
       }
     ]
   };

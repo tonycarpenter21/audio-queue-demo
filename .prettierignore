@@ -1,0 +1,10 @@
+# Build outputs
+build/
+dist/
+
+# Docusaurus files
+docs/
+
+# Package files
+package-lock.json
+*.lock 

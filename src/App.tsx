@@ -6,10 +6,8 @@ import {
   stopCurrentAudioInChannel,
   pauseChannel,
   resumeChannel,
-  togglePauseChannel,
   pauseAllChannels,
   resumeAllChannels,
-  togglePauseAllChannels,
   onQueueChange,
   offQueueChange,
   onAudioStart,
@@ -18,6 +16,8 @@ import {
   onAudioResume,
   offAudioPause,
   offAudioResume,
+  setChannelVolume,
+  getChannelVolume,
   QueueSnapshot,
   AudioStartInfo,
   AudioCompleteInfo,
@@ -30,12 +30,12 @@ import './shared.css';
 import { audioFilesChannelOne, audioFilesChannelZero, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 import { createHandleAudioAndVisualizer, isAudioFileLooping, clearLoopingTracker } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
+import BackgroundVisualizer from './BackgroundVisualizer/BackgroundVisualizer';
 import Footer from './Footer/Footer';
 import Header from './Header/Header';
-import { createExamples } from './MultiChannelExampleBlock/exampleData';
-import ExampleTabMenu, { ExampleTabs } from './ExampleTabMenu/ExampleTabMenu';
+import { createExamples, FadeOption } from './MultiChannelExampleBlock/exampleData';
 import ExampleTab from './ExampleTab/ExampleTab';
-import { Example } from './types';
+import { Example, ExampleTabs } from './types';
 
 interface ProgressTracking {
   duration: number;
@@ -56,11 +56,154 @@ function App(): JSX.Element {
     [visualizerRefs]
   );
 
-  const [currentExampleTab, setCurrentExampleTab] = useState<ExampleTabs>(ExampleTabs.BASIC_QUEUE);
+  const [currentExampleTab, setCurrentExampleTab] = useState<ExampleTabs>(ExampleTabs.QUEUE_MANAGEMENT);
   const [queueState, setQueueState] = useState<{ [channelNumber: number]: boolean }>({ 0: true, 1: true });
   const [pauseState, setPauseState] = useState<{ [channelNumber: number]: boolean }>({ 0: false, 1: false });
+  const [selectedFadeOption, setSelectedFadeOption] = useState<FadeOption>('none');
 
   const handleAudioAndVisualizer = createHandleAudioAndVisualizer();
+
+  // Easing functions for fade effects
+  const easingFunctions = useMemo(
+    () => ({
+      'ease-in': (t: number): number => t * t,
+      'ease-in-out': (t: number): number => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+      'ease-out': (t: number): number => t * (2 - t),
+      linear: (t: number): number => t
+    }),
+    []
+  );
+
+  const fadeVolume = useCallback(
+    async (channelNumber: number, targetVolume: number, duration: number = 1000, easing: FadeOption = 'ease-in-out'): Promise<void> => {
+      if (easing === 'none') {
+        setChannelVolume(channelNumber, targetVolume);
+        return;
+      }
+
+      const currentVolume: number = getChannelVolume(channelNumber);
+      const steps: number = 20;
+      const stepDuration: number = duration / steps;
+      const easingFunc = easingFunctions[easing];
+
+      return new Promise((resolve) => {
+        let currentStep: number = 0;
+
+        const interval = setInterval(() => {
+          currentStep++;
+          const progress: number = currentStep / steps;
+          const easedProgress: number = easingFunc(progress);
+          const newVolume: number = currentVolume + (targetVolume - currentVolume) * easedProgress;
+
+          setChannelVolume(channelNumber, newVolume);
+
+          if (currentStep >= steps) {
+            clearInterval(interval);
+            setChannelVolume(channelNumber, targetVolume); // Ensure exact final value
+            resolve();
+          }
+        }, stepDuration);
+      });
+    },
+    [easingFunctions]
+  );
+
+  const pauseChannelWithFade = useCallback(
+    async (channelNumber: number = 0): Promise<void> => {
+      if (selectedFadeOption === 'none') {
+        pauseChannel(channelNumber);
+        return;
+      }
+
+      const originalVolume: number = getChannelVolume(channelNumber);
+      await fadeVolume(channelNumber, 0, 800, selectedFadeOption);
+      pauseChannel(channelNumber);
+      setChannelVolume(channelNumber, originalVolume); // Reset for resume
+    },
+    [selectedFadeOption, fadeVolume]
+  );
+
+  const resumeChannelWithFade = useCallback(
+    async (channelNumber: number = 0): Promise<void> => {
+      if (selectedFadeOption === 'none') {
+        resumeChannel(channelNumber);
+        return;
+      }
+
+      const targetVolume: number = getChannelVolume(channelNumber);
+      setChannelVolume(channelNumber, 0);
+      resumeChannel(channelNumber);
+      await fadeVolume(channelNumber, targetVolume, 800, selectedFadeOption);
+    },
+    [selectedFadeOption, fadeVolume]
+  );
+
+  const togglePauseChannelWithFade = useCallback(
+    async (channelNumber: number = 0): Promise<void> => {
+      const currentPauseState: boolean = pauseState[channelNumber];
+      if (currentPauseState) {
+        await resumeChannelWithFade(channelNumber);
+      } else {
+        await pauseChannelWithFade(channelNumber);
+      }
+    },
+    [pauseState, pauseChannelWithFade, resumeChannelWithFade]
+  );
+
+  const pauseAllChannelsWithFade = useCallback(async (): Promise<void> => {
+    if (selectedFadeOption === 'none') {
+      pauseAllChannels();
+      return;
+    }
+
+    const channels: number[] = [0, 1];
+    const originalVolumes: { [key: number]: number } = {};
+
+    // Store original volumes
+    channels.forEach((channel) => {
+      originalVolumes[channel] = getChannelVolume(channel);
+    });
+
+    // Fade all channels simultaneously
+    await Promise.all(channels.map((channel) => fadeVolume(channel, 0, 800, selectedFadeOption)));
+
+    pauseAllChannels();
+
+    // Reset volumes for resume
+    channels.forEach((channel) => {
+      setChannelVolume(channel, originalVolumes[channel]);
+    });
+  }, [selectedFadeOption, fadeVolume]);
+
+  const resumeAllChannelsWithFade = useCallback(async (): Promise<void> => {
+    if (selectedFadeOption === 'none') {
+      resumeAllChannels();
+      return;
+    }
+
+    const channels: number[] = [0, 1];
+    const targetVolumes: { [key: number]: number } = {};
+
+    // Store target volumes and set to 0
+    channels.forEach((channel) => {
+      targetVolumes[channel] = getChannelVolume(channel);
+      setChannelVolume(channel, 0);
+    });
+
+    resumeAllChannels();
+
+    // Fade all channels in simultaneously
+    await Promise.all(channels.map((channel) => fadeVolume(channel, targetVolumes[channel], 800, selectedFadeOption)));
+  }, [selectedFadeOption, fadeVolume]);
+
+  const togglePauseAllChannelsWithFade = useCallback(async (): Promise<void> => {
+    const anyChannelPlaying: boolean = !pauseState[0] || !pauseState[1];
+    if (anyChannelPlaying) {
+      await pauseAllChannelsWithFade();
+    } else {
+      await resumeAllChannelsWithFade();
+    }
+  }, [pauseState, pauseAllChannelsWithFade, resumeAllChannelsWithFade]);
 
   const handleAudioPause = useCallback(
     (channelNumber: number) => (): void => {
@@ -242,28 +385,31 @@ function App(): JSX.Element {
     stopCurrentAudioInChannel,
     stopAllAudioInChannel,
     stopAllAudio,
-    pauseChannel,
-    resumeChannel,
-    togglePauseChannel,
-    pauseAllChannels,
-    resumeAllChannels,
-    togglePauseAllChannels,
+    pauseChannelWithFade,
+    resumeChannelWithFade,
+    togglePauseChannelWithFade,
+    pauseAllChannelsWithFade,
+    resumeAllChannelsWithFade,
+    togglePauseAllChannelsWithFade,
     queueAudioPriority,
     getRandomAudioFile,
     audioFilesChannelZero,
-    audioFilesChannelOne
+    audioFilesChannelOne,
+    selectedFadeOption
   );
 
   return (
     <div className="app">
+      <BackgroundVisualizer />
       <div className="example-container">
-        <Header />
-        <ExampleTabMenu currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
+        <Header currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
         <ExampleTab
           currentExampleTab={currentExampleTab}
           examples={examples}
+          onFadeOptionChange={setSelectedFadeOption}
           pauseState={pauseState}
           queueState={queueState}
+          selectedFadeOption={selectedFadeOption}
           visualizerRefs={visualizerRefs}
         />
         <Footer />

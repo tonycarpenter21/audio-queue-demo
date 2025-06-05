@@ -1,4 +1,4 @@
-import { ExampleTabs } from '../ExampleTabMenu/ExampleTabMenu';
+import { ExampleTabs } from '../types';
 import { Example } from '../types';
 import './ExampleTab.css';
 import { MutableRefObject } from 'react';
@@ -7,6 +7,70 @@ import ChannelSection from '../ChannelSection/ChannelSection';
 import GlobalControls from '../GlobalControls/GlobalControls';
 import VolumeSlider from '../VolumeSlider/VolumeSlider';
 import { setChannelVolume, setAllChannelsVolume } from 'audio-channel-queue';
+import { useState } from 'react';
+import { FadeOption } from '../MultiChannelExampleBlock/exampleData';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+interface FadeControlsProps {
+  selectedFadeOption: FadeOption;
+  onFadeOptionChange: (option: FadeOption) => void;
+}
+
+function FadeControls({ selectedFadeOption, onFadeOptionChange }: FadeControlsProps): JSX.Element {
+  const fadeOptions: {
+    value: FadeOption;
+    label: string;
+    description: string;
+  }[] = [
+    {
+      description: 'Instant pause/resume (original behavior)',
+      label: 'No Fade',
+      value: 'none'
+    },
+    {
+      description: 'Constant rate fade (mechanical)',
+      label: 'Linear',
+      value: 'linear'
+    },
+    {
+      description: 'Slow start, fast end (builds anticipation)',
+      label: 'Ease In',
+      value: 'ease-in'
+    },
+    {
+      description: 'Fast start, slow end (natural ending)',
+      label: 'Ease Out',
+      value: 'ease-out'
+    },
+    {
+      description: 'Slow start and end (most natural)',
+      label: 'Ease In-Out',
+      value: 'ease-in-out'
+    }
+  ];
+
+  return (
+    <div className="fade-controls">
+      <h3 className="fade-controls-title">🎵 Audio Fade Options</h3>
+      <p className="fade-controls-description">
+        Choose how audio fades when pausing/resuming. The code examples below will update automatically.
+      </p>
+      <div className="fade-options-buttons">
+        {fadeOptions.map((option) => (
+          <button
+            className={`fade-option-button ${selectedFadeOption === option.value ? 'active' : ''}`}
+            key={option.value}
+            onClick={() => onFadeOptionChange(option.value)}
+          >
+            <div className="fade-option-label">{option.label}</div>
+            <div className="fade-option-description">{option.description}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ExampleTab(props: {
   currentExampleTab: ExampleTabs;
@@ -18,11 +82,20 @@ function ExampleTab(props: {
     [channelNumber: number]: boolean;
   };
   visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
+  selectedFadeOption?: FadeOption;
+  onFadeOptionChange?: (option: FadeOption) => void;
 }): JSX.Element {
-  const { currentExampleTab, examples, queueState, pauseState, visualizerRefs } = props;
+  const { currentExampleTab, examples, queueState, pauseState, visualizerRefs, selectedFadeOption, onFadeOptionChange } = props;
+
+  // Track volume states for dynamic code examples
+  const [volumeStates, setVolumeStates] = useState({
+    channel0: 100,
+    channel1: 100,
+    master: 100
+  });
 
   const tabContent: Record<ExampleTabs, { description: string[] }> = {
-    [ExampleTabs.BASIC_QUEUE]: {
+    [ExampleTabs.QUEUE_MANAGEMENT]: {
       description: [
         'This example shows how to add and remove audio files from queues. Channel-specific controls let you manage each audio channel independently.',
         'Audio files will never overlap within their given channel. Use different channels when you want audio to play simultaneously.',
@@ -44,12 +117,10 @@ function ExampleTab(props: {
         'Volume settings are persistent and affect all audio played on that channel.'
       ]
     },
-    [ExampleTabs.ADVANCED_FEATURES]: {
+    [ExampleTabs.DOCUMENTATION]: {
       description: [
-        'Advanced features include priority queueing and audio looping capabilities.',
-        'Priority audio will jump to the front of the queue for urgent sounds.',
-        'Looping audio will automatically restart when it finishes playing.',
-        'Combine features for powerful audio management scenarios.'
+        'Complete API documentation is available in a separate documentation site.',
+        'Click the Documentation tab to open the comprehensive guide in a new window.'
       ]
     }
   };
@@ -87,8 +158,18 @@ function ExampleTab(props: {
   const handleVolumeChange = (volume: number, channelNumber?: number): void => {
     if (channelNumber !== undefined) {
       setChannelVolume(channelNumber, volume);
+      // Update volume state for code examples
+      setVolumeStates((prev) => ({
+        ...prev,
+        [`channel${channelNumber}`]: Math.round(volume * 100)
+      }));
     } else {
       setAllChannelsVolume(volume);
+      // Update master volume state for code examples
+      setVolumeStates((prev) => ({
+        ...prev,
+        master: Math.round(volume * 100)
+      }));
     }
   };
 
@@ -98,15 +179,51 @@ function ExampleTab(props: {
     return (
       <div className="volume-controls-section">
         <h3 className="section-title section-title-primary">Volume Controls</h3>
-        <div className="volume-controls-grid">
+        <div className="volume-controls-container">
           <div className="volume-control-item">
             <VolumeSlider channelNumber={0} initialVolume={1} onVolumeChange={handleVolumeChange} />
+            <SyntaxHighlighter
+              customStyle={{
+                borderRadius: '10px',
+                padding: '10px 20px'
+              }}
+              language="typescript"
+              style={vscDarkPlus}
+            >
+              {`setChannelVolume(0, ${volumeStates.channel0 / 100});`}
+            </SyntaxHighlighter>
           </div>
+
+          <div className="volume-controls-divider" />
+
           <div className="volume-control-item">
             <VolumeSlider channelNumber={1} initialVolume={1} onVolumeChange={handleVolumeChange} />
+            <SyntaxHighlighter
+              customStyle={{
+                borderRadius: '10px',
+                padding: '10px 20px'
+              }}
+              language="typescript"
+              style={vscDarkPlus}
+            >
+              {`setChannelVolume(1, ${volumeStates.channel1 / 100});`}
+            </SyntaxHighlighter>
           </div>
+
+          <div className="volume-controls-divider" />
+
           <div className="volume-control-item">
             <VolumeSlider initialVolume={1} isGlobal={true} onVolumeChange={handleVolumeChange} />
+            <SyntaxHighlighter
+              customStyle={{
+                borderRadius: '10px',
+                padding: '10px 20px'
+              }}
+              language="typescript"
+              style={vscDarkPlus}
+            >
+              {`setAllChannelsVolume(${volumeStates.master / 100});`}
+            </SyntaxHighlighter>
           </div>
         </div>
       </div>
@@ -120,6 +237,10 @@ function ExampleTab(props: {
           <p key={description}>{description}</p>
         ))}
       </div>
+
+      {currentExampleTab === ExampleTabs.PAUSE_RESUME && (
+        <FadeControls onFadeOptionChange={onFadeOptionChange || ((): void => {})} selectedFadeOption={selectedFadeOption || 'none'} />
+      )}
 
       {renderVolumeControls()}
 

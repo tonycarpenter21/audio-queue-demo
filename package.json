@@ -11,7 +11,7 @@
     "@types/node": "^16.18.108",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
-    "audio-channel-queue": "^1.5.0",
+    "audio-channel-queue": "^1.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
@@ -20,8 +20,13 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "concurrently \"npm run start:demo\" \"npm run start:docs\"",
+    "start:demo": "react-scripts start",
+    "start:docs": "cd docs && npm start",
+    "start:both": "concurrently \"npm run start:demo\" \"npm run start:docs\"",
     "build": "react-scripts build",
+    "build:docs": "cd docs && npm run build",
+    "build:both": "npm run build && npm run build:docs",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "npx eslint src/ --ignore-pattern \"eslint.config.mjs\"",
@@ -53,6 +58,7 @@
     "@eslint/js": "^9.10.0",
     "@stylistic/stylelint-plugin": "^3.0.1",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "concurrently": "^9.1.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.35.2",
     "gh-pages": "^6.1.1",
@@ -65,8 +71,9 @@
     "typescript-eslint": "^8.5.0"
   },
   "lint-staged": {
-    "*.js": "eslint --cache --fix",
-    "*.css": "npm run lint:styles",
-    "*.{tsx,ts,js,css,md}": "prettier --write"
+    "src/**/*.{js,jsx,ts,tsx}": "eslint --cache --fix",
+    "src/**/*.css": "npm run lint:styles",
+    "src/**/*.{tsx,ts,js,css,md}": "prettier --write",
+    "*.{json,yml,yaml}": "prettier --write"
   }
 }
