@@ -20,13 +20,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently \"npm run start:demo\" \"npm run start:docs\"",
-    "start:demo": "react-scripts start",
-    "start:docs": "cd docs && npm start",
-    "start:both": "concurrently \"npm run start:demo\" \"npm run start:docs\"",
+    "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:docs": "cd docs && npm run build",
-    "build:both": "npm run build && npm run build:docs",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "npx eslint src/ --ignore-pattern \"eslint.config.mjs\"",
@@ -58,7 +53,6 @@
     "@eslint/js": "^9.10.0",
     "@stylistic/stylelint-plugin": "^3.0.1",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "concurrently": "^9.1.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.35.2",
     "gh-pages": "^6.1.1",

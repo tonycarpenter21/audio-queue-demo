@@ -9,28 +9,7 @@ interface HeaderProps {
 function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
   const handleTabClick = (tab: ExampleTabs): void => {
     if (tab === ExampleTabs.DOCUMENTATION) {
-      // Open documentation in a new tab
-      let docsUrl: string;
-
-      if (process.env.NODE_ENV === 'development') {
-        // In development, try different ports in order of preference
-        const currentPort = window.location.port;
-        if (currentPort === '3000') {
-          docsUrl = 'http://localhost:3001'; // Demo on 3000, docs likely on 3001
-        } else if (currentPort === '3001') {
-          docsUrl = 'http://localhost:3000'; // Demo on 3001, docs likely on 3000
-        } else {
-          docsUrl = 'http://localhost:3000'; // Default to 3000
-        }
-
-        // Show a helpful message in development
-        console.log(`📖 Opening docs at: ${docsUrl}`);
-        console.log("💡 If docs don't load, make sure Docusaurus is running with: cd docs && npm start");
-      } else {
-        docsUrl = 'https://tonycarpenter21.github.io/audio-queue-demo/docs/';
-      }
-
-      window.open(docsUrl, '_blank', 'noopener,noreferrer');
+      window.open('https://tonycarpenter21.github.io/audio-queue-docs/', '_blank', 'noopener,noreferrer');
     } else {
       onTabChange(tab);
     }

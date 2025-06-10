@@ -10,6 +10,8 @@ The demo repo can be found at [GitHub Demo Repo](https://github.com/tonycarpente
 
 This visual demo can be found [here](https://tonycarpenter21.github.io/audio-queue-demo/).
 
+The docs can be found [here](https://tonycarpenter21.github.io/audio-queue-docs/).
+
 This demo app repo requires Node v20+.
 
 ## Available Scripts
