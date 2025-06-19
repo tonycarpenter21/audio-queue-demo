@@ -84,16 +84,6 @@ if (isChannelPaused(${channelParam})) {
         isDisabledWhenQueueIsEmpty: false
       },
       {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
-          handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
-        },
-        buttonText: 'Add Priority Sound (Channel 0)',
-        buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile);',
-        isDisabledWhenQueueIsEmpty: false
-      },
-      {
         buttonFunction: (): void => stopCurrentAudioInChannel(),
         buttonText: 'Stop Current Sound (Channel 0)',
         buttonType: 'default',
@@ -116,16 +106,6 @@ if (isChannelPaused(${channelParam})) {
         buttonText: 'Add Sound To End Of Queue (Channel 1)',
         buttonType: 'default',
         codeExample: 'queueAudio(audioFile, 1);',
-        isDisabledWhenQueueIsEmpty: false
-      },
-      {
-        buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
-          handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
-        },
-        buttonText: 'Add Priority Sound (Channel 1)',
-        buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile, 1);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -303,6 +283,74 @@ if (isChannelPaused(${channelParam})) {
         buttonType: 'default',
         codeExample: 'stopAllAudioInChannel(1);',
         isDisabledWhenQueueIsEmpty: true
+      }
+    ],
+    [ExampleTabs.PRIORITY_SOUNDS]: [
+      // Channel 0 examples
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          handleAudioAndVisualizer(fileName, 0, queueAudio);
+        },
+        buttonText: 'Add Sound To End Of Queue (Channel 0)',
+        buttonType: 'default',
+        codeExample: 'queueAudio(audioFile);',
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
+        },
+        buttonText: 'Add Priority Sound (Channel 0)',
+        buttonType: 'priority',
+        codeExample: 'queueAudioPriority(audioFile);',
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
+          stopCurrentAudioInChannel();
+        },
+        buttonText: 'Interrupt And Add Priority Sound (Channel 0)',
+        buttonType: 'priority',
+        codeExample: `queueAudioPriority(audioFile);
+stopCurrentAudioInChannel();`,
+        isDisabledWhenQueueIsEmpty: false
+      },
+      // Channel 1 examples
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          handleAudioAndVisualizer(fileName, 1, queueAudio);
+        },
+        buttonText: 'Add Sound To End Of Queue (Channel 1)',
+        buttonType: 'default',
+        codeExample: 'queueAudio(audioFile, 1);',
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
+        },
+        buttonText: 'Add Priority Sound (Channel 1)',
+        buttonType: 'priority',
+        codeExample: 'queueAudioPriority(audioFile, 1);',
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
+          stopCurrentAudioInChannel(1);
+        },
+        buttonText: 'Interrupt And Add Priority Sound (Channel 1)',
+        buttonType: 'priority',
+        codeExample: `queueAudioPriority(audioFile, 1);
+stopCurrentAudioInChannel(1);`,
+        isDisabledWhenQueueIsEmpty: false
       }
     ]
   };

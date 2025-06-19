@@ -1,6 +1,7 @@
 export enum ExampleTabs {
-  DOCUMENTATION = 'Documentation',
+  ADVANCED_FEATURES = 'Advanced Features',
   PAUSE_RESUME = 'Pause & Resume',
+  PRIORITY_SOUNDS = 'Priority Sounds',
   QUEUE_MANAGEMENT = 'Queue Management',
   VOLUME_CONTROL = 'Volume Control'
 }

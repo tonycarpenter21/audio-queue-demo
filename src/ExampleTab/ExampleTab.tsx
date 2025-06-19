@@ -117,10 +117,15 @@ function ExampleTab(props: {
         'Volume settings are persistent and affect all audio played on that channel.'
       ]
     },
-    [ExampleTabs.DOCUMENTATION]: {
+    [ExampleTabs.ADVANCED_FEATURES]: {
+      description: [] // No description for this tab
+    },
+    // All advanced features are grouped together here
+    [ExampleTabs.PRIORITY_SOUNDS]: {
       description: [
-        'Complete API documentation is available in a separate documentation site.',
-        'Click the Documentation tab to open the comprehensive guide in a new window.'
+        'This example demonstrates how to add priority sounds to the audio queue.',
+        'Priority sounds will queue after the currently playing sound.',
+        'To test this functionality, click the "Add Priority Sound" button to add a priority sound to the queue.'
       ]
     }
   };

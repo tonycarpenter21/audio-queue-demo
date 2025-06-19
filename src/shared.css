@@ -101,14 +101,16 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.025em;
+  line-height: 1.4;
   margin-bottom: var(--space-3);
-  max-width: 100%;
-  overflow: hidden;
+  max-width: 300px;
+  min-height: 2.5rem;
   padding: var(--space-3) var(--space-6);
   position: relative;
-  text-overflow: ellipsis;
+  text-align: center;
   transition: none;
-  white-space: nowrap;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .button:hover {
