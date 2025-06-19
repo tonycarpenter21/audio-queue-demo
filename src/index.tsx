@@ -1,13 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// Detect basename dynamically from current URL
+const getBasename = (): string => {
+  const path: string = window.location.pathname;
+  if (path.startsWith('/audio-queue-demo')) {
+    return '/audio-queue-demo';
+  }
+  return '';
+};
+
+const basename: string = getBasename();
+
 const root: ReactDOM.Root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter basename={basename}>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );
 

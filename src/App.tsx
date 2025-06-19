@@ -25,6 +25,7 @@ import {
   cleanWebpackFilename
 } from 'audio-channel-queue';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import './shared.css';
 import { audioFilesChannelOne, audioFilesChannelZero, backgroundMusic, getRandomAudioFile } from './audio/audioFilesAndUtils';
@@ -34,8 +35,9 @@ import BackgroundVisualizer from './BackgroundVisualizer/BackgroundVisualizer';
 import Footer from './Footer/Footer';
 import Header from './Header/Header';
 import { createExamples, FadeOption } from './MultiChannelExampleBlock/exampleData';
-import ExampleTab from './ExampleTab/ExampleTab';
-import { Example, ExampleTabs } from './types';
+import { Example, ExampleTabs, ExampleTabRoutes } from './types';
+import AppRoutes from './routes/AppRoutes';
+import { usePageTitle } from './hooks/usePageTitle';
 
 interface ProgressTracking {
   duration: number;
@@ -56,10 +58,23 @@ function App(): JSX.Element {
     [visualizerRefs]
   );
 
-  const [currentExampleTab, setCurrentExampleTab] = useState<ExampleTabs>(ExampleTabs.QUEUE_MANAGEMENT);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [queueState, setQueueState] = useState<{ [channelNumber: number]: boolean }>({ 0: true, 1: true });
   const [pauseState, setPauseState] = useState<{ [channelNumber: number]: boolean }>({ 0: false, 1: false });
   const [selectedFadeOption, setSelectedFadeOption] = useState<FadeOption>('none');
+
+  // Get current tab from route
+  const getCurrentTabFromRoute = useCallback((): ExampleTabs => {
+    const route: string = location.pathname;
+    const tabEntry = Object.entries(ExampleTabRoutes).find(([, path]) => path === route);
+    return tabEntry ? (tabEntry[0] as ExampleTabs) : ExampleTabs.QUEUE_MANAGEMENT;
+  }, [location.pathname]);
+
+  const currentExampleTab: ExampleTabs = getCurrentTabFromRoute();
+
+  // Update page title based on current tab
+  usePageTitle(currentExampleTab);
 
   const handleAudioAndVisualizer = createHandleAudioAndVisualizer();
 
@@ -258,7 +273,7 @@ function App(): JSX.Element {
   const handleTabChange = useCallback(
     (newTab: ExampleTabs) => {
       stopAllAudio();
-      setCurrentExampleTab(newTab);
+      navigate(ExampleTabRoutes[newTab]);
       visualizerRefs.forEach((ref) => ref.current?.clearQueue());
       setQueueState({ 0: true, 1: true });
       setPauseState({ 0: false, 1: false });
@@ -266,7 +281,7 @@ function App(): JSX.Element {
       progressTrackingRef.current = {};
       clearLoopingTracker();
     },
-    [visualizerRefs]
+    [navigate, visualizerRefs]
   );
 
   const handleQueueChange = useCallback(
@@ -367,6 +382,16 @@ function App(): JSX.Element {
     });
   }, [getVisualizer]);
 
+  // Handle route changes for cleanup
+  useEffect(() => {
+    stopAllAudio();
+    visualizerRefs.forEach((ref) => ref.current?.clearQueue());
+    setQueueState({ 0: true, 1: true });
+    setPauseState({ 0: false, 1: false });
+    progressTrackingRef.current = {};
+    clearLoopingTracker();
+  }, [location.pathname, visualizerRefs]);
+
   useEffect(() => {
     const channels: number[] = [0, 1];
 
@@ -422,8 +447,7 @@ function App(): JSX.Element {
       <BackgroundVisualizer />
       <div className="example-container">
         <Header currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
-        <ExampleTab
-          currentExampleTab={currentExampleTab}
+        <AppRoutes
           examples={examples}
           onFadeOptionChange={setSelectedFadeOption}
           pauseState={pauseState}
