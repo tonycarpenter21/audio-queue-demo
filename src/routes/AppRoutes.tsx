@@ -2,8 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
 import ExampleTab from '../ExampleTab/ExampleTab';
-import { Example, ExampleTabs, ExampleTabRoutes } from '../types';
-import { FadeOption } from '../MultiChannelExampleBlock/exampleData';
+import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from '../types';
 
 interface AppRoutesProps {
   examples: Record<string, Example[]>;
@@ -34,13 +33,15 @@ function AppRoutes({
     />
   );
 
+  // Get all tabs that should have routes (exclude dropdown container)
+  const routableTabs: ExampleTabs[] = Object.values(ExampleTabs).filter((tab: ExampleTabs) => tab !== ExampleTabs.OTHER_FEATURES);
+
   return (
     <Routes>
       <Route element={<Navigate replace to={ExampleTabRoutes[ExampleTabs.QUEUE_MANAGEMENT]} />} path="/" />
-      <Route element={createExampleTabRoute(ExampleTabs.QUEUE_MANAGEMENT)} path={ExampleTabRoutes[ExampleTabs.QUEUE_MANAGEMENT]} />
-      <Route element={createExampleTabRoute(ExampleTabs.PAUSE_RESUME)} path={ExampleTabRoutes[ExampleTabs.PAUSE_RESUME]} />
-      <Route element={createExampleTabRoute(ExampleTabs.VOLUME_CONTROL)} path={ExampleTabRoutes[ExampleTabs.VOLUME_CONTROL]} />
-      <Route element={createExampleTabRoute(ExampleTabs.PRIORITY_SOUNDS)} path={ExampleTabRoutes[ExampleTabs.PRIORITY_SOUNDS]} />
+      {routableTabs.map((tab: ExampleTabs) => (
+        <Route element={createExampleTabRoute(tab)} key={tab} path={ExampleTabRoutes[tab]} />
+      ))}
     </Routes>
   );
 }

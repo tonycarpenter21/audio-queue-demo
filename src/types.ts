@@ -1,5 +1,7 @@
+import { FadeType } from 'audio-channel-queue';
+
 export enum ExampleTabs {
-  ADVANCED_FEATURES = 'Advanced Features',
+  OTHER_FEATURES = 'Other Features',
   PAUSE_RESUME = 'Pause & Resume',
   PRIORITY_SOUNDS = 'Priority Sounds',
   QUEUE_MANAGEMENT = 'Queue Management',
@@ -7,12 +9,14 @@ export enum ExampleTabs {
 }
 
 export const ExampleTabRoutes: Record<ExampleTabs, string> = {
-  [ExampleTabs.ADVANCED_FEATURES]: '/advanced-features',
+  [ExampleTabs.OTHER_FEATURES]: '/other-features',
   [ExampleTabs.PAUSE_RESUME]: '/pause-resume',
   [ExampleTabs.PRIORITY_SOUNDS]: '/priority-sounds',
   [ExampleTabs.QUEUE_MANAGEMENT]: '/queue-management',
   [ExampleTabs.VOLUME_CONTROL]: '/volume-control'
 };
+
+export type FadeOption = 'None' | FadeType;
 
 export interface Example {
   buttonFunction: () => void;

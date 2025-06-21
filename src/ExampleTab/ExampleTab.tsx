@@ -1,5 +1,5 @@
 import { ExampleTabs } from '../types';
-import { Example } from '../types';
+import { Example, FadeOption } from '../types';
 import './ExampleTab.css';
 import { MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
@@ -8,7 +8,7 @@ import GlobalControls from '../GlobalControls/GlobalControls';
 import VolumeSlider from '../VolumeSlider/VolumeSlider';
 import { setChannelVolume, setAllChannelsVolume } from 'audio-channel-queue';
 import { useState } from 'react';
-import { FadeOption } from '../MultiChannelExampleBlock/exampleData';
+import { FadeType } from 'audio-channel-queue';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -26,27 +26,22 @@ function FadeControls({ selectedFadeOption, onFadeOptionChange }: FadeControlsPr
     {
       description: 'Instant pause/resume (original behavior)',
       label: 'No Fade',
-      value: 'none'
+      value: 'None'
     },
     {
       description: 'Constant rate fade (mechanical)',
       label: 'Linear',
-      value: 'linear'
+      value: FadeType.Linear
     },
     {
-      description: 'Slow start, fast end (builds anticipation)',
-      label: 'Ease In',
-      value: 'ease-in'
+      description: 'Smooth, natural fade (recommended)',
+      label: 'Gentle',
+      value: FadeType.Gentle
     },
     {
-      description: 'Fast start, slow end (natural ending)',
-      label: 'Ease Out',
-      value: 'ease-out'
-    },
-    {
-      description: 'Slow start and end (most natural)',
-      label: 'Ease In-Out',
-      value: 'ease-in-out'
+      description: 'Quick, impactful fade (intense)',
+      label: 'Dramatic',
+      value: FadeType.Dramatic
     }
   ];
 
@@ -117,7 +112,7 @@ function ExampleTab(props: {
         'Volume settings are persistent and affect all audio played on that channel.'
       ]
     },
-    [ExampleTabs.ADVANCED_FEATURES]: {
+    [ExampleTabs.OTHER_FEATURES]: {
       description: [] // No description for this tab
     },
     // All advanced features are grouped together here
@@ -244,7 +239,7 @@ function ExampleTab(props: {
       </div>
 
       {currentExampleTab === ExampleTabs.PAUSE_RESUME && (
-        <FadeControls onFadeOptionChange={onFadeOptionChange || ((): void => {})} selectedFadeOption={selectedFadeOption || 'none'} />
+        <FadeControls onFadeOptionChange={onFadeOptionChange || ((): void => {})} selectedFadeOption={selectedFadeOption || 'None'} />
       )}
 
       {renderVolumeControls()}

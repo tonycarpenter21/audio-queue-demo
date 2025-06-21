@@ -1,10 +1,11 @@
+/* eslint-disable sort-keys */
 import globals from 'globals';
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
 
 export default [
-  { 
+  {
     files: ['**/*.{ts,jsx,tsx}'],
     ignores: ['eslint.config.mjs', '**/build/**', '**/dist/**', './src/audio']
   },
@@ -16,12 +17,12 @@ export default [
     rules: {
       // JS rules
       'comma-dangle': ['warn', 'never'],
-      'comma-spacing': ['error', { before: false, after: true }],
+      'comma-spacing': ['error', { after: true, before: false }],
       'key-spacing': ['error', { afterColon: true }],
       'keyword-spacing': 'error',
       'no-console': 'warn',
       'object-curly-spacing': ['error', 'always'],
-      'sort-keys': ['warn', 'asc', { caseSensitive: true, natural: true, minKeys: 2 }],
+      'sort-keys': ['warn', 'asc', { caseSensitive: true, minKeys: 2, natural: true }],
       'space-before-blocks': 'warn',
 
       // Typescript rules

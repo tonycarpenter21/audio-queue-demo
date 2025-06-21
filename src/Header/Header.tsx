@@ -25,7 +25,7 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
   ];
 
   const handleTabClick = (tab: ExampleTabs): void => {
-    if (tab === ExampleTabs.ADVANCED_FEATURES) {
+    if (tab === ExampleTabs.OTHER_FEATURES) {
       setIsDropdownOpen(!isDropdownOpen);
     } else {
       onTabChange(tab);
@@ -57,30 +57,32 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
             onClick={() => handleTabClick(ExampleTabs.QUEUE_MANAGEMENT)}
           >
             <span className="feature-icon">🎵</span>
-            <span className="feature-text">Queue Management</span>
+            <span className="feature-text">{ExampleTabs.QUEUE_MANAGEMENT}</span>
           </button>
           <button
             className={`feature ${currentExampleTab === ExampleTabs.PAUSE_RESUME ? 'active' : ''}`}
             onClick={() => handleTabClick(ExampleTabs.PAUSE_RESUME)}
           >
             <span className="feature-icon">⏯️</span>
-            <span className="feature-text">Pause & Resume</span>
+            <span className="feature-text">{ExampleTabs.PAUSE_RESUME}</span>
           </button>
           <button
             className={`feature ${currentExampleTab === ExampleTabs.VOLUME_CONTROL ? 'active' : ''}`}
             onClick={() => handleTabClick(ExampleTabs.VOLUME_CONTROL)}
           >
             <span className="feature-icon">🔊</span>
-            <span className="feature-text">Volume Control</span>
+            <span className="feature-text">{ExampleTabs.VOLUME_CONTROL}</span>
           </button>
           <div className="advanced-features-container">
             <button
-              className={`feature advanced-features ${isAdvancedFeatureActive() ? 'active' : ''} ${isDropdownOpen ? 'dropdown-open' : ''}`}
-              onClick={() => handleTabClick(ExampleTabs.ADVANCED_FEATURES)}
+              className={`feature ${isAdvancedFeatureActive() ? 'active' : ''}`}
+              onClick={() => handleTabClick(ExampleTabs.OTHER_FEATURES)}
             >
               <span className="feature-icon">⚙️</span>
-              <span className="feature-text">Advanced Features</span>
-              <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
+              <div className="feature-text-with-arrow">
+                <span className="feature-text">{ExampleTabs.OTHER_FEATURES}</span>
+                <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
+              </div>
             </button>
             {isDropdownOpen && (
               <>

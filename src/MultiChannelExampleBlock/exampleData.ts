@@ -1,7 +1,5 @@
-import { Example } from '../types';
+import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
-
-export type FadeOption = 'none' | 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
 
 type HandleAudioAndVisualizer = (
   fileName: string,
@@ -31,42 +29,59 @@ export function createExamples(
 ): Record<string, Example[]> {
   // Helper function to get fade code example
   const getFadeCodeExample = (action: string, channel: string = ''): string => {
-    if (selectedFadeOption === 'none') {
-      return `${action}${channel ? `(${channel})` : '()'}`;
-    }
-
-    const channelParam = channel || '0';
-
-    if (action.includes('pause')) {
-      return `// First fade volume to 0
-await setChannelVolume(
-  ${channelParam}, 0, 800, '${selectedFadeOption}'
-);
-// Then pause the audio
-await ${action}${channel ? `(${channel})` : '()'}`;
-    } else if (action.includes('resume')) {
-      return `// First resume at 0 volume
-await setChannelVolume(${channelParam}, 0);
-await ${action}${channel ? `(${channel})` : '()'};
-// Then fade volume to 1.0
-await setChannelVolume(
-  ${channelParam}, 1.0, 800, '${selectedFadeOption}'
-)`;
+    if (selectedFadeOption === 'None') {
+      // Use old functions without fade
+      if (action.includes('pauseAllChannels')) {
+        return `pauseAllChannels();`;
+      } else if (action.includes('resumeAllChannels')) {
+        return `resumeAllChannels();`;
+      } else if (action.includes('togglePauseAllChannels')) {
+        return `togglePauseAllChannels();`;
+      } else if (action.includes('pause')) {
+        const channelParam = channel || '0';
+        return `pauseChannel(${channelParam});`;
+      } else if (action.includes('resume')) {
+        const channelParam = channel || '0';
+        return `resumeChannel(${channelParam});`;
+      } else if (action.includes('toggle')) {
+        const channelParam = channel || '0';
+        return `togglePauseChannel(${channelParam});`;
+      } else {
+        return `${action}${channel ? `(${channel})` : '()'}`;
+      }
     } else {
-      // For toggle functions
-      return `// Smart toggle with fade
-if (isChannelPaused(${channelParam})) {
-  await setChannelVolume(${channelParam}, 0);
-  await ${action}${channel ? `(${channel})` : '()'};
-  await setChannelVolume(
-    ${channelParam}, 1.0, 800, '${selectedFadeOption}'
-  );
-} else {
-  await setChannelVolume(
-    ${channelParam}, 0, 800, '${selectedFadeOption}'
-  );
-  await ${action}${channel ? `(${channel})` : '()'};
-}`;
+      // Use fade functions with FadeType
+      const fadeTypeString = `FadeType.${selectedFadeOption.charAt(0).toUpperCase() + selectedFadeOption.slice(1)}`;
+
+      if (action.includes('pauseAllChannels')) {
+        return `await pauseAllWithFade(
+  ${fadeTypeString}
+);`;
+      } else if (action.includes('resumeAllChannels')) {
+        return `await resumeAllWithFade();`;
+      } else if (action.includes('togglePauseAllChannels')) {
+        return `await togglePauseAllWithFade(
+  ${fadeTypeString}
+);`;
+      } else if (action.includes('pause')) {
+        const channelParam = channel || '0';
+        return channel ? `await pauseWithFade(${fadeTypeString}, ${channelParam});` : `await pauseWithFade(${fadeTypeString});`;
+      } else if (action.includes('resume')) {
+        const channelParam = channel || '0';
+        return channel ? `await resumeWithFade(${fadeTypeString}, ${channelParam});` : `await resumeWithFade();`;
+      } else if (action.includes('toggle')) {
+        const channelParam = channel || '0';
+        return channel
+          ? `await togglePauseWithFade(
+  ${fadeTypeString}, 
+  ${channelParam}
+);`
+          : `await togglePauseWithFade(
+  ${fadeTypeString}
+);`;
+      } else {
+        return `await ${action}${channel ? `(${channel})` : '()'}`;
+      }
     }
   };
 
