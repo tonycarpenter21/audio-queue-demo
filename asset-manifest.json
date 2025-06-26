@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/audio-queue-demo/static/css/main.f39e2d61.css",
-    "main.js": "/audio-queue-demo/static/js/main.5f0cdd22.js",
+    "main.css": "/audio-queue-demo/static/css/main.c6550432.css",
+    "main.js": "/audio-queue-demo/static/js/main.127f35db.js",
     "static/js/453.89f44a12.chunk.js": "/audio-queue-demo/static/js/453.89f44a12.chunk.js",
     "static/media/background_music.mp3": "/audio-queue-demo/static/media/background_music.cae1a9d634ae5e05b290.mp3",
     "static/media/long_teleportation.mp3": "/audio-queue-demo/static/media/long_teleportation.80574d638658e56f0943.mp3",
@@ -17,12 +17,12 @@
     "static/media/player_has_left_the_game.mp3": "/audio-queue-demo/static/media/player_has_left_the_game.80ef11adf98d421748c1.mp3",
     "static/media/one_minute_left.mp3": "/audio-queue-demo/static/media/one_minute_left.031a3d43aa37fc2e9dec.mp3",
     "index.html": "/audio-queue-demo/index.html",
-    "main.f39e2d61.css.map": "/audio-queue-demo/static/css/main.f39e2d61.css.map",
-    "main.5f0cdd22.js.map": "/audio-queue-demo/static/js/main.5f0cdd22.js.map",
+    "main.c6550432.css.map": "/audio-queue-demo/static/css/main.c6550432.css.map",
+    "main.127f35db.js.map": "/audio-queue-demo/static/js/main.127f35db.js.map",
     "453.89f44a12.chunk.js.map": "/audio-queue-demo/static/js/453.89f44a12.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f39e2d61.css",
-    "static/js/main.5f0cdd22.js"
+    "static/css/main.c6550432.css",
+    "static/js/main.127f35db.js"
   ]
 }
