@@ -90,6 +90,14 @@ function ExampleTab(props: {
   });
 
   const tabContent: Record<ExampleTabs, { description: string[] }> = {
+    [ExampleTabs.AUDIO_INFO]: {
+      description: [
+        'This example demonstrates how to display real-time audio information and queue status using the audio info functions.',
+        'The widget below shows live updates of current audio, progress, queue status, and channel information.',
+        'Add audio to either channel using the buttons below to see the information update in real-time.',
+        'Try different audio files, pause/resume, and queue multiple items to see how the info changes.'
+      ]
+    },
     [ExampleTabs.QUEUE_MANAGEMENT]: {
       description: [
         'This example shows how to add and remove audio files from queues. Channel-specific controls let you manage each audio channel independently.',
@@ -104,7 +112,7 @@ function ExampleTab(props: {
         'Toggle pause provides a convenient way to pause/resume with a single button press.'
       ]
     },
-    [ExampleTabs.VOLUME_CONTROL]: {
+    [ExampleTabs.VOLUME_LOOPING]: {
       description: [
         'Control the volume of individual channels or all channels simultaneously using the volume sliders below.',
         'This example uses looping audio files to demonstrate volume control - you can adjust levels while audio is playing.',
@@ -174,7 +182,7 @@ function ExampleTab(props: {
   };
 
   const renderVolumeControls = (): JSX.Element | null => {
-    if (currentExampleTab !== ExampleTabs.VOLUME_CONTROL) return null;
+    if (currentExampleTab !== ExampleTabs.VOLUME_LOOPING) return null;
 
     return (
       <div className="volume-controls-section">
@@ -252,6 +260,7 @@ function ExampleTab(props: {
             examples={channel0}
             isChannelQueueEmpty={queueState[0]}
             pauseState={pauseState[0]}
+            showAudioInfo={currentExampleTab === ExampleTabs.AUDIO_INFO}
             visualizerRef={visualizerRefs[0]}
           />
           <ChannelSection
@@ -259,6 +268,7 @@ function ExampleTab(props: {
             examples={channel1}
             isChannelQueueEmpty={queueState[1]}
             pauseState={pauseState[1]}
+            showAudioInfo={currentExampleTab === ExampleTabs.AUDIO_INFO}
             visualizerRef={visualizerRefs[1]}
           />
         </div>

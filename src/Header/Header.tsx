@@ -18,6 +18,11 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
 
   const advancedFeatureOptions: AdvancedFeatureOption[] = [
     {
+      icon: '📊',
+      label: 'Audio Info',
+      tab: ExampleTabs.AUDIO_INFO
+    },
+    {
       icon: '🔝',
       label: 'Add Priority Sound',
       tab: ExampleTabs.PRIORITY_SOUNDS
@@ -67,11 +72,11 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
             <span className="feature-text">{ExampleTabs.PAUSE_RESUME}</span>
           </button>
           <button
-            className={`feature ${currentExampleTab === ExampleTabs.VOLUME_CONTROL ? 'active' : ''}`}
-            onClick={() => handleTabClick(ExampleTabs.VOLUME_CONTROL)}
+            className={`feature ${currentExampleTab === ExampleTabs.VOLUME_LOOPING ? 'active' : ''}`}
+            onClick={() => handleTabClick(ExampleTabs.VOLUME_LOOPING)}
           >
             <span className="feature-icon">🔊</span>
-            <span className="feature-text">{ExampleTabs.VOLUME_CONTROL}</span>
+            <span className="feature-text">{ExampleTabs.VOLUME_LOOPING}</span>
           </button>
           <div className="advanced-features-container">
             <button

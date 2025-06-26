@@ -1,19 +1,21 @@
 import { FadeType } from 'audio-channel-queue';
 
 export enum ExampleTabs {
+  AUDIO_INFO = 'Audio Info',
   OTHER_FEATURES = 'Other Features',
   PAUSE_RESUME = 'Pause & Resume',
   PRIORITY_SOUNDS = 'Priority Sounds',
   QUEUE_MANAGEMENT = 'Queue Management',
-  VOLUME_CONTROL = 'Volume Control'
+  VOLUME_LOOPING = 'Volume & Looping'
 }
 
 export const ExampleTabRoutes: Record<ExampleTabs, string> = {
+  [ExampleTabs.AUDIO_INFO]: '/audio-info',
   [ExampleTabs.OTHER_FEATURES]: '/other-features',
   [ExampleTabs.PAUSE_RESUME]: '/pause-resume',
   [ExampleTabs.PRIORITY_SOUNDS]: '/priority-sounds',
   [ExampleTabs.QUEUE_MANAGEMENT]: '/queue-management',
-  [ExampleTabs.VOLUME_CONTROL]: '/volume-control'
+  [ExampleTabs.VOLUME_LOOPING]: '/volume-and-looping'
 };
 
 export type FadeOption = 'None' | FadeType;

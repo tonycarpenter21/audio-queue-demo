@@ -193,7 +193,7 @@ function App(): JSX.Element {
         trackingInfo.pausedAt = Date.now();
       }
     },
-    [selectedFadeOption]
+    []
   );
 
   const handleAudioResume = useCallback(
@@ -207,7 +207,7 @@ function App(): JSX.Element {
         delete trackingInfo.pausedAt;
       }
     },
-    [selectedFadeOption]
+    []
   );
 
   const handleTabChange = useCallback(

@@ -31,6 +31,10 @@ body {
   --warning-400: #fbbf24;
   --warning-500: #f59e0b;
 
+  /* Error/danger red */
+  --error-400: #ef4444;
+  --error-500: #dc2626;
+
   /* Neutral palette - sophisticated grays */
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;

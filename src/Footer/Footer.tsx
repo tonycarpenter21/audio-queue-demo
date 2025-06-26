@@ -7,6 +7,7 @@ function Footer(): JSX.Element {
         <a href="https://www.npmjs.com/package/audio-channel-queue">NPM Package</a>
         <a href="https://github.com/tonycarpenter21/audio-channel-queue">NPM Package Github Repo</a>
         <a href="https://github.com/tonycarpenter21/audio-queue-demo">Demo Github Repo</a>
+        <a href="https://tonycarpenter21.github.io/audio-queue-docs/">Documentation</a>
       </div>
       <div>
         This project is licensed under the{' '}

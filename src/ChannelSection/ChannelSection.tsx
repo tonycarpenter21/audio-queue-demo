@@ -2,6 +2,7 @@ import { MutableRefObject } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
+import ChannelAudioInfo from '../ChannelAudioInfo/ChannelAudioInfo';
 import { Example } from '../types';
 import Divider from '../Divider/Divider';
 import './ChannelSection.css';
@@ -11,10 +12,18 @@ interface ChannelSectionProps {
   examples: Example[];
   isChannelQueueEmpty: boolean;
   pauseState: boolean;
+  showAudioInfo?: boolean;
   visualizerRef: MutableRefObject<AudioQueueVisualizerHandle | null>;
 }
 
-function ChannelSection({ channelNumber, examples, isChannelQueueEmpty, pauseState, visualizerRef }: ChannelSectionProps): JSX.Element {
+function ChannelSection({
+  channelNumber,
+  examples,
+  isChannelQueueEmpty,
+  pauseState,
+  showAudioInfo = false,
+  visualizerRef
+}: ChannelSectionProps): JSX.Element {
   return (
     <div className="channel-section content-container channel-container">
       <h3 className="section-title section-title-primary">Channel {channelNumber}</h3>
@@ -75,6 +84,8 @@ function ChannelSection({ channelNumber, examples, isChannelQueueEmpty, pauseSta
       <div className="channel-visualizer">
         <AudioQueueVisualizer channelNumber={channelNumber} ref={visualizerRef} />
       </div>
+
+      {showAudioInfo && <ChannelAudioInfo channelNumber={channelNumber} />}
     </div>
   );
 }

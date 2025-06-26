@@ -251,7 +251,7 @@ export function createExamples(
         isDisabledWhenQueueIsEmpty: true
       }
     ],
-    [ExampleTabs.VOLUME_CONTROL]: [
+    [ExampleTabs.VOLUME_LOOPING]: [
       // Add specific looping sounds for volume demonstration
       {
         buttonFunction: (): void => {
@@ -366,6 +366,67 @@ stopCurrentAudioInChannel();`,
         codeExample: `queueAudioPriority(audioFile, 1);
 stopCurrentAudioInChannel(1);`,
         isDisabledWhenQueueIsEmpty: false
+      }
+    ],
+    [ExampleTabs.AUDIO_INFO]: [
+      // Channel 0 examples for audio info
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          handleAudioAndVisualizer(fileName, 0, queueAudio);
+        },
+        buttonText: 'Add Sound To Queue (Channel 0)',
+        buttonType: 'default',
+        codeExample: `// Add audio to channel 0
+queueAudio(audioFile, 0);
+
+// Get current audio info
+const info = getCurrentAudioInfo();
+console.log('Current audio:', info);
+
+// Get queue snapshot
+const snapshot = getQueueSnapshot();
+console.log('Queue:', snapshot);`,
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          togglePauseChannelWithFade();
+        },
+        buttonText: 'Toggle Pause (Channel 0)',
+        buttonType: 'default',
+        codeExample: getFadeCodeExample('togglePauseChannel'),
+        isDisabledWhenQueueIsEmpty: true
+      },
+      // Channel 1 examples for audio info
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          handleAudioAndVisualizer(fileName, 1, queueAudio);
+        },
+        buttonText: 'Add Sound To Queue (Channel 1)',
+        buttonType: 'default',
+        codeExample: `// Add audio to channel 1
+queueAudio(audioFile, 1);
+
+// Get current audio info
+const info = getCurrentAudioInfo(1);
+console.log('Current audio:', info);
+
+// Get queue snapshot
+const snapshot = getQueueSnapshot(1);
+console.log('Queue:', snapshot);
+`,
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          togglePauseChannelWithFade(1);
+        },
+        buttonText: 'Toggle Pause (Channel 1)',
+        buttonType: 'default',
+        codeExample: getFadeCodeExample('togglePauseChannel', '1'),
+        isDisabledWhenQueueIsEmpty: true
       }
     ]
   };
