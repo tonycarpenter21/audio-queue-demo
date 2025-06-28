@@ -1,5 +1,9 @@
+import { QueueSnapshot, transitionVolume, EasingType } from 'audio-channel-queue';
 import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
+
+// Track current volume levels for each channel
+const volumeTracker = new Map<number, number>();
 
 type HandleAudioAndVisualizer = (
   fileName: string,
@@ -21,9 +25,11 @@ export function createExamples(
   resumeAllChannelsWithFade: () => Promise<void>,
   togglePauseAllChannelsWithFade: () => Promise<void>,
   queueAudioPriority: (url: string, channelNumber?: number, options?: Record<string, unknown>) => void,
+  onAudioComplete: (channelNumber: number, callback: (info: { remainingInQueue: number }) => void) => void,
+  getQueueSnapshot: (channelNumber: number) => QueueSnapshot | null,
   getRandomAudioFile: (files: string[]) => string,
-  audioFilesChannelZero: string[],
-  audioFilesChannelOne: string[],
+  audioFilesVocalExamples: string[],
+  audioFilesSoundEffectExamples: string[],
   backgroundMusic: string,
   selectedFadeOption: FadeOption
 ): Record<string, Example[]> {
@@ -90,7 +96,7 @@ export function createExamples(
       // Channel 0 examples
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 0, queueAudio);
         },
         buttonText: 'Add Sound To End Of Queue (Channel 0)',
@@ -115,7 +121,7 @@ export function createExamples(
       // Channel 1 examples
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          const fileName: string = getRandomAudioFile(audioFilesSoundEffectExamples);
           handleAudioAndVisualizer(fileName, 1, queueAudio);
         },
         buttonText: 'Add Sound To End Of Queue (Channel 1)',
@@ -150,7 +156,7 @@ export function createExamples(
       // First add some basic queue buttons so users can add sounds to test pause/resume
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 0, queueAudio);
         },
         buttonText: 'Add Sound To Queue (Channel 0)',
@@ -257,7 +263,7 @@ export function createExamples(
         buttonFunction: (): void => {
           // Use a specific long audio file for Channel 0 (teleportation sound)
           handleAudioAndVisualizer(
-            audioFilesChannelZero[2],
+            audioFilesVocalExamples[2],
             0,
             (url: string, channel: number) => queueAudio(url, channel, { loop: true }),
             true
@@ -300,11 +306,96 @@ export function createExamples(
         isDisabledWhenQueueIsEmpty: true
       }
     ],
+    [ExampleTabs.AUDIO_DUCKING]: [
+      // Channel 0: Background music with looping and pause toggle
+      {
+        buttonFunction: (): void => {
+          handleAudioAndVisualizer(backgroundMusic, 0, (url: string, channel: number) => queueAudio(url, channel, { loop: true }), true);
+        },
+        buttonText: 'Start Background Music (Channel 0)',
+        buttonType: 'default',
+        codeExample: `queueAudio(backgroundMusic, 0, {
+  loop: true
+});`,
+        isDisabledWhenChannelPlaying: true,
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          togglePauseChannelWithFade();
+        },
+        buttonText: 'Toggle Music Pause (Channel 0)',
+        buttonType: 'default',
+        codeExample: getFadeCodeExample('togglePauseChannel'),
+        isDisabledWhenQueueIsEmpty: true
+      },
+      // Channel 1: Voice/dialogue that ducks the music
+      {
+        buttonFunction: async (): Promise<void> => {
+          // Initialize volume tracker for channel 0 if not set
+          if (!volumeTracker.has(0)) {
+            volumeTracker.set(0, 1.0);
+          }
+
+          // Check if channel 1 already has audio queued (indicating ducking may already be active)
+          const channel1Queue = getQueueSnapshot(1);
+          const shouldDuck = !channel1Queue || channel1Queue.totalItems === 0;
+
+          // Duck background music if channel 1 is currently empty
+          if (shouldDuck) {
+            await transitionVolume(0, 0.25, 300, EasingType.EaseOut);
+          }
+
+          // Play voice/dialogue audio
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
+          handleAudioAndVisualizer(fileName, 1, queueAudio);
+
+          // Set up one-time listener to restore volume when ALL queued audio completes
+          const restoreVolumeHandler = (info: { remainingInQueue: number }): void => {
+            if (info.remainingInQueue === 0) {
+              // All audio in channel 1 has completed, restore background music
+              transitionVolume(0, 1.0, 500, EasingType.EaseInOut);
+            }
+          };
+
+          onAudioComplete(1, restoreVolumeHandler);
+        },
+        buttonText: 'Play Voice Audio With Smooth Ducking (Channel 1)',
+        buttonType: 'default',
+        codeExample: `// Check if channel 1 is empty
+const queue = getQueueSnapshot(1);
+const isAlreadyDucked = 
+  queue && queue.totalItems > 0;
+
+// Duck background music 
+// if not already ducked
+if (!isAlreadyDucked) {
+  await transitionVolume(
+    0, 0.25, 300, EasingType.EaseOut
+  );
+}
+
+// Play voice audio 
+// (can queue multiple)
+queueAudio(voiceAudio, 1);
+
+// Restore when ALL 
+// queued audio completes
+onAudioComplete(1, (info) => {
+  if (info.remainingInQueue === 0) {
+    await transitionVolume(
+      0, 1.0, 500, EasingType.EaseInOut
+    );
+  }
+});`,
+        isDisabledWhenQueueIsEmpty: false
+      }
+    ],
     [ExampleTabs.PRIORITY_SOUNDS]: [
       // Channel 0 examples
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 0, queueAudio);
         },
         buttonText: 'Add Sound To End Of Queue (Channel 0)',
@@ -314,7 +405,7 @@ export function createExamples(
       },
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
         },
         buttonText: 'Add Priority Sound (Channel 0)',
@@ -324,7 +415,7 @@ export function createExamples(
       },
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 0, queueAudioPriority);
           stopCurrentAudioInChannel();
         },
@@ -337,7 +428,7 @@ stopCurrentAudioInChannel();`,
       // Channel 1 examples
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          const fileName: string = getRandomAudioFile(audioFilesSoundEffectExamples);
           handleAudioAndVisualizer(fileName, 1, queueAudio);
         },
         buttonText: 'Add Sound To End Of Queue (Channel 1)',
@@ -347,7 +438,7 @@ stopCurrentAudioInChannel();`,
       },
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          const fileName: string = getRandomAudioFile(audioFilesSoundEffectExamples);
           handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
         },
         buttonText: 'Add Priority Sound (Channel 1)',
@@ -357,7 +448,7 @@ stopCurrentAudioInChannel();`,
       },
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          const fileName: string = getRandomAudioFile(audioFilesSoundEffectExamples);
           handleAudioAndVisualizer(fileName, 1, queueAudioPriority);
           stopCurrentAudioInChannel(1);
         },
@@ -372,7 +463,7 @@ stopCurrentAudioInChannel(1);`,
       // Channel 0 examples for audio info
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelZero);
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 0, queueAudio);
         },
         buttonText: 'Add Sound To Queue (Channel 0)',
@@ -401,7 +492,7 @@ console.log('Queue:', snapshot);`,
       // Channel 1 examples for audio info
       {
         buttonFunction: (): void => {
-          const fileName: string = getRandomAudioFile(audioFilesChannelOne);
+          const fileName: string = getRandomAudioFile(audioFilesSoundEffectExamples);
           handleAudioAndVisualizer(fileName, 1, queueAudio);
         },
         buttonText: 'Add Sound To Queue (Channel 1)',

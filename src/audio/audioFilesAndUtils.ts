@@ -12,8 +12,8 @@ import playerHasLeftGame from './player_has_left_the_game.mp3';
 import redCaptureBase from './red_team_capture_base.mp3';
 import redLostBase from './red_team_lost_base.mp3';
 
-// New format for enhanced features
-export const audioFilesChannelZero: string[] = [
+// Voice/dialogue audio files (people talking - game announcements)
+export const audioFilesVocalExamples: string[] = [
   blueCaptureBase,
   blueLostBase,
   newPlayerJoined,
@@ -23,7 +23,8 @@ export const audioFilesChannelZero: string[] = [
   redLostBase
 ];
 
-export const audioFilesChannelOne: string[] = [
+// Sound effect audio files (non-vocal sounds like lasers, teleportation)
+export const audioFilesSoundEffectExamples: string[] = [
   laserGunFiring,
   laserGunFiringRepeatedlyOne,
   longTeleportationOne,

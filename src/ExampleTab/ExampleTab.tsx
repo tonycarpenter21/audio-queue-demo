@@ -90,6 +90,14 @@ function ExampleTab(props: {
   });
 
   const tabContent: Record<ExampleTabs, { description: string[] }> = {
+    [ExampleTabs.AUDIO_DUCKING]: {
+      description: [
+        'This example demonstrates automatic audio ducking - when sound effects play, background music volume automatically reduces to 50%.',
+        'Start the background music on Channel 0, then play sound effects on Channel 1 to hear the ducking effect.',
+        'The music volume will automatically restore to full volume when the sound effect completes.',
+        'This technique is commonly used in games and interactive applications for better audio clarity.'
+      ]
+    },
     [ExampleTabs.AUDIO_INFO]: {
       description: [
         'This example demonstrates how to display real-time audio information and queue status using the audio info functions.',

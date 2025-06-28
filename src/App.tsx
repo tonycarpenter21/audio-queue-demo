@@ -24,6 +24,7 @@ import {
   onAudioResume,
   offAudioPause,
   offAudioResume,
+  getQueueSnapshot,
   QueueSnapshot,
   AudioStartInfo,
   AudioCompleteInfo,
@@ -34,7 +35,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import './shared.css';
-import { audioFilesChannelOne, audioFilesChannelZero, backgroundMusic, getRandomAudioFile } from './audio/audioFilesAndUtils';
+import { audioFilesSoundEffectExamples, audioFilesVocalExamples, backgroundMusic, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 import { createHandleAudioAndVisualizer, isAudioFileLooping, clearLoopingTracker } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
 import BackgroundVisualizer from './BackgroundVisualizer/BackgroundVisualizer';
@@ -383,9 +384,11 @@ function App(): JSX.Element {
     resumeAllChannelsWithFade,
     togglePauseAllChannelsWithFade,
     queueAudioPriority,
+    onAudioComplete,
+    getQueueSnapshot,
     getRandomAudioFile,
-    audioFilesChannelZero,
-    audioFilesChannelOne,
+    audioFilesVocalExamples,
+    audioFilesSoundEffectExamples,
     backgroundMusic,
     selectedFadeOption
   );

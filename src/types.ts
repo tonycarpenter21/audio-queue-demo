@@ -1,6 +1,7 @@
 import { FadeType } from 'audio-channel-queue';
 
 export enum ExampleTabs {
+  AUDIO_DUCKING = 'Audio Ducking',
   AUDIO_INFO = 'Audio Info',
   OTHER_FEATURES = 'Other Features',
   PAUSE_RESUME = 'Pause & Resume',
@@ -10,6 +11,7 @@ export enum ExampleTabs {
 }
 
 export const ExampleTabRoutes: Record<ExampleTabs, string> = {
+  [ExampleTabs.AUDIO_DUCKING]: '/audio-ducking',
   [ExampleTabs.AUDIO_INFO]: '/audio-info',
   [ExampleTabs.OTHER_FEATURES]: '/other-features',
   [ExampleTabs.PAUSE_RESUME]: '/pause-resume',
