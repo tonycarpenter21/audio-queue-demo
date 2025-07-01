@@ -9,20 +9,30 @@ import './ChannelSection.css';
 
 interface ChannelSectionProps {
   channelNumber: number;
+  channelQueueLength: number;
   examples: Example[];
   isChannelQueueEmpty: boolean;
   pauseState: boolean;
   showAudioInfo?: boolean;
   visualizerRef: MutableRefObject<AudioQueueVisualizerHandle | null>;
+  enableReordering?: boolean;
+  onMoveUp?: (fromIndex: number, channelNumber: number) => void;
+  onMoveDown?: (fromIndex: number, channelNumber: number) => void;
+  onRemoveItem?: (fromIndex: number, channelNumber: number) => void;
 }
 
 function ChannelSection({
   channelNumber,
+  channelQueueLength,
   examples,
   isChannelQueueEmpty,
   pauseState,
   showAudioInfo = false,
-  visualizerRef
+  visualizerRef,
+  enableReordering = false,
+  onMoveUp,
+  onMoveDown,
+  onRemoveItem
 }: ChannelSectionProps): JSX.Element {
   return (
     <div className="channel-section content-container channel-container">
@@ -35,6 +45,11 @@ function ChannelSection({
 
           if (example.isDisabledWhenQueueIsEmpty !== undefined) {
             isDisabled = example.isDisabledWhenQueueIsEmpty ? isChannelQueueEmpty : false;
+          }
+
+          // Check minimum queue length requirement
+          if (example.minQueueLength !== undefined) {
+            isDisabled = isDisabled || channelQueueLength < example.minQueueLength;
           }
 
           // Additional disabled logic for buttons that should be disabled when channel is playing
@@ -82,7 +97,14 @@ function ChannelSection({
       </div>
 
       <div className="channel-visualizer">
-        <AudioQueueVisualizer channelNumber={channelNumber} ref={visualizerRef} />
+        <AudioQueueVisualizer
+          channelNumber={channelNumber}
+          enableReordering={enableReordering}
+          onMoveDown={onMoveDown}
+          onMoveUp={onMoveUp}
+          onRemoveItem={onRemoveItem}
+          ref={visualizerRef}
+        />
       </div>
 
       {showAudioInfo && <ChannelAudioInfo channelNumber={channelNumber} />}

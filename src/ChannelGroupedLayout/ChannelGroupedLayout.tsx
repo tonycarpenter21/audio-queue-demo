@@ -8,6 +8,7 @@ import './ChannelGroupedLayout.css';
 interface ChannelGroupedLayoutProps {
   examples: { example: Example[]; key: string }[];
   hasGlobalControls: boolean;
+  queueLengths: { [channelNumber: number]: number };
   queueState: { [channelNumber: number]: boolean };
   pauseState: { [channelNumber: number]: boolean };
   visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
@@ -15,6 +16,7 @@ interface ChannelGroupedLayoutProps {
 
 function ChannelGroupedLayout({
   examples,
+  queueLengths,
   queueState,
   pauseState,
   visualizerRefs,
@@ -60,6 +62,7 @@ function ChannelGroupedLayout({
       <div className="channels-container">
         <ChannelSection
           channelNumber={0}
+          channelQueueLength={queueLengths[0]}
           examples={channel0Examples}
           isChannelQueueEmpty={queueState[0]}
           pauseState={pauseState[0]}
@@ -67,6 +70,7 @@ function ChannelGroupedLayout({
         />
         <ChannelSection
           channelNumber={1}
+          channelQueueLength={queueLengths[1]}
           examples={channel1Examples}
           isChannelQueueEmpty={queueState[1]}
           pauseState={pauseState[1]}

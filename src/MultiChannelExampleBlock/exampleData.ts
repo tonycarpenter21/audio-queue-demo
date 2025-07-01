@@ -1,9 +1,6 @@
-import { QueueSnapshot, transitionVolume, EasingType } from 'audio-channel-queue';
+import { QueueManipulationResult, QueueItem, setVolumeDucking } from 'audio-channel-queue';
 import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
-
-// Track current volume levels for each channel
-const volumeTracker = new Map<number, number>();
 
 type HandleAudioAndVisualizer = (
   fileName: string,
@@ -25,13 +22,16 @@ export function createExamples(
   resumeAllChannelsWithFade: () => Promise<void>,
   togglePauseAllChannelsWithFade: () => Promise<void>,
   queueAudioPriority: (url: string, channelNumber?: number, options?: Record<string, unknown>) => void,
-  onAudioComplete: (channelNumber: number, callback: (info: { remainingInQueue: number }) => void) => void,
-  getQueueSnapshot: (channelNumber: number) => QueueSnapshot | null,
   getRandomAudioFile: (files: string[]) => string,
   audioFilesVocalExamples: string[],
   audioFilesSoundEffectExamples: string[],
   backgroundMusic: string,
-  selectedFadeOption: FadeOption
+  selectedFadeOption: FadeOption,
+  clearQueueAfterCurrent: (channelNumber?: number) => Promise<QueueManipulationResult>,
+  getQueueItemInfo: (queuedSlotNumber: number, channelNumber?: number) => QueueItem | null,
+  getQueueLength: (channelNumber?: number) => number,
+  isDuckingEnabled: boolean,
+  setIsDuckingEnabled: (enabled: boolean) => void
 ): Record<string, Example[]> {
   // Helper function to get fade code example
   const getFadeCodeExample = (action: string, channel: string = ''): string => {
@@ -307,6 +307,49 @@ export function createExamples(
       }
     ],
     [ExampleTabs.AUDIO_DUCKING]: [
+      // Volume ducking toggle button
+      {
+        buttonFunction: (): void => {
+          const newDuckingState: boolean = !isDuckingEnabled;
+          setIsDuckingEnabled(newDuckingState);
+
+          if (newDuckingState) {
+            setVolumeDucking({
+              duckingVolume: 0.25, // Background music reduced to 25%
+              priorityChannel: 1, // Channel 1 (voice) has priority
+              priorityVolume: 1.0 // Voice plays at full volume
+            });
+          } else {
+            // Disable ducking by setting all volumes to 100%
+            setVolumeDucking({
+              duckingVolume: 1.0, // No ducking
+              priorityChannel: 1,
+              priorityVolume: 1.0
+            });
+          }
+        },
+        buttonText: `${isDuckingEnabled ? '🔇 Disable' : '🔊 Enable'} Volume Ducking (Channel 1 Currently ${isDuckingEnabled ? 'On' : 'Off'})`,
+        buttonType: isDuckingEnabled ? 'resume' : 'priority',
+        codeExample: isDuckingEnabled
+          ? `// Currently ON - Disable ducking
+setVolumeDucking({
+  // No ducking
+  duckingVolume: 1.0,
+  priorityChannel: 1,     
+  priorityVolume: 1.0     
+});`
+          : `// Currently OFF - Enable ducking  
+setVolumeDucking({
+  // Duck to 25%
+  duckingVolume: 0.25,
+  // Channel 1 priority
+  priorityChannel: 1,
+  // Voice at 100%
+  priorityVolume: 1.0
+});`,
+        isDisabledWhenChannelPlaying: true,
+        isDisabledWhenQueueIsEmpty: false
+      },
       // Channel 0: Background music with looping and pause toggle
       {
         buttonFunction: (): void => {
@@ -314,7 +357,10 @@ export function createExamples(
         },
         buttonText: 'Start Background Music (Channel 0)',
         buttonType: 'default',
-        codeExample: `queueAudio(backgroundMusic, 0, {
+        codeExample: `// Start background music -
+// will auto-duck when channel 1 
+// plays if ducking enabled
+queueAudio(backgroundMusic, 0, {
   loop: true
 });`,
         isDisabledWhenChannelPlaying: true,
@@ -329,65 +375,26 @@ export function createExamples(
         codeExample: getFadeCodeExample('togglePauseChannel'),
         isDisabledWhenQueueIsEmpty: true
       },
-      // Channel 1: Voice/dialogue that ducks the music
+      // Channel 1: Voice/dialogue that automatically ducks the music (if enabled)
       {
-        buttonFunction: async (): Promise<void> => {
-          // Initialize volume tracker for channel 0 if not set
-          if (!volumeTracker.has(0)) {
-            volumeTracker.set(0, 1.0);
-          }
-
-          // Check if channel 1 already has audio queued (indicating ducking may already be active)
-          const channel1Queue = getQueueSnapshot(1);
-          const shouldDuck = !channel1Queue || channel1Queue.totalItems === 0;
-
-          // Duck background music if channel 1 is currently empty
-          if (shouldDuck) {
-            await transitionVolume(0, 0.25, 300, EasingType.EaseOut);
-          }
-
-          // Play voice/dialogue audio
+        buttonFunction: (): void => {
+          // Simply queue audio - ducking happens automatically if enabled!
           const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
           handleAudioAndVisualizer(fileName, 1, queueAudio);
-
-          // Set up one-time listener to restore volume when ALL queued audio completes
-          const restoreVolumeHandler = (info: { remainingInQueue: number }): void => {
-            if (info.remainingInQueue === 0) {
-              // All audio in channel 1 has completed, restore background music
-              transitionVolume(0, 1.0, 500, EasingType.EaseInOut);
-            }
-          };
-
-          onAudioComplete(1, restoreVolumeHandler);
         },
-        buttonText: 'Play Voice Audio With Smooth Ducking (Channel 1)',
+        buttonText: 'Play Voice Audio (Channel 1)',
         buttonType: 'default',
-        codeExample: `// Check if channel 1 is empty
-const queue = getQueueSnapshot(1);
-const isAlreadyDucked = 
-  queue && queue.totalItems > 0;
-
-// Duck background music 
-// if not already ducked
-if (!isAlreadyDucked) {
-  await transitionVolume(
-    0, 0.25, 300, EasingType.EaseOut
-  );
-}
-
-// Play voice audio 
-// (can queue multiple)
+        codeExample: `// Just queue voice audio normally -
+// Background music will 
+// automatically duck/restore
+// if volume ducking is enabled
 queueAudio(voiceAudio, 1);
 
-// Restore when ALL 
-// queued audio completes
-onAudioComplete(1, (info) => {
-  if (info.remainingInQueue === 0) {
-    await transitionVolume(
-      0, 1.0, 500, EasingType.EaseInOut
-    );
-  }
-});`,
+// You can queue multiple voices!
+// Ducking stays active until 
+// channel 1 is empty
+queueAudio(anotherVoice, 1);
+queueAudio(thirdVoice, 1);`,
         isDisabledWhenQueueIsEmpty: false
       }
     ],
@@ -423,7 +430,7 @@ onAudioComplete(1, (info) => {
         buttonType: 'priority',
         codeExample: `queueAudioPriority(audioFile);
 stopCurrentAudioInChannel();`,
-        isDisabledWhenQueueIsEmpty: false
+        isDisabledWhenQueueIsEmpty: true
       },
       // Channel 1 examples
       {
@@ -456,7 +463,7 @@ stopCurrentAudioInChannel();`,
         buttonType: 'priority',
         codeExample: `queueAudioPriority(audioFile, 1);
 stopCurrentAudioInChannel(1);`,
-        isDisabledWhenQueueIsEmpty: false
+        isDisabledWhenQueueIsEmpty: true
       }
     ],
     [ExampleTabs.AUDIO_INFO]: [
@@ -518,6 +525,109 @@ console.log('Queue:', snapshot);
         buttonType: 'default',
         codeExample: getFadeCodeExample('togglePauseChannel', '1'),
         isDisabledWhenQueueIsEmpty: true
+      }
+    ],
+    [ExampleTabs.ADVANCED_QUEUE_MANIPULATION]: [
+      // Channel 0: Basic queue setup for advanced manipulation
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesVocalExamples);
+          handleAudioAndVisualizer(fileName, 0, queueAudio);
+        },
+        buttonText: 'Add Sound To Queue (Channel 0)',
+        buttonType: 'default',
+        codeExample: `queueAudio(audioFile);`,
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          togglePauseChannelWithFade(0);
+        },
+        buttonText: 'Toggle Pause (Channel 0)',
+        buttonType: 'default',
+        codeExample: getFadeCodeExample('togglePauseChannel', '0'),
+        isDisabledWhenQueueIsEmpty: true
+      },
+      {
+        buttonFunction: async (): Promise<void> => {
+          const queueLength: number = getQueueLength(0);
+          if (queueLength >= 2) {
+            await clearQueueAfterCurrent(0);
+          }
+        },
+        buttonText: 'Clear All After Current (Channel 0)',
+        buttonType: 'default',
+        codeExample: `await clearQueueAfterCurrent();`,
+        isDisabledWhenQueueIsEmpty: true,
+        minQueueLength: 2
+      },
+      // Channel 1: Similar setup for advanced manipulation
+      {
+        buttonFunction: (): void => {
+          const fileName: string = getRandomAudioFile(audioFilesSoundEffectExamples);
+          handleAudioAndVisualizer(fileName, 1, queueAudio);
+        },
+        buttonText: 'Add Sound To Queue (Channel 1)',
+        buttonType: 'default',
+        codeExample: `queueAudio(soundEffect, 1);`,
+        isDisabledWhenQueueIsEmpty: false
+      },
+      {
+        buttonFunction: (): void => {
+          togglePauseChannelWithFade(1);
+        },
+        buttonText: 'Toggle Pause (Channel 1)',
+        buttonType: 'default',
+        codeExample: getFadeCodeExample('togglePauseChannel', '1'),
+        isDisabledWhenQueueIsEmpty: true
+      },
+      {
+        buttonFunction: async (): Promise<void> => {
+          const queueLength: number = getQueueLength(1);
+          if (queueLength >= 2) {
+            await clearQueueAfterCurrent(1);
+          }
+        },
+        buttonText: 'Clear All After Current (Channel 1)',
+        buttonType: 'default',
+        codeExample: `await clearQueueAfterCurrent(1);`,
+        isDisabledWhenQueueIsEmpty: true,
+        minQueueLength: 2
+      },
+      // Utility examples
+      {
+        buttonFunction: (): void => {
+          const length0: number = getQueueLength(0);
+          const length1: number = getQueueLength(1);
+          const item0: QueueItem | null = getQueueItemInfo(1, 0);
+          const item1: QueueItem | null = getQueueItemInfo(1, 1);
+
+          // eslint-disable-next-line no-console
+          console.log(`Channel 0 queue length: ${length0}`);
+          // eslint-disable-next-line no-console
+          console.log(`Channel 1 queue length: ${length1}`);
+          // eslint-disable-next-line no-console
+          console.log('Channel 0 item at index 1:', item0);
+          // eslint-disable-next-line no-console
+          console.log('Channel 1 item at index 1:', item1);
+        },
+        buttonText: 'Show Queue Manipulation Result Interface',
+        buttonType: 'default',
+        codeExample: `// All queue manipulation functions return a QueueManipulationResult:
+interface QueueManipulationResult {
+  success: boolean;          // Whether the operation was successful
+  error?: string;            // Error message if operation failed
+  updatedQueue?: QueueSnapshot; // The queue snapshot after the operation (if successful)
+}
+
+// Example usage:
+const result = await removeQueuedItem(1, 0);
+if (result.success) {
+  console.log('Success!', result.updatedQueue);
+} else {
+  console.log('Error:', result.error);
+}`,
+        isDisabledWhenQueueIsEmpty: false
       }
     ]
   };

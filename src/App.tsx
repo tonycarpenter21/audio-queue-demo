@@ -24,12 +24,14 @@ import {
   onAudioResume,
   offAudioPause,
   offAudioResume,
-  getQueueSnapshot,
   QueueSnapshot,
   AudioStartInfo,
   AudioCompleteInfo,
   QueueItem,
-  cleanWebpackFilename
+  cleanWebpackFilename,
+  clearQueueAfterCurrent,
+  getQueueItemInfo,
+  getQueueLength
 } from 'audio-channel-queue';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -68,8 +70,10 @@ function App(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const [queueState, setQueueState] = useState<{ [channelNumber: number]: boolean }>({ 0: true, 1: true });
+  const [queueLengths, setQueueLengths] = useState<{ [channelNumber: number]: number }>({ 0: 0, 1: 0 });
   const [pauseState, setPauseState] = useState<{ [channelNumber: number]: boolean }>({ 0: false, 1: false });
   const [selectedFadeOption, setSelectedFadeOption] = useState<FadeOption>('None');
+  const [isDuckingEnabled, setIsDuckingEnabled] = useState<boolean>(false);
 
   // Get current tab from route
   const getCurrentTabFromRoute = useCallback((): ExampleTabs => {
@@ -91,7 +95,9 @@ function App(): JSX.Element {
         visualizerRefs.forEach((ref) => ref.current?.clearQueue());
         // Reset states: queueState true = empty, pauseState false = not paused
         setQueueState({ 0: true, 1: true });
+        setQueueLengths({ 0: 0, 1: 0 });
         setPauseState({ 0: false, 1: false });
+        setIsDuckingEnabled(false);
         // Clear progress tracking
         progressTrackingRef.current = {};
         clearLoopingTracker();
@@ -218,7 +224,9 @@ function App(): JSX.Element {
       visualizerRefs.forEach((ref) => ref.current?.clearQueue());
       // Reset states: queueState true = empty, pauseState false = not paused
       setQueueState({ 0: true, 1: true });
+      setQueueLengths({ 0: 0, 1: 0 });
       setPauseState({ 0: false, 1: false });
+      setIsDuckingEnabled(false);
       // Clear all progress tracking data including pause times
       progressTrackingRef.current = {};
       clearLoopingTracker();
@@ -247,6 +255,8 @@ function App(): JSX.Element {
         visualizer.setPlayingState(isPlaying);
         // Update queue state: true = empty, false = has items
         setQueueState((prev) => ({ ...prev, [channelNumber]: !hasItems }));
+        // Update queue lengths
+        setQueueLengths((prev) => ({ ...prev, [channelNumber]: snapshot.totalItems }));
       },
     [getVisualizer]
   );
@@ -334,7 +344,9 @@ function App(): JSX.Element {
 
     // Reset queue state (true = empty) and pause state (false = not paused)
     setQueueState({ 0: true, 1: true });
+    setQueueLengths({ 0: 0, 1: 0 });
     setPauseState({ 0: false, 1: false });
+    setIsDuckingEnabled(false);
 
     // Clear progress tracking and looping state
     progressTrackingRef.current = {};
@@ -384,13 +396,16 @@ function App(): JSX.Element {
     resumeAllChannelsWithFade,
     togglePauseAllChannelsWithFade,
     queueAudioPriority,
-    onAudioComplete,
-    getQueueSnapshot,
     getRandomAudioFile,
     audioFilesVocalExamples,
     audioFilesSoundEffectExamples,
     backgroundMusic,
-    selectedFadeOption
+    selectedFadeOption,
+    clearQueueAfterCurrent,
+    getQueueItemInfo,
+    getQueueLength,
+    isDuckingEnabled,
+    setIsDuckingEnabled
   );
 
   return (
@@ -402,6 +417,7 @@ function App(): JSX.Element {
           examples={examples}
           onFadeOptionChange={handleFadeOptionChange}
           pauseState={pauseState}
+          queueLengths={queueLengths}
           queueState={queueState}
           selectedFadeOption={selectedFadeOption}
           visualizerRefs={visualizerRefs}

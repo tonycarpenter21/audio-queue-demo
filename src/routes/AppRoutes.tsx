@@ -8,6 +8,7 @@ interface AppRoutesProps {
   examples: Record<string, Example[]>;
   onFadeOptionChange: (option: FadeOption) => void;
   pauseState: { [channelNumber: number]: boolean };
+  queueLengths: { [channelNumber: number]: number };
   queueState: { [channelNumber: number]: boolean };
   selectedFadeOption: FadeOption;
   visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
@@ -17,6 +18,7 @@ function AppRoutes({
   examples,
   onFadeOptionChange,
   pauseState,
+  queueLengths,
   queueState,
   selectedFadeOption,
   visualizerRefs
@@ -27,6 +29,7 @@ function AppRoutes({
       examples={examples}
       onFadeOptionChange={onFadeOptionChange}
       pauseState={pauseState}
+      queueLengths={queueLengths}
       queueState={queueState}
       selectedFadeOption={selectedFadeOption}
       visualizerRefs={visualizerRefs}

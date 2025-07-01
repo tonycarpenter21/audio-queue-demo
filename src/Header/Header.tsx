@@ -18,6 +18,11 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
 
   const advancedFeatureOptions: AdvancedFeatureOption[] = [
     {
+      icon: '🎛️',
+      label: 'Advanced Queue Manipulation',
+      tab: ExampleTabs.ADVANCED_QUEUE_MANIPULATION
+    },
+    {
       icon: '🦆',
       label: 'Audio Ducking',
       tab: ExampleTabs.AUDIO_DUCKING

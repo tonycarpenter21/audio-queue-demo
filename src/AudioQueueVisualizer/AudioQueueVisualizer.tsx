@@ -10,6 +10,10 @@ interface AudioFile {
 
 interface AudioQueueVisualizerProps {
   channelNumber: number;
+  enableReordering?: boolean;
+  onMoveUp?: (fromIndex: number, channelNumber: number) => void;
+  onMoveDown?: (fromIndex: number, channelNumber: number) => void;
+  onRemoveItem?: (fromIndex: number, channelNumber: number) => void;
 }
 
 export interface AudioQueueVisualizerHandle {
@@ -42,10 +46,13 @@ const truncateFilename = (filename: string, maxLength: number = 25): string => {
     return filename.substring(0, maxLength - 3) + '...';
   }
 
-  return nameWithoutExt.substring(0, availableLength) + '...' + '.' + extension;
+  return `${nameWithoutExt.substring(0, availableLength)}....${extension}`;
 };
 
-const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelNumber }: AudioQueueVisualizerProps, ref) {
+const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer(
+  { channelNumber, enableReordering = false, onMoveUp, onMoveDown, onRemoveItem }: AudioQueueVisualizerProps,
+  ref
+) {
   const [currentPlayingPercentage, setCurrentPlayingPercentage] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<AudioFile[]>([]);
@@ -108,10 +115,42 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer({ channelN
             {fileIndex === 0 && isPlaying && (
               <div className="audio-file-progress" style={{ width: `${currentPlayingPercentage * 100}%` }} />
             )}
-            <span className="audio-file-text">
+            <span className={`audio-file-text ${enableReordering && fileIndex > 0 ? 'with-buttons' : ''}`}>
               {file.isLooping && <span>🔁 </span>}
-              {truncateFilename(file.name)}
+              {truncateFilename(file.name, enableReordering && fileIndex > 0 ? 20 : 25)}
             </span>
+            {enableReordering && fileIndex > 0 && (
+              <div className="advanced-queue-buttons-container">
+                <div className="reorder-buttons-container">
+                  <button
+                    className="reorder-button reorder-up"
+                    disabled={fileIndex === 1}
+                    onClick={() => onMoveUp?.(fileIndex, channelNumber)}
+                    title="Move up in queue"
+                    type="button"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="reorder-button reorder-down"
+                    disabled={fileIndex === queue.length - 1}
+                    onClick={() => onMoveDown?.(fileIndex, channelNumber)}
+                    title="Move down in queue"
+                    type="button"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <button
+                  className="reorder-button remove-button"
+                  onClick={() => onRemoveItem?.(fileIndex, channelNumber)}
+                  title="Remove from queue"
+                  type="button"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
