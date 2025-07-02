@@ -1,0 +1,88 @@
+.fade-controls {
+  background: var(--bg-surface);
+  border: 1px solid rgb(59 130 246 / 30%);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+}
+
+.fade-controls-title {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+}
+
+.fade-controls-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-5);
+}
+
+.fade-options-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.fade-option-button {
+  background: var(--bg-elevated);
+  border: 1px solid rgb(59 130 246 / 30%);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.fade-option-button:hover {
+  background: rgb(59 130 246 / 10%);
+  border-color: rgb(59 130 246 / 50%);
+  color: var(--text-primary);
+}
+
+.fade-option-button.active {
+  background: var(--primary-600);
+  border-color: var(--primary-500);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.fade-option-button.active:hover {
+  background: var(--primary-700);
+}
+
+.fade-option-label {
+  color: inherit;
+  font-weight: 600;
+}
+
+.fade-option-description {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.fade-option-button:hover .fade-option-description,
+.fade-option-button.active .fade-option-description {
+  color: var(--text-secondary);
+}
+
+/* Mobile responsiveness for fade controls */
+@media (width <= 800px) {
+  .fade-options-buttons {
+    flex-direction: column;
+  }
+
+  .fade-option-button {
+    width: 100%;
+  }
+}

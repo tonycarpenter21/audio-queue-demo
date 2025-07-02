@@ -1,4 +1,6 @@
 import { FadeType } from 'audio-channel-queue';
+import { MutableRefObject } from 'react';
+import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 
 export enum ExampleTabs {
   ADVANCED_QUEUE_MANIPULATION = 'Advanced Queue Manipulation',
@@ -32,4 +34,11 @@ export interface Example {
   isDisabledWhenQueueIsEmpty?: boolean;
   isDisabledWhenChannelPlaying?: boolean;
   minQueueLength?: number;
+}
+
+export interface ExampleTabProps {
+  currentExampleTab: ExampleTabs;
+  examples: Record<string, Example[]>;
+  visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
+  onFadeOptionChange?: (option: FadeOption) => void;
 }

@@ -19,7 +19,9 @@ import {
   onQueueChange,
   offQueueChange,
   onAudioStart,
+  offAudioStart,
   onAudioComplete,
+  offAudioComplete,
   onAudioPause,
   onAudioResume,
   offAudioPause,
@@ -47,6 +49,8 @@ import { createExamples } from './MultiChannelExampleBlock/exampleData';
 import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from './types';
 import AppRoutes from './routes/AppRoutes';
 import { usePageTitle } from './hooks/usePageTitle';
+import { useAudioQueue } from './context/AudioQueueContext';
+import { useAudioQueueActions } from './hooks/useAudioQueueActions';
 
 interface ProgressTracking {
   duration: number;
@@ -69,10 +73,12 @@ function App(): JSX.Element {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const [queueState, setQueueState] = useState<{ [channelNumber: number]: boolean }>({ 0: true, 1: true });
-  const [queueLengths, setQueueLengths] = useState<{ [channelNumber: number]: number }>({ 0: 0, 1: 0 });
-  const [pauseState, setPauseState] = useState<{ [channelNumber: number]: boolean }>({ 0: false, 1: false });
-  const [selectedFadeOption, setSelectedFadeOption] = useState<FadeOption>('None');
+
+  // Get state and actions from context
+  const { state } = useAudioQueue();
+  const { pauseState, selectedFadeOption } = state;
+  const { setQueueState, setQueueLength, setPauseState, setFadeOption, resetAllStates } = useAudioQueueActions();
+
   const [isDuckingEnabled, setIsDuckingEnabled] = useState<boolean>(false);
 
   // Get current tab from route
@@ -84,57 +90,89 @@ function App(): JSX.Element {
 
   const currentExampleTab: ExampleTabs = getCurrentTabFromRoute();
 
-  // Custom fade option change handler that clears queues on pause/resume tab
-  const handleFadeOptionChange = useCallback(
-    (newFadeOption: FadeOption): void => {
-      setSelectedFadeOption(newFadeOption);
-
-      // Clear all queues when changing fade types on the pause/resume tab
-      if (currentExampleTab === ExampleTabs.PAUSE_RESUME) {
-        stopAllAudio();
-        visualizerRefs.forEach((ref) => ref.current?.clearQueue());
-        // Reset states: queueState true = empty, pauseState false = not paused
-        setQueueState({ 0: true, 1: true });
-        setQueueLengths({ 0: 0, 1: 0 });
-        setPauseState({ 0: false, 1: false });
-        setIsDuckingEnabled(false);
-        // Clear progress tracking
-        progressTrackingRef.current = {};
-        clearLoopingTracker();
-      }
-    },
-    [currentExampleTab, visualizerRefs]
-  );
-
   // Update page title based on current tab
   usePageTitle(currentExampleTab);
 
   const handleAudioAndVisualizer = createHandleAudioAndVisualizer();
 
+  // Comprehensive cleanup function to ensure all audio stops
+  const performFullCleanup = useCallback(async (): Promise<void> => {
+    await stopAllAudio();
+
+    visualizerRefs.forEach((ref) => {
+      if (ref.current) {
+        ref.current.clearQueue();
+        ref.current.setPlayingState(false);
+      }
+    });
+
+    // Reset all state
+    resetAllStates();
+    setIsDuckingEnabled(false);
+
+    // Clear progress tracking
+    progressTrackingRef.current = {};
+    clearLoopingTracker();
+  }, [visualizerRefs, resetAllStates]);
+
+  // Custom fade option change handler that clears queues on pause/resume tab
+  const handleFadeOptionChange = useCallback(
+    async (newFadeOption: FadeOption): Promise<void> => {
+      setFadeOption(newFadeOption);
+
+      // Clear audio but preserve the fade option when on pause/resume tab
+      if (currentExampleTab === ExampleTabs.PAUSE_RESUME) {
+        await stopAllAudio();
+
+        // Clear all visualizers
+        visualizerRefs.forEach((ref) => {
+          if (ref.current) {
+            ref.current.clearQueue();
+            ref.current.setPlayingState(false);
+          }
+        });
+
+        // Reset queue and pause states, but NOT the fade option
+        setQueueState(0, true);
+        setQueueState(1, true);
+        setQueueLength(0, 0);
+        setQueueLength(1, 0);
+        setPauseState(0, false);
+        setPauseState(1, false);
+        setIsDuckingEnabled(false);
+
+        // Clear progress tracking
+        progressTrackingRef.current = {};
+        clearLoopingTracker();
+      }
+    },
+    [currentExampleTab, setFadeOption, visualizerRefs, setQueueState, setQueueLength, setPauseState]
+  );
+
   const pauseChannelWithFade = useCallback(
     async (channelNumber: number = 0): Promise<void> => {
       // Immediately update UI state for responsive feedback
-      setPauseState((prev) => ({ ...prev, [channelNumber]: true }));
+      setPauseState(channelNumber, true);
       if (selectedFadeOption === 'None') {
         pauseChannel(channelNumber);
       } else {
         await pauseWithFade(selectedFadeOption, channelNumber);
       }
     },
-    [selectedFadeOption]
+    [selectedFadeOption, setPauseState]
   );
 
   const resumeChannelWithFade = useCallback(
     async (channelNumber: number = 0): Promise<void> => {
       // Immediately update UI state for responsive feedback
-      setPauseState((prev) => ({ ...prev, [channelNumber]: false }));
+      setPauseState(channelNumber, false);
       if (selectedFadeOption === 'None') {
         resumeChannel(channelNumber);
       } else {
         await resumeWithFade(undefined, channelNumber);
       }
     },
-    [selectedFadeOption]
+    [selectedFadeOption, setPauseState]
   );
 
   const togglePauseChannelWithFade = useCallback(
@@ -144,7 +182,7 @@ function App(): JSX.Element {
       const newPausedState: boolean = !currentlyPaused;
 
       // Update UI state immediately for responsive feedback
-      setPauseState((prev) => ({ ...prev, [channelNumber]: newPausedState }));
+      setPauseState(channelNumber, newPausedState);
 
       if (selectedFadeOption === 'None') {
         togglePauseChannel(channelNumber);
@@ -152,28 +190,30 @@ function App(): JSX.Element {
         await togglePauseWithFade(selectedFadeOption, channelNumber);
       }
     },
-    [selectedFadeOption, pauseState]
+    [selectedFadeOption, pauseState, setPauseState]
   );
 
   const pauseAllChannelsWithFade = useCallback(async (): Promise<void> => {
     // Immediately update UI state for responsive feedback
-    setPauseState({ 0: true, 1: true });
+    setPauseState(0, true);
+    setPauseState(1, true);
     if (selectedFadeOption === 'None') {
       pauseAllChannels();
     } else {
       await pauseAllWithFade(selectedFadeOption);
     }
-  }, [selectedFadeOption]);
+  }, [selectedFadeOption, setPauseState]);
 
   const resumeAllChannelsWithFade = useCallback(async (): Promise<void> => {
     // Immediately update UI state for responsive feedback
-    setPauseState({ 0: false, 1: false });
+    setPauseState(0, false);
+    setPauseState(1, false);
     if (selectedFadeOption === 'None') {
       resumeAllChannels();
     } else {
       await resumeAllWithFade();
     }
-  }, [selectedFadeOption]);
+  }, [selectedFadeOption, setPauseState]);
 
   const togglePauseAllChannelsWithFade = useCallback(async (): Promise<void> => {
     // Determine if any channel is currently playing (not paused)
@@ -182,14 +222,15 @@ function App(): JSX.Element {
     const newPausedState: boolean = anyChannelPlaying;
 
     // Update UI state immediately for responsive feedback
-    setPauseState({ 0: newPausedState, 1: newPausedState });
+    setPauseState(0, newPausedState);
+    setPauseState(1, newPausedState);
 
     if (selectedFadeOption === 'None') {
       togglePauseAllChannels();
     } else {
       await togglePauseAllWithFade(selectedFadeOption);
     }
-  }, [selectedFadeOption, pauseState]);
+  }, [selectedFadeOption, pauseState, setPauseState]);
 
   const handleAudioPause = useCallback(
     (channelNumber: number) => (): void => {
@@ -218,20 +259,13 @@ function App(): JSX.Element {
   );
 
   const handleTabChange = useCallback(
-    (newTab: ExampleTabs) => {
-      stopAllAudio();
+    async (newTab: ExampleTabs) => {
+      await performFullCleanup();
+
+      // Navigate to new tab
       navigate(ExampleTabRoutes[newTab]);
-      visualizerRefs.forEach((ref) => ref.current?.clearQueue());
-      // Reset states: queueState true = empty, pauseState false = not paused
-      setQueueState({ 0: true, 1: true });
-      setQueueLengths({ 0: 0, 1: 0 });
-      setPauseState({ 0: false, 1: false });
-      setIsDuckingEnabled(false);
-      // Clear all progress tracking data including pause times
-      progressTrackingRef.current = {};
-      clearLoopingTracker();
     },
-    [navigate, visualizerRefs]
+    [navigate, performFullCleanup]
   );
 
   const handleQueueChange = useCallback(
@@ -254,11 +288,11 @@ function App(): JSX.Element {
 
         visualizer.setPlayingState(isPlaying);
         // Update queue state: true = empty, false = has items
-        setQueueState((prev) => ({ ...prev, [channelNumber]: !hasItems }));
+        setQueueState(channelNumber, !hasItems);
         // Update queue lengths
-        setQueueLengths((prev) => ({ ...prev, [channelNumber]: snapshot.totalItems }));
+        setQueueLength(channelNumber, snapshot.totalItems);
       },
-    [getVisualizer]
+    [getVisualizer, setQueueState, setQueueLength]
   );
 
   const handleAudioStart = useCallback(
@@ -274,9 +308,9 @@ function App(): JSX.Element {
         };
 
         visualizer?.setPlayingState(true);
-        setQueueState((prev) => ({ ...prev, [channelNumber]: false }));
+        setQueueState(channelNumber, false);
       },
-    [getVisualizer]
+    [getVisualizer, setQueueState]
   );
 
   const handleAudioComplete = useCallback(
@@ -289,10 +323,10 @@ function App(): JSX.Element {
         if (info.remainingInQueue === 0) {
           visualizer?.setPlayingState(false);
           // Set queue as empty (true = empty)
-          setQueueState((prev) => ({ ...prev, [channelNumber]: true }));
+          setQueueState(channelNumber, true);
         }
       },
-    [getVisualizer]
+    [getVisualizer, setQueueState]
   );
 
   const calculateProgress = useCallback((): void => {
@@ -336,26 +370,10 @@ function App(): JSX.Element {
     });
   }, [getVisualizer]);
 
-  // Handle route changes for cleanup
-  useEffect(() => {
-    // Stop all audio and clear visualizers
-    stopAllAudio();
-    visualizerRefs.forEach((ref) => ref.current?.clearQueue());
-
-    // Reset queue state (true = empty) and pause state (false = not paused)
-    setQueueState({ 0: true, 1: true });
-    setQueueLengths({ 0: 0, 1: 0 });
-    setPauseState({ 0: false, 1: false });
-    setIsDuckingEnabled(false);
-
-    // Clear progress tracking and looping state
-    progressTrackingRef.current = {};
-    clearLoopingTracker();
-  }, [location.pathname, visualizerRefs]);
-
   useEffect(() => {
     const channels: number[] = [0, 1];
 
+    // Set up audio event listeners
     channels.forEach((channel) => {
       onQueueChange(channel, handleQueueChange(channel));
       onAudioStart(channel, handleAudioStart(channel));
@@ -364,24 +382,51 @@ function App(): JSX.Element {
       onAudioResume(channel, handleAudioResume(channel));
     });
 
-    let animationFrameId: number;
+    // Handle browser tab visibility changes
+    const handleVisibilityChange = async (): Promise<void> => {
+      if (document.hidden) {
+        stopAllAudio();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Start animation loop
+    let animationFrameId: number;
     const animationLoop = (): void => {
       calculateProgress();
       animationFrameId = requestAnimationFrame(animationLoop);
     };
-
     animationFrameId = requestAnimationFrame(animationLoop);
 
+    // Cleanup function
     return (): void => {
+      // Remove ALL audio event listeners to prevent state confusion
       channels.forEach((channel) => {
         offQueueChange(channel);
+        offAudioStart(channel);
+        offAudioComplete(channel);
         offAudioPause(channel);
         offAudioResume(channel);
       });
+
+      // Remove visibility listener
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+      // Cancel animation frame
       cancelAnimationFrame(animationFrameId);
+
+      // Perform full cleanup on unmount
+      performFullCleanup();
     };
-  }, [handleQueueChange, handleAudioStart, handleAudioComplete, handleAudioPause, handleAudioResume, calculateProgress]);
+  }, [
+    handleQueueChange,
+    handleAudioStart,
+    handleAudioComplete,
+    handleAudioPause,
+    handleAudioResume,
+    calculateProgress,
+    performFullCleanup
+  ]);
 
   const examples: Record<string, Example[]> = createExamples(
     handleAudioAndVisualizer,
@@ -413,15 +458,7 @@ function App(): JSX.Element {
       <BackgroundVisualizer />
       <div className="example-container">
         <Header currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
-        <AppRoutes
-          examples={examples}
-          onFadeOptionChange={handleFadeOptionChange}
-          pauseState={pauseState}
-          queueLengths={queueLengths}
-          queueState={queueState}
-          selectedFadeOption={selectedFadeOption}
-          visualizerRefs={visualizerRefs}
-        />
+        <AppRoutes examples={examples} onFadeOptionChange={handleFadeOptionChange} visualizerRefs={visualizerRefs} />
         <Footer />
       </div>
     </div>

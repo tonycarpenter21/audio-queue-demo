@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { AudioQueueProvider } from './context/AudioQueueContext';
 
 // Detect basename dynamically from current URL
 const getBasename = (): string => {
@@ -20,7 +21,9 @@ const root: ReactDOM.Root = ReactDOM.createRoot(document.getElementById('root') 
 root.render(
   <React.StrictMode>
     <BrowserRouter basename={basename}>
-      <App />
+      <AudioQueueProvider>
+        <App />
+      </AudioQueueProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

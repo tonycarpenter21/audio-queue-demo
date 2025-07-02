@@ -1,39 +1,18 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
-import ExampleTab from '../ExampleTab/ExampleTab';
+import ExampleTab from '../ExampleTab';
 import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from '../types';
 
 interface AppRoutesProps {
   examples: Record<string, Example[]>;
   onFadeOptionChange: (option: FadeOption) => void;
-  pauseState: { [channelNumber: number]: boolean };
-  queueLengths: { [channelNumber: number]: number };
-  queueState: { [channelNumber: number]: boolean };
-  selectedFadeOption: FadeOption;
   visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
 }
 
-function AppRoutes({
-  examples,
-  onFadeOptionChange,
-  pauseState,
-  queueLengths,
-  queueState,
-  selectedFadeOption,
-  visualizerRefs
-}: AppRoutesProps): JSX.Element {
+function AppRoutes({ examples, onFadeOptionChange, visualizerRefs }: AppRoutesProps): JSX.Element {
   const createExampleTabRoute = (tab: ExampleTabs): JSX.Element => (
-    <ExampleTab
-      currentExampleTab={tab}
-      examples={examples}
-      onFadeOptionChange={onFadeOptionChange}
-      pauseState={pauseState}
-      queueLengths={queueLengths}
-      queueState={queueState}
-      selectedFadeOption={selectedFadeOption}
-      visualizerRefs={visualizerRefs}
-    />
+    <ExampleTab currentExampleTab={tab} examples={examples} onFadeOptionChange={onFadeOptionChange} visualizerRefs={visualizerRefs} />
   );
 
   // Get all tabs that should have routes (exclude dropdown container)

@@ -1,335 +1,59 @@
-import { ExampleTabs } from '../types';
-import { Example, FadeOption } from '../types';
+import { ExampleTabProps, ExampleTabs, Example } from '../types';
 import './ExampleTab.css';
-import { MutableRefObject } from 'react';
-import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
-import ChannelSection from '../ChannelSection/ChannelSection';
 import GlobalControls from '../GlobalControls/GlobalControls';
-import VolumeSlider from '../VolumeSlider/VolumeSlider';
-import { setChannelVolume, setAllChannelsVolume, reorderQueue, removeQueuedItem } from 'audio-channel-queue';
-import { useState } from 'react';
-import { FadeType } from 'audio-channel-queue';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import TabDescription from './TabDescription';
+import ChannelsLayout from './ChannelsLayout';
+import { tabContentDescriptions } from './exampleTabContent';
+import { organizeExamplesByChannel } from './exampleOrganizer';
+import { useQueueManipulation } from '../hooks/useQueueManipulation';
+import { getTabSpecificComponents } from './tabComponentConfig';
+import { useAudioQueue } from '../context/AudioQueueContext';
 
-interface FadeControlsProps {
-  selectedFadeOption: FadeOption;
-  onFadeOptionChange: (option: FadeOption) => void;
-}
+function ExampleTab(props: ExampleTabProps): JSX.Element {
+  const { currentExampleTab, examples, visualizerRefs, onFadeOptionChange } = props;
 
-function FadeControls({ selectedFadeOption, onFadeOptionChange }: FadeControlsProps): JSX.Element {
-  const fadeOptions: {
-    value: FadeOption;
-    label: string;
-    description: string;
-  }[] = [
-    {
-      description: 'Instant pause/resume (original behavior)',
-      label: 'No Fade',
-      value: 'None'
-    },
-    {
-      description: 'Constant rate fade (mechanical)',
-      label: 'Linear',
-      value: FadeType.Linear
-    },
-    {
-      description: 'Smooth, natural fade (recommended)',
-      label: 'Gentle',
-      value: FadeType.Gentle
-    },
-    {
-      description: 'Quick, impactful fade (intense)',
-      label: 'Dramatic',
-      value: FadeType.Dramatic
-    }
-  ];
+  // Get state from context
+  const { state } = useAudioQueue();
+  const { queueState, queueLengths, pauseState, selectedFadeOption } = state;
 
-  return (
-    <div className="fade-controls">
-      <h3 className="fade-controls-title">🎵 Audio Fade Options</h3>
-      <p className="fade-controls-description">
-        Choose how audio fades when pausing/resuming. The code examples below will update automatically.
-      </p>
-      <div className="fade-options-buttons">
-        {fadeOptions.map((option) => (
-          <button
-            className={`fade-option-button ${selectedFadeOption === option.value ? 'active' : ''}`}
-            key={option.value}
-            onClick={() => onFadeOptionChange(option.value)}
-          >
-            <div className="fade-option-label">{option.label}</div>
-            <div className="fade-option-description">{option.description}</div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ExampleTab(props: {
-  currentExampleTab: ExampleTabs;
-  examples: Record<string, Example[]>;
-  queueState: {
-    [channelNumber: number]: boolean;
-  };
-  queueLengths: {
-    [channelNumber: number]: number;
-  };
-  pauseState: {
-    [channelNumber: number]: boolean;
-  };
-  visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
-  selectedFadeOption?: FadeOption;
-  onFadeOptionChange?: (option: FadeOption) => void;
-}): JSX.Element {
-  const { currentExampleTab, examples, queueState, queueLengths, pauseState, visualizerRefs, selectedFadeOption, onFadeOptionChange } =
-    props;
-
-  // Track volume states for dynamic code examples
-  const [volumeStates, setVolumeStates] = useState({
-    channel0: 100,
-    channel1: 100,
-    master: 100
-  });
-
-  const tabContent: Record<ExampleTabs, { description: string[] }> = {
-    [ExampleTabs.ADVANCED_QUEUE_MANIPULATION]: {
-      description: [
-        'This example demonstrates advanced queue manipulation features for precise control over audio playback order.',
-        'Add multiple sounds to each channel, then use the manipulation buttons to reorder, remove, or clear queue items in real-time.',
-        'Pausing the queue after adding items will make it easier to understand the queue manipulation functions.',
-        'Queue items are indexed from 0 (currently playing) - you can only manipulate queued items (index 1+), not the currently playing audio.',
-        'All manipulation functions return success/error results and provide updated queue snapshots for debugging and validation.',
-        'More advanced functionality is available via the package such as getQueueItemInfo(),getQueueLength(), and swapQueueItems().'
-      ]
-    },
-    [ExampleTabs.AUDIO_DUCKING]: {
-      description: [
-        'This example demonstrates automatic audio ducking - when sound effects play, background music volume automatically reduces to 50%.',
-        'Start the background music on Channel 0, then play sound effects on Channel 1 to hear the ducking effect.',
-        'The music volume will automatically restore to full volume when the sound effect completes.',
-        'This technique is commonly used in games and interactive applications for better audio clarity.'
-      ]
-    },
-    [ExampleTabs.AUDIO_INFO]: {
-      description: [
-        'This example demonstrates how to display real-time audio information and queue status using the audio info functions.',
-        'The widget below shows live updates of current audio, progress, queue status, and channel information.',
-        'Add audio to either channel using the buttons below to see the information update in real-time.',
-        'Try different audio files, pause/resume, and queue multiple items to see how the info changes.'
-      ]
-    },
-    [ExampleTabs.QUEUE_MANAGEMENT]: {
-      description: [
-        'This example shows how to add and remove audio files from queues. Channel-specific controls let you manage each audio channel independently.',
-        'Audio files will never overlap within their given channel. Use different channels when you want audio to play simultaneously.',
-        'To test this functionality, click the "Add Sound" buttons to queue audio, then use the stop controls to manage playback.'
-      ]
-    },
-    [ExampleTabs.PAUSE_RESUME]: {
-      description: [
-        'This example demonstrates the new pause and resume functionality for fine-grained audio control.',
-        'You can pause individual channels or all channels at once, and resume them later without losing your place in the audio.',
-        'Toggle pause provides a convenient way to pause/resume with a single button press.'
-      ]
-    },
-    [ExampleTabs.VOLUME_LOOPING]: {
-      description: [
-        'Control the volume of individual channels or all channels simultaneously using the volume sliders below.',
-        'This example uses looping audio files to demonstrate volume control - you can adjust levels while audio is playing.',
-        'Start the looping audio, then use pause/resume controls and volume sliders to test different volume levels.',
-        'Volume settings are persistent and affect all audio played on that channel.'
-      ]
-    },
-    [ExampleTabs.OTHER_FEATURES]: {
-      description: [] // No description for this tab
-    },
-    // All advanced features are grouped together here
-    [ExampleTabs.PRIORITY_SOUNDS]: {
-      description: [
-        'This example demonstrates how to add priority sounds to the audio queue.',
-        'Priority sounds will queue after the currently playing sound.',
-        'To test this functionality, click the "Add Priority Sound" button to add a priority sound to the queue.'
-      ]
-    }
-  };
-
-  const currentContent: { description: string[] } = tabContent[currentExampleTab];
+  // Get descriptions for current tab
+  const currentContent = tabContentDescriptions[currentExampleTab];
   const currentExamples: Example[] = examples[currentExampleTab] || [];
 
-  // Organize examples by channel and global
-  const organizeExamples = (): {
-    channel0: Example[];
-    channel1: Example[];
-    global: Example[];
-  } => {
-    const channel0: Example[] = [];
-    const channel1: Example[] = [];
-    const global: Example[] = [];
+  // Organize examples by channel
+  const { channel0, channel1, global } = organizeExamplesByChannel(currentExamples);
 
-    currentExamples.forEach((example) => {
-      const text: string = example.buttonText.toLowerCase();
+  // Use queue manipulation hook
+  const { handleMoveUp, handleMoveDown, handleRemoveItem } = useQueueManipulation();
 
-      if (text.includes('channel 0')) {
-        channel0.push(example);
-      } else if (text.includes('channel 1')) {
-        channel1.push(example);
-      } else if (text.includes('all channels') || text.includes('all sounds')) {
-        global.push(example);
-      }
-    });
+  // Get tab-specific components
+  const tabSpecificComponents = getTabSpecificComponents(currentExampleTab, selectedFadeOption, onFadeOptionChange);
 
-    return { channel0, channel1, global };
-  };
-
-  const { channel0, channel1, global }: { channel0: Example[]; channel1: Example[]; global: Example[] } = organizeExamples();
-
-  const handleVolumeChange = (volume: number, channelNumber?: number): void => {
-    if (channelNumber !== undefined) {
-      setChannelVolume(channelNumber, volume);
-      // Update volume state for code examples
-      setVolumeStates((prev) => ({
-        ...prev,
-        [`channel${channelNumber}`]: Math.round(volume * 100)
-      }));
-    } else {
-      setAllChannelsVolume(volume);
-      // Update master volume state for code examples
-      setVolumeStates((prev) => ({
-        ...prev,
-        master: Math.round(volume * 100)
-      }));
-    }
-  };
-
-  const handleMoveUp = async (fromIndex: number, channelNumber: number): Promise<void> => {
-    if (fromIndex <= 1) return; // Can't move up if already at position 1 (after currently playing)
-
-    const result = await reorderQueue(fromIndex, fromIndex - 1, channelNumber);
-    if (!result.success) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to move item up:', result.error);
-    }
-  };
-
-  const handleMoveDown = async (fromIndex: number, channelNumber: number): Promise<void> => {
-    const result = await reorderQueue(fromIndex, fromIndex + 1, channelNumber);
-    if (!result.success) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to move item down:', result.error);
-    }
-  };
-
-  const handleRemoveItem = async (fromIndex: number, channelNumber: number): Promise<void> => {
-    const result = await removeQueuedItem(fromIndex, channelNumber);
-    if (!result.success) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to remove item:', result.error);
-    }
-  };
-
-  const renderVolumeControls = (): JSX.Element | null => {
-    if (currentExampleTab !== ExampleTabs.VOLUME_LOOPING) return null;
-
-    return (
-      <div className="volume-controls-section">
-        <h3 className="section-title section-title-primary">Volume Controls</h3>
-        <div className="volume-controls-container">
-          <div className="volume-control-item">
-            <VolumeSlider channelNumber={0} initialVolume={1} onVolumeChange={handleVolumeChange} />
-            <SyntaxHighlighter
-              customStyle={{
-                borderRadius: '10px',
-                padding: '10px 20px'
-              }}
-              language="typescript"
-              style={vscDarkPlus}
-            >
-              {`setChannelVolume(0, ${volumeStates.channel0 / 100});`}
-            </SyntaxHighlighter>
-          </div>
-
-          <div className="volume-controls-divider" />
-
-          <div className="volume-control-item">
-            <VolumeSlider channelNumber={1} initialVolume={1} onVolumeChange={handleVolumeChange} />
-            <SyntaxHighlighter
-              customStyle={{
-                borderRadius: '10px',
-                padding: '10px 20px'
-              }}
-              language="typescript"
-              style={vscDarkPlus}
-            >
-              {`setChannelVolume(1, ${volumeStates.channel1 / 100});`}
-            </SyntaxHighlighter>
-          </div>
-
-          <div className="volume-controls-divider" />
-
-          <div className="volume-control-item">
-            <VolumeSlider initialVolume={1} isGlobal={true} onVolumeChange={handleVolumeChange} />
-            <SyntaxHighlighter
-              customStyle={{
-                borderRadius: '10px',
-                padding: '10px 20px'
-              }}
-              language="typescript"
-              style={vscDarkPlus}
-            >
-              {`setAllChannelsVolume(${volumeStates.master / 100});`}
-            </SyntaxHighlighter>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Determine which features are enabled for current tab
+  const enableReordering = currentExampleTab === ExampleTabs.ADVANCED_QUEUE_MANIPULATION;
+  const showAudioInfo = currentExampleTab === ExampleTabs.AUDIO_INFO;
 
   return (
     <div className="description-and-channel-example-container">
-      <div className="description-container">
-        {currentContent.description.map((description) => (
-          <p key={description}>{description}</p>
-        ))}
-      </div>
+      <TabDescription descriptions={currentContent.description} />
 
-      {currentExampleTab === ExampleTabs.PAUSE_RESUME && (
-        <FadeControls onFadeOptionChange={onFadeOptionChange || ((): void => {})} selectedFadeOption={selectedFadeOption || 'None'} />
-      )}
-
-      {renderVolumeControls()}
+      {tabSpecificComponents}
 
       <div className="channel-grouped-layout">
         {global.length > 0 && <GlobalControls examples={global} pauseState={pauseState} queueState={queueState} />}
-        <div className="channels-container">
-          <ChannelSection
-            channelNumber={0}
-            channelQueueLength={queueLengths[0]}
-            enableReordering={currentExampleTab === ExampleTabs.ADVANCED_QUEUE_MANIPULATION}
-            examples={channel0}
-            isChannelQueueEmpty={queueState[0]}
-            onMoveDown={handleMoveDown}
-            onMoveUp={handleMoveUp}
-            onRemoveItem={handleRemoveItem}
-            pauseState={pauseState[0]}
-            showAudioInfo={currentExampleTab === ExampleTabs.AUDIO_INFO}
-            visualizerRef={visualizerRefs[0]}
-          />
-          <ChannelSection
-            channelNumber={1}
-            channelQueueLength={queueLengths[1]}
-            enableReordering={currentExampleTab === ExampleTabs.ADVANCED_QUEUE_MANIPULATION}
-            examples={channel1}
-            isChannelQueueEmpty={queueState[1]}
-            onMoveDown={handleMoveDown}
-            onMoveUp={handleMoveUp}
-            onRemoveItem={handleRemoveItem}
-            pauseState={pauseState[1]}
-            showAudioInfo={currentExampleTab === ExampleTabs.AUDIO_INFO}
-            visualizerRef={visualizerRefs[1]}
-          />
-        </div>
+        <ChannelsLayout
+          channel0Examples={channel0}
+          channel1Examples={channel1}
+          enableReordering={enableReordering}
+          onMoveDown={handleMoveDown}
+          onMoveUp={handleMoveUp}
+          onRemoveItem={handleRemoveItem}
+          pauseState={pauseState}
+          queueLengths={queueLengths}
+          queueState={queueState}
+          showAudioInfo={showAudioInfo}
+          visualizerRefs={visualizerRefs}
+        />
       </div>
     </div>
   );
