@@ -38,22 +38,22 @@ export function createExamples(
     if (selectedFadeOption === 'None') {
       // Use old functions without fade
       if (action.includes('pauseAllChannels')) {
-        return `pauseAllChannels();`;
+        return `await pauseAllChannels();`;
       } else if (action.includes('resumeAllChannels')) {
-        return `resumeAllChannels();`;
+        return `await resumeAllChannels();`;
       } else if (action.includes('togglePauseAllChannels')) {
-        return `togglePauseAllChannels();`;
+        return `await togglePauseAllChannels();`;
       } else if (action.includes('pause')) {
         const channelParam = channel || '0';
-        return `pauseChannel(${channelParam});`;
+        return `await pauseChannel(${channelParam});`;
       } else if (action.includes('resume')) {
         const channelParam = channel || '0';
-        return `resumeChannel(${channelParam});`;
+        return `await resumeChannel(${channelParam});`;
       } else if (action.includes('toggle')) {
         const channelParam = channel || '0';
-        return `togglePauseChannel(${channelParam});`;
+        return `await togglePauseChannel(${channelParam});`;
       } else {
-        return `${action}${channel ? `(${channel})` : '()'}`;
+        return `await ${action}${channel ? `(${channel})` : '()'}`;
       }
     } else {
       // Use fade functions with FadeType
@@ -71,10 +71,22 @@ export function createExamples(
 );`;
       } else if (action.includes('pause')) {
         const channelParam = channel || '0';
-        return channel ? `await pauseWithFade(${fadeTypeString}, ${channelParam});` : `await pauseWithFade(${fadeTypeString});`;
+        return channel
+          ? `await pauseWithFade(
+  ${fadeTypeString}, 
+  ${channelParam}
+);`
+          : `await pauseWithFade(
+  ${fadeTypeString}
+);`;
       } else if (action.includes('resume')) {
         const channelParam = channel || '0';
-        return channel ? `await resumeWithFade(${fadeTypeString}, ${channelParam});` : `await resumeWithFade();`;
+        return channel
+          ? `await resumeWithFade(
+  ${fadeTypeString}, 
+  ${channelParam}
+);`
+          : `await resumeWithFade();`;
       } else if (action.includes('toggle')) {
         const channelParam = channel || '0';
         return channel
@@ -101,21 +113,21 @@ export function createExamples(
         },
         buttonText: 'Add Sound To End Of Queue (Channel 0)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile);',
+        codeExample: 'await queueAudio(audioFile);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
         buttonFunction: (): void => stopCurrentAudioInChannel(),
         buttonText: 'Stop Current Sound (Channel 0)',
         buttonType: 'default',
-        codeExample: 'stopCurrentAudioInChannel();',
+        codeExample: 'await stopCurrentAudioInChannel();',
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => stopAllAudioInChannel(),
         buttonText: 'Stop All Sounds In Queue (Channel 0)',
         buttonType: 'default',
-        codeExample: 'stopAllAudioInChannel();',
+        codeExample: 'await stopAllAudioInChannel();',
         isDisabledWhenQueueIsEmpty: true
       },
       // Channel 1 examples
@@ -126,21 +138,21 @@ export function createExamples(
         },
         buttonText: 'Add Sound To End Of Queue (Channel 1)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 1);',
+        codeExample: 'await queueAudio(audioFile, 1);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
         buttonFunction: (): void => stopCurrentAudioInChannel(1),
         buttonText: 'Stop Current Sound (Channel 1)',
         buttonType: 'default',
-        codeExample: 'stopCurrentAudioInChannel(1);',
+        codeExample: 'await stopCurrentAudioInChannel(1);',
         isDisabledWhenQueueIsEmpty: true
       },
       {
         buttonFunction: (): void => stopAllAudioInChannel(1),
         buttonText: 'Stop All Sounds In Queue (Channel 1)',
         buttonType: 'default',
-        codeExample: 'stopAllAudioInChannel(1);',
+        codeExample: 'await stopAllAudioInChannel(1);',
         isDisabledWhenQueueIsEmpty: true
       },
       // Global example
@@ -148,7 +160,7 @@ export function createExamples(
         buttonFunction: (): void => stopAllAudio(),
         buttonText: 'Stop All Sounds In All Channels',
         buttonType: 'default',
-        codeExample: 'stopAllAudio();',
+        codeExample: 'await stopAllAudio();',
         isDisabledWhenQueueIsEmpty: true
       }
     ],
@@ -161,7 +173,7 @@ export function createExamples(
         },
         buttonText: 'Add Sound To Queue (Channel 0)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile);',
+        codeExample: 'await queueAudio(audioFile);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -171,7 +183,7 @@ export function createExamples(
         },
         buttonText: 'Add Sound To Queue (Channel 1)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 1);',
+        codeExample: 'await queueAudio(audioFile, 1);',
         isDisabledWhenQueueIsEmpty: false
       },
       // Channel 0 pause/resume
@@ -271,7 +283,7 @@ export function createExamples(
         },
         buttonText: 'Start Looping Audio (Channel 0)',
         buttonType: 'default',
-        codeExample: `queueAudio(audioFile, 0, {
+        codeExample: `await queueAudio(audioFile, 0, {
   loop: true
 });`,
         isDisabledWhenChannelPlaying: true,
@@ -281,7 +293,7 @@ export function createExamples(
         buttonFunction: (): void => stopAllAudioInChannel(),
         buttonText: 'Stop Channel 0',
         buttonType: 'default',
-        codeExample: 'stopAllAudioInChannel();',
+        codeExample: 'await stopAllAudioInChannel();',
         isDisabledWhenQueueIsEmpty: true
       },
       // Channel 1 looping audio
@@ -292,7 +304,7 @@ export function createExamples(
         },
         buttonText: 'Start Looping Audio (Channel 1)',
         buttonType: 'default',
-        codeExample: `queueAudio(audioFile, 1, {
+        codeExample: `await queueAudio(audioFile, 1, {
   loop: true
 });`,
         isDisabledWhenChannelPlaying: true,
@@ -302,7 +314,7 @@ export function createExamples(
         buttonFunction: (): void => stopAllAudioInChannel(1),
         buttonText: 'Stop Channel 1',
         buttonType: 'default',
-        codeExample: 'stopAllAudioInChannel(1);',
+        codeExample: 'await stopAllAudioInChannel(1);',
         isDisabledWhenQueueIsEmpty: true
       }
     ],
@@ -360,7 +372,7 @@ setVolumeDucking({
         codeExample: `// Start background music -
 // will auto-duck when channel 1 
 // plays if ducking enabled
-queueAudio(backgroundMusic, 0, {
+await queueAudio(backgroundMusic, 0, {
   loop: true
 });`,
         isDisabledWhenChannelPlaying: true,
@@ -388,13 +400,13 @@ queueAudio(backgroundMusic, 0, {
 // Background music will 
 // automatically duck/restore
 // if volume ducking is enabled
-queueAudio(voiceAudio, 1);
+await queueAudio(voiceAudio, 1);
 
 // You can queue multiple voices!
 // Ducking stays active until 
 // channel 1 is empty
-queueAudio(anotherVoice, 1);
-queueAudio(thirdVoice, 1);`,
+await queueAudio(anotherVoice, 1);
+await queueAudio(thirdVoice, 1);`,
         isDisabledWhenQueueIsEmpty: false
       }
     ],
@@ -407,7 +419,7 @@ queueAudio(thirdVoice, 1);`,
         },
         buttonText: 'Add Sound To End Of Queue (Channel 0)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile);',
+        codeExample: 'await queueAudio(audioFile);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -417,7 +429,7 @@ queueAudio(thirdVoice, 1);`,
         },
         buttonText: 'Add Priority Sound (Channel 0)',
         buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile);',
+        codeExample: 'await queueAudioPriority(audioFile);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -428,8 +440,8 @@ queueAudio(thirdVoice, 1);`,
         },
         buttonText: 'Interrupt And Add Priority Sound (Channel 0)',
         buttonType: 'priority',
-        codeExample: `queueAudioPriority(audioFile);
-stopCurrentAudioInChannel();`,
+        codeExample: `await queueAudioPriority(audioFile);
+await stopCurrentAudioInChannel();`,
         isDisabledWhenQueueIsEmpty: true
       },
       // Channel 1 examples
@@ -440,7 +452,7 @@ stopCurrentAudioInChannel();`,
         },
         buttonText: 'Add Sound To End Of Queue (Channel 1)',
         buttonType: 'default',
-        codeExample: 'queueAudio(audioFile, 1);',
+        codeExample: 'await queueAudio(audioFile, 1);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -450,7 +462,7 @@ stopCurrentAudioInChannel();`,
         },
         buttonText: 'Add Priority Sound (Channel 1)',
         buttonType: 'priority',
-        codeExample: 'queueAudioPriority(audioFile, 1);',
+        codeExample: 'await queueAudioPriority(audioFile, 1);',
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -461,8 +473,8 @@ stopCurrentAudioInChannel();`,
         },
         buttonText: 'Interrupt And Add Priority Sound (Channel 1)',
         buttonType: 'priority',
-        codeExample: `queueAudioPriority(audioFile, 1);
-stopCurrentAudioInChannel(1);`,
+        codeExample: `await queueAudioPriority(audioFile, 1);
+await stopCurrentAudioInChannel(1);`,
         isDisabledWhenQueueIsEmpty: true
       }
     ],
@@ -476,7 +488,7 @@ stopCurrentAudioInChannel(1);`,
         buttonText: 'Add Sound To Queue (Channel 0)',
         buttonType: 'default',
         codeExample: `// Add audio to channel 0
-queueAudio(audioFile, 0);
+await queueAudio(audioFile, 0);
 
 // Get current audio info
 const info = getCurrentAudioInfo();
@@ -505,7 +517,7 @@ console.log('Queue:', snapshot);`,
         buttonText: 'Add Sound To Queue (Channel 1)',
         buttonType: 'default',
         codeExample: `// Add audio to channel 1
-queueAudio(audioFile, 1);
+await queueAudio(audioFile, 1);
 
 // Get current audio info
 const info = getCurrentAudioInfo(1);
@@ -536,7 +548,7 @@ console.log('Queue:', snapshot);
         },
         buttonText: 'Add Sound To Queue (Channel 0)',
         buttonType: 'default',
-        codeExample: `queueAudio(audioFile);`,
+        codeExample: `await queueAudio(audioFile);`,
         isDisabledWhenQueueIsEmpty: false
       },
       {
@@ -569,7 +581,7 @@ console.log('Queue:', snapshot);
         },
         buttonText: 'Add Sound To Queue (Channel 1)',
         buttonType: 'default',
-        codeExample: `queueAudio(soundEffect, 1);`,
+        codeExample: `await queueAudio(soundEffect, 1);`,
         isDisabledWhenQueueIsEmpty: false
       },
       {
