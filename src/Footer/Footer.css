@@ -6,6 +6,7 @@
   flex-direction: column;
   font-size: 0.875rem;
   margin-top: var(--space-8);
+  padding-bottom: var(--space-6);
   padding-top: var(--space-6);
 }
 
@@ -35,6 +36,30 @@
   color: var(--primary-300);
   outline: 2px solid var(--primary-500);
   outline-offset: 0.125rem;
+}
+
+.footer-version {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.footer-version-badge {
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: var(--space-1) var(--space-3);
+}
+
+.footer-debug-console-wrapper {
+  margin-top: var(--space-4);
+  position: relative;
+  width: 100%;
 }
 
 @media (width <= 600px) {

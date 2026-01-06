@@ -19,16 +19,14 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
     description: [
       'This example demonstrates automatic audio ducking - when sound effects play, background music volume automatically reduces to 50%.',
       'Start the background music on Channel 0, then play sound effects on Channel 1 to hear the ducking effect.',
-      'The music volume will automatically restore to full volume when the sound effect completes.',
-      'This technique is commonly used in games and interactive applications for better audio clarity.'
+      'The music volume will automatically restore to full volume when the sound effect completes.'
     ]
   },
   [ExampleTabs.AUDIO_INFO]: {
     description: [
       'This example demonstrates how to display real-time audio information and queue status using the audio info functions.',
       'The widget below shows live updates of current audio, progress, queue status, and channel information.',
-      'Add audio to either channel using the buttons below to see the information update in real-time.',
-      'Try different audio files, pause/resume, and queue multiple items to see how the info changes.'
+      'Add audio to either channel using the buttons below to see the information update in real-time.'
     ]
   },
   [ExampleTabs.QUEUE_MANAGEMENT]: {
@@ -47,10 +45,9 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
   },
   [ExampleTabs.VOLUME_LOOPING]: {
     description: [
-      'Control the volume of individual channels or all channels simultaneously using the volume sliders below.',
+      'Control the volume of individual channels, all channels simultaneously, and global volume using the volume sliders below.',
       'This example uses looping audio files to demonstrate volume control - you can adjust levels while audio is playing.',
-      'Start the looping audio, then use pause/resume controls and volume sliders to test different volume levels.',
-      'Volume settings are persistent and affect all audio played on that channel.'
+      'Start the looping audio, then use pause/resume controls and volume sliders to test different volume levels.'
     ]
   },
   [ExampleTabs.OTHER_FEATURES]: {

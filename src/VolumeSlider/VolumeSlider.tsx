@@ -4,17 +4,21 @@ import './VolumeSlider.css';
 interface VolumeSliderProps {
   channelNumber?: number;
   initialVolume?: number;
-  isGlobal?: boolean;
+  label?: string;
   onVolumeChange: (volume: number, channelNumber?: number) => void;
+  volume?: number;
 }
 
-function VolumeSlider({ channelNumber, initialVolume = 1, isGlobal = false, onVolumeChange }: VolumeSliderProps): JSX.Element {
-  const [volume, setVolume] = useState<number>(initialVolume);
+function VolumeSlider({ channelNumber, initialVolume = 1, label, onVolumeChange, volume: externalVolume }: VolumeSliderProps): JSX.Element {
+  const [internalVolume, setInternalVolume] = useState<number>(initialVolume);
+
+  // Use external volume if provided (for controlled component), otherwise use internal state
+  const volume: number = externalVolume !== undefined ? externalVolume : internalVolume;
 
   const handleVolumeChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const newVolume: number = parseFloat(event.target.value);
-      setVolume(newVolume);
+      setInternalVolume(newVolume);
       onVolumeChange(newVolume, channelNumber);
     },
     [onVolumeChange, channelNumber]
@@ -28,7 +32,7 @@ function VolumeSlider({ channelNumber, initialVolume = 1, isGlobal = false, onVo
   };
 
   const getVolumeLabel = (): string => {
-    if (isGlobal) return 'Master Volume';
+    if (label) return label;
     return `Channel ${channelNumber} Volume`;
   };
 
@@ -49,8 +53,7 @@ function VolumeSlider({ channelNumber, initialVolume = 1, isGlobal = false, onVo
         <div
           className="volume-slider-fill"
           style={{
-            maxWidth: '100%',
-            width: `calc(${volume * 100}% + ${volume === 0 ? 0 : 10}px)`
+            width: `calc(${volume * 100}% + ${10 - volume * 20}px)`
           }}
         />
       </div>

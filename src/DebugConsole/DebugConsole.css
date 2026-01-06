@@ -1,0 +1,182 @@
+.debug-console {
+  background: rgb(20 20 20 / 95%);
+  border: 2px solid var(--primary-500);
+  border-radius: var(--radius-lg);
+  bottom: var(--space-4);
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  max-width: 600px;
+  position: fixed;
+  right: var(--space-4);
+  width: 90%;
+  z-index: 9999;
+}
+
+.debug-console-header {
+  align-items: center;
+  background: var(--primary-600);
+  border-radius: calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+}
+
+.debug-console-title {
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.debug-console-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.debug-console-button {
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: var(--radius-sm);
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: var(--space-1) var(--space-2);
+  transition: all 0.2s ease;
+}
+
+.debug-console-button:hover {
+  background: rgb(255 255 255 / 20%);
+}
+
+.debug-console-button:active {
+  transform: scale(0.95);
+}
+
+.debug-console-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.debug-console-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.debug-console-body::-webkit-scrollbar-track {
+  background: rgb(255 255 255 / 5%);
+}
+
+.debug-console-body::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 20%);
+  border-radius: 4px;
+}
+
+.debug-console-body::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 30%);
+}
+
+.debug-console-empty {
+  color: rgb(255 255 255 / 40%);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.debug-console-entry {
+  background: rgb(255 255 255 / 5%);
+  border-left: 3px solid;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  gap: var(--space-2);
+  line-height: 1.4;
+  padding: var(--space-2);
+}
+
+.debug-console-log {
+  border-left-color: var(--primary-400);
+}
+
+.debug-console-warn {
+  background: rgb(234 179 8 / 10%);
+  border-left-color: rgb(234 179 8);
+}
+
+.debug-console-error {
+  background: rgb(239 68 68 / 10%);
+  border-left-color: rgb(239 68 68);
+}
+
+.debug-console-info {
+  background: rgb(59 130 246 / 10%);
+  border-left-color: rgb(59 130 246);
+}
+
+.debug-console-timestamp {
+  color: rgb(156 163 175);
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+
+.debug-console-type {
+  color: rgb(209 213 219);
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.debug-console-message {
+  color: rgb(229 231 235);
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.debug-console-show-button {
+  background: var(--primary-600);
+  border: 2px solid var(--primary-500);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  transition: all 0.2s ease;
+}
+
+.debug-console-show-button:hover {
+  background: var(--primary-500);
+  transform: translateY(-2px);
+}
+
+.debug-console-show-button:active {
+  transform: translateY(0);
+}
+
+@media (width <= 800px) {
+  .debug-console {
+    bottom: var(--space-2);
+    max-height: 300px;
+    max-width: none;
+    right: var(--space-2);
+    width: calc(100% - var(--space-4));
+  }
+
+  .debug-console-body {
+    max-height: 250px;
+  }
+}

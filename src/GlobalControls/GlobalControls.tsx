@@ -1,6 +1,7 @@
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Example } from '../types';
+import Divider, { DividerOrientation } from '../Divider/Divider';
 import './GlobalControls.css';
 import React from 'react';
 
@@ -56,7 +57,7 @@ function GlobalControls({ examples, queueState, pauseState }: GlobalControlsProp
                 </SyntaxHighlighter>
               </div>
 
-              {!isLastItem && <div className="global-controls-divider" />}
+              {!isLastItem && <Divider orientation={DividerOrientation.Vertical} />}
             </React.Fragment>
           );
         })}

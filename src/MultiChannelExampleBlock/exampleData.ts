@@ -1,4 +1,4 @@
-import { QueueManipulationResult, QueueItem, setVolumeDucking } from 'audio-channel-queue';
+import { QueueManipulationResult, QueueItem, setVolumeDucking, togglePauseChannel } from 'audio-channel-queue';
 import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
 
@@ -73,8 +73,7 @@ export function createExamples(
         const channelParam = channel || '0';
         return channel
           ? `await pauseWithFade(
-  ${fadeTypeString}, 
-  ${channelParam}
+  ${fadeTypeString}, ${channelParam}
 );`
           : `await pauseWithFade(
   ${fadeTypeString}
@@ -83,16 +82,14 @@ export function createExamples(
         const channelParam = channel || '0';
         return channel
           ? `await resumeWithFade(
-  ${fadeTypeString}, 
-  ${channelParam}
+  ${fadeTypeString}, ${channelParam}
 );`
           : `await resumeWithFade();`;
       } else if (action.includes('toggle')) {
         const channelParam = channel || '0';
         return channel
           ? `await togglePauseWithFade(
-  ${fadeTypeString}, 
-  ${channelParam}
+  ${fadeTypeString}, ${channelParam}
 );`
           : `await togglePauseWithFade(
   ${fadeTypeString}
@@ -501,7 +498,7 @@ console.log('Queue:', snapshot);`,
       },
       {
         buttonFunction: (): void => {
-          togglePauseChannelWithFade();
+          togglePauseChannel();
         },
         buttonText: 'Toggle Pause (Channel 0)',
         buttonType: 'default',
@@ -531,7 +528,7 @@ console.log('Queue:', snapshot);
       },
       {
         buttonFunction: (): void => {
-          togglePauseChannelWithFade(1);
+          togglePauseChannel(1);
         },
         buttonText: 'Toggle Pause (Channel 1)',
         buttonType: 'default',

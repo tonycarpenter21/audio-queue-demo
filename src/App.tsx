@@ -33,7 +33,8 @@ import {
   cleanWebpackFilename,
   clearQueueAfterCurrent,
   getQueueItemInfo,
-  getQueueLength
+  getQueueLength,
+  setGlobalVolume
 } from 'audio-channel-queue';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -110,6 +111,9 @@ function App(): JSX.Element {
     resetAllStates();
     setIsDuckingEnabled(false);
 
+    // Reset global volume to 1
+    setGlobalVolume(1);
+
     // Clear progress tracking
     progressTrackingRef.current = {};
     clearLoopingTracker();
@@ -169,7 +173,7 @@ function App(): JSX.Element {
       if (selectedFadeOption === 'None') {
         resumeChannel(channelNumber);
       } else {
-        await resumeWithFade(undefined, channelNumber);
+        await resumeWithFade(selectedFadeOption, channelNumber);
       }
     },
     [selectedFadeOption, setPauseState]
