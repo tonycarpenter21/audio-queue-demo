@@ -60,7 +60,7 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
   return (
     <div className="header-container">
       <div className="hero-content">
-        <h1>Audio Channel Queue</h1>
+        <h1>AudioQ</h1>
         <p className="hero-description">
           Multi-channel audio queue management for browsers with real-time progress tracking, volume control, and advanced event handling.
           Perfect for games, interactive applications, and web-based audio experiences.
@@ -120,21 +120,11 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
         </div>
 
         <div className="hero-actions">
-          <a
-            className="action-button primary"
-            href="https://www.npmjs.com/package/audio-channel-queue"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <a className="action-button primary" href="https://www.npmjs.com/package/audioq" rel="noopener noreferrer" target="_blank">
             <span className="button-icon">📦</span>
             Install Package
           </a>
-          <a
-            className="action-button secondary"
-            href="https://github.com/tonycarpenter21/audio-channel-queue"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <a className="action-button secondary" href="https://github.com/tonycarpenter21/audioq" rel="noopener noreferrer" target="_blank">
             <span className="button-icon">⭐</span>
             View on GitHub
           </a>

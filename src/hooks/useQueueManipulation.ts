@@ -1,4 +1,4 @@
-import { reorderQueue, removeQueuedItem } from 'audio-channel-queue';
+import { reorderQueue, removeQueuedItem } from 'audioq';
 
 interface UseQueueManipulationReturn {
   handleMoveUp: (fromIndex: number, channelNumber: number) => Promise<void>;

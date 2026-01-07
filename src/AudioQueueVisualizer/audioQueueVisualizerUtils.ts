@@ -1,4 +1,4 @@
-import { extractFileName } from 'audio-channel-queue';
+import { extractFileName } from 'audioq';
 
 // Track looping audio files per channel
 const loopingAudioTracker: { [channelNumber: number]: Set<string> } = {};

@@ -35,7 +35,7 @@ import {
   getQueueItemInfo,
   getQueueLength,
   setGlobalVolume
-} from 'audio-channel-queue';
+} from 'audioq';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './App.css';

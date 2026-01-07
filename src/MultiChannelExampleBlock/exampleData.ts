@@ -1,4 +1,4 @@
-import { QueueManipulationResult, QueueItem, setVolumeDucking, togglePauseChannel } from 'audio-channel-queue';
+import { QueueManipulationResult, QueueItem, setVolumeDucking, togglePauseChannel } from 'audioq';
 import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
 

@@ -1,15 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  getCurrentAudioInfo,
-  getQueueSnapshot,
-  onAudioProgress,
-  offAudioProgress,
-  cleanWebpackFilename,
-  QueueSnapshot
-} from 'audio-channel-queue';
+import { getCurrentAudioInfo, getQueueSnapshot, onAudioProgress, offAudioProgress, cleanWebpackFilename, QueueSnapshot } from 'audioq';
 import './ChannelAudioInfo.css';
 
-// Using types from audio-channel-queue package
+// Using types from audioq package
 interface AudioInfo {
   currentTime: number;
   duration: number;

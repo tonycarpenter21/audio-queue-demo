@@ -1,10 +1,10 @@
 # Audio Queue Demo
 
-This project is a demo for the NPM Package Audio Queue.
+This project is a demo for the NPM package AudioQ.
 
-Package and details can be found at [NPM](https://www.npmjs.com/package/audio-channel-queue).
+Package and details can be found at [NPM](https://www.npmjs.com/package/audioq).
 
-The audio-channel-queue package repo can be found at [GitHub NPM Package Repo](https://github.com/tonycarpenter21/audio-channel-queue).
+The AudioQ package repo can be found at [GitHub NPM Package Repo](https://github.com/tonycarpenter21/audioq).
 
 The demo repo can be found at [GitHub Demo Repo](https://github.com/tonycarpenter21/audio-queue-demo).
 

@@ -1,4 +1,4 @@
-import { FadeType } from 'audio-channel-queue';
+import { FadeType } from 'audioq';
 import { MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
 

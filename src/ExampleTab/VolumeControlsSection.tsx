@@ -1,5 +1,5 @@
 import VolumeSlider from '../VolumeSlider/VolumeSlider';
-import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume } from 'audio-channel-queue';
+import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume } from 'audioq';
 import { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';

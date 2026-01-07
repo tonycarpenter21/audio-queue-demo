@@ -1,5 +1,5 @@
 import { FadeOption } from '../types';
-import { FadeType } from 'audio-channel-queue';
+import { FadeType } from 'audioq';
 import './FadeControls.css';
 
 interface FadeControlsProps {
