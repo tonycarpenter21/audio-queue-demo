@@ -61,6 +61,9 @@ const check = async (name, run) => {
     await click('Speed 1x (Channel 0)');
     await page.waitForTimeout(1000);
     assert.match(await text('.v3-panel'), /Background Music 0:1\d \/ 2:47 · 1\.5x/);
+    const heights = await page.locator('.v3-spectrum-bar').evaluateAll((bars) => bars.map((bar) => parseFloat(bar.style.height)));
+    assert.equal(heights.length, 16);
+    assert.ok(Math.max(...heights) > 4, `spectrum shows no signal: ${heights.join(', ')}`);
     await click('Next Track (Channel 0)');
     await page.waitForTimeout(1200);
     assert.match(await text('.v3-panel'), /Teleporter Hum .*Recently played: getHistory\(0\) Background Music \(stopped/);
@@ -99,8 +102,19 @@ const check = async (name, run) => {
     assert.match(await text('.channel-audio-info', 1), /Status: ▶️ Playing File: \S+\.mp3 .*Items: 1/);
   });
 
-  await check('notifications: dedupe, blob beep and queue limit', async () => {
+  await check('notifications: the debug log shows queue events', async () => {
     await openTab('New: Notifications');
+    await click('Debug Log Off');
+    await click('Generated Beep');
+    await page.waitForTimeout(800);
+    assert.ok(
+      logs.some((line) => /^audioq \[channel 0\] start/.test(line)),
+      'no "audioq [channel 0] start" debug line'
+    );
+    await click('Debug Log On');
+  });
+
+  await check('notifications: dedupe, blob beep and queue limit', async () => {
     for (let i = 0; i < 3; i++) await click('Tap Fast');
     await click('Generated Beep');
     for (let i = 0; i < 4; i++) await click('Queue Up To 2');

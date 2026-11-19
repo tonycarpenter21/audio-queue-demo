@@ -288,8 +288,19 @@ await queueAudio(music, 1, {
   ];
 }
 
-function notificationExamples(): Example[] {
+function notificationExamples(settings: PlaylistSettings, actions: PlaylistSettingsActions): Example[] {
   return [
+    {
+      buttonFunction: actions.toggleDebug,
+      buttonText: `Debug Log ${settings.debug ? 'On' : 'Off'}`,
+      buttonType: settings.debug ? 'resume' : 'default',
+      channel: 'global',
+      codeExample: `// Logs every event with its channel
+// and payload (see the debug console
+// at the bottom of the page)
+setQueueConfig({ debug: ${settings.debug} });`,
+      enabledWhen: 'always'
+    },
     {
       buttonFunction: (): void => {
         void queueAudio(laserGunFiring, 0, { dedupeMs: 1000, volume: 0.6 }).then((item) => {
@@ -371,7 +382,7 @@ export function createV3Examples(settings: PlaylistSettings, actions: PlaylistSe
   return {
     [ExampleTabs.PLAYLIST]: playlistExamples(settings, actions),
     [ExampleTabs.SPRITES_CAPTIONS]: spriteExamples(),
-    [ExampleTabs.NOTIFICATIONS]: notificationExamples()
+    [ExampleTabs.NOTIFICATIONS]: notificationExamples(settings, actions)
   };
 }
 

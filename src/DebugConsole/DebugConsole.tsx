@@ -20,6 +20,7 @@ function DebugConsole(): JSX.Element {
     const originalWarn = console.warn;
     const originalError = console.error;
     const originalInfo = console.info;
+    const originalDebug = console.debug;
 
     // Helper to format arguments
     const formatArgs = (...args: unknown[]): string => {
@@ -77,12 +78,19 @@ function DebugConsole(): JSX.Element {
       addLog('info', ...args);
     };
 
+    // audioq's debug log (setQueueConfig({ debug: true })) writes through console.debug
+    console.debug = (...args: unknown[]): void => {
+      originalDebug(...args);
+      addLog('info', ...args);
+    };
+
     // Cleanup: restore original console methods
     return (): void => {
       console.log = originalLog;
       console.warn = originalWarn;
       console.error = originalError;
       console.info = originalInfo;
+      console.debug = originalDebug;
     };
   }, []);
 

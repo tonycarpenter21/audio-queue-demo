@@ -88,3 +88,17 @@
 .v3-beat-on {
   background: #a855f7;
 }
+
+.v3-spectrum {
+  align-items: flex-end;
+  display: flex;
+  gap: 3px;
+  height: 48px;
+}
+
+.v3-spectrum-bar {
+  background: linear-gradient(to top, #4ade80, #a855f7);
+  border-radius: 2px;
+  flex: 1;
+  height: 4%;
+}

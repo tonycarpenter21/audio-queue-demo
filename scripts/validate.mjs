@@ -144,9 +144,15 @@ const checks = [
 ];
 
 let failed = 0;
+let buildFailed = false;
 for (const [name, check] of checks) {
+  if (name === 'end-to-end' && buildFailed) {
+    console.log(`- ${name.padEnd(20)}         skipped: the build failed`);
+    continue;
+  }
   const started = Date.now();
   const result = await check();
+  if (name === 'build' && !result.ok) buildFailed = true;
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
   console.log(`${result.ok ? '✔' : '✖'} ${name.padEnd(20)} ${seconds.padStart(5)}s  ${result.summary ?? ''}`);
   if (!result.ok) {
