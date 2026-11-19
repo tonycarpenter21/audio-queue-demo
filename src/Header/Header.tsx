@@ -18,9 +18,9 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
 
   const advancedFeatureOptions: AdvancedFeatureOption[] = [
     {
-      icon: '🎧',
-      label: 'New: Playlist & Lock Screen',
-      tab: ExampleTabs.PLAYLIST
+      icon: '🔒',
+      label: 'New: Playback & Lock Screen',
+      tab: ExampleTabs.PLAYBACK
     },
     {
       icon: '💬',
@@ -102,6 +102,13 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
           >
             <span className="feature-icon">🔊</span>
             <span className="feature-text">{ExampleTabs.VOLUME_LOOPING}</span>
+          </button>
+          <button
+            className={`feature ${currentExampleTab === ExampleTabs.PLAYLIST ? 'active' : ''}`}
+            onClick={() => handleTabClick(ExampleTabs.PLAYLIST)}
+          >
+            <span className="feature-icon">🎧</span>
+            <span className="feature-text">{ExampleTabs.PLAYLIST}</span>
           </button>
           <div className="advanced-features-container">
             <button

@@ -180,3 +180,7 @@
     max-height: 250px;
   }
 }
+
+.debug-console-button-on {
+  outline: 2px solid #facc15;
+}

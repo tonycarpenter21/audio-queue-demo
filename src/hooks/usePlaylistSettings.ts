@@ -10,7 +10,6 @@ export const GAP_MS: number = 1500;
 
 export interface PlaylistSettings {
   crossfadeMs: number;
-  debug: boolean;
   gapMs: number;
   pauseWhenHidden: boolean;
   rate: number;
@@ -22,14 +21,13 @@ export interface PlaylistSettingsActions {
   cycleRepeat: () => void;
   reset: () => void;
   togglePauseWhenHidden: () => void;
-  toggleDebug: () => void;
   toggleCrossfade: () => void;
   toggleGap: () => void;
 }
 
-const DEFAULTS: PlaylistSettings = { crossfadeMs: 0, debug: false, gapMs: 0, pauseWhenHidden: false, rate: 1, repeat: 'off' };
+const DEFAULTS: PlaylistSettings = { crossfadeMs: 0, gapMs: 0, pauseWhenHidden: false, rate: 1, repeat: 'off' };
 
-/** Settings the new-feature tabs change, mirrored in React state so the buttons can show them. */
+/** Settings the playlist tabs change, mirrored in React state so the buttons can show them. */
 export function usePlaylistSettings(): [PlaylistSettings, PlaylistSettingsActions] {
   const [settings, setSettings] = useState<PlaylistSettings>(DEFAULTS);
 
@@ -73,22 +71,14 @@ export function usePlaylistSettings(): [PlaylistSettings, PlaylistSettingsAction
     });
   }, []);
 
-  const toggleDebug = useCallback((): void => {
-    setSettings((current) => {
-      const debug: boolean = !current.debug;
-      setQueueConfig({ debug });
-      return { ...current, debug };
-    });
-  }, []);
-
   const reset = useCallback((): void => {
     setPlaybackRate(PLAYLIST_CHANNEL, DEFAULTS.rate);
     setRepeatMode(PLAYLIST_CHANNEL, DEFAULTS.repeat);
     setCrossfade(PLAYLIST_CHANNEL, DEFAULTS.crossfadeMs);
     setChannelGap(PLAYLIST_CHANNEL, DEFAULTS.gapMs);
-    setQueueConfig({ debug: DEFAULTS.debug, pauseWhenHidden: DEFAULTS.pauseWhenHidden });
+    setQueueConfig({ pauseWhenHidden: DEFAULTS.pauseWhenHidden });
     setSettings(DEFAULTS);
   }, []);
 
-  return [settings, { cycleRate, cycleRepeat, reset, toggleCrossfade, toggleDebug, toggleGap, togglePauseWhenHidden }];
+  return [settings, { cycleRate, cycleRepeat, reset, toggleCrossfade, toggleGap, togglePauseWhenHidden }];
 }

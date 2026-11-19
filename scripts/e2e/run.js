@@ -38,13 +38,21 @@ const check = async (name, run) => {
   page.on('console', (message) => logs.push(message.text()));
   const click = (name) => page.getByRole('button', { exact: false, name }).first().click();
   const openTab = async (label) => {
-    await click('Other Features');
+    await click('More Examples');
     await click(label);
+    await page.waitForTimeout(300);
+  };
+  const openTopTab = async (label) => {
+    await page.locator('.feature-highlights > button', { hasText: label }).first().click();
     await page.waitForTimeout(300);
   };
   const text = async (selector, index = 0) => (await page.locator(selector).nth(index).innerText()).replace(/\s+/g, ' ');
 
   await page.goto(`${BASE}/`);
+
+  await check('footer shows the installed audioq version', async () => {
+    assert.match(await text('.footer-version'), /Package Version: 3\./);
+  });
 
   await check('queue management: a queued sound appears in the visualizer', async () => {
     await click('Add Sound To End Of Queue (Channel 0)');
@@ -52,11 +60,25 @@ const check = async (name, run) => {
     assert.match(await text('.channel-visualizer'), /\.mp3/);
   });
 
-  await check('playlist: plays, seeks, changes speed and skips', async () => {
-    await openTab('New: Playlist');
+  await check('playlist: plays, skips and records history', async () => {
+    await openTopTab('Playlist');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1500);
     assert.match(await text('.v3-panel'), /Background Music 0:0\d \/ 2:47 · 1x · playing · 3 up next/);
+    await click('Repeat: off (Channel 0)');
+    assert.equal(await page.getByRole('button', { name: /Repeat:/ }).innerText(), 'Repeat: all (Channel 0)');
+    await click('Next Track (Channel 0)');
+    await page.waitForTimeout(1200);
+    assert.match(await text('.v3-panel'), /Teleporter Hum .*Recently played: getHistory\(0\) Background Music \(stopped/);
+    assert.equal(await page.locator('.v3-spectrum').count(), 0, 'the spectrum belongs to the Playback tab');
+    assert.equal(await page.locator('.channel-section').count(), 1, 'only channel 0 has examples here');
+  });
+
+  await check('playback: seeks, changes speed and shows the spectrum', async () => {
+    await openTab('New: Playback');
+    await click('Queue A Playlist (Channel 0)');
+    await page.waitForTimeout(1500);
+    assert.match(await text('.v3-panel'), /Background Music 0:0\d \/ 2:47 · 1x/);
     await click('Forward 10 Seconds (Channel 0)');
     await click('Speed 1x (Channel 0)');
     await page.waitForTimeout(1000);
@@ -64,9 +86,6 @@ const check = async (name, run) => {
     const heights = await page.locator('.v3-spectrum-bar').evaluateAll((bars) => bars.map((bar) => parseFloat(bar.style.height)));
     assert.equal(heights.length, 16);
     assert.ok(Math.max(...heights) > 4, `spectrum shows no signal: ${heights.join(', ')}`);
-    await click('Next Track (Channel 0)');
-    await page.waitForTimeout(1200);
-    assert.match(await text('.v3-panel'), /Teleporter Hum .*Recently played: getHistory\(0\) Background Music \(stopped/);
   });
 
   await check('sprites: preloads, and captions follow the segments that play', async () => {
@@ -102,16 +121,19 @@ const check = async (name, run) => {
     assert.match(await text('.channel-audio-info', 1), /Status: ▶️ Playing File: \S+\.mp3 .*Items: 1/);
   });
 
-  await check('notifications: the debug log shows queue events', async () => {
+  await check('debug console: the audioq event log shows queue events', async () => {
     await openTab('New: Notifications');
-    await click('Debug Log Off');
+    await click('Show Debug Console');
+    await click('audioq events: Off');
     await click('Generated Beep');
     await page.waitForTimeout(800);
     assert.ok(
       logs.some((line) => /^audioq \[channel 0\] start/.test(line)),
       'no "audioq [channel 0] start" debug line'
     );
-    await click('Debug Log On');
+    assert.match(await text('.debug-console-body'), /audioq \[channel 0\] start/);
+    await click('audioq events: On');
+    await page.getByRole('button', { name: '✕' }).click();
   });
 
   await check('notifications: dedupe, blob beep and queue limit', async () => {
@@ -139,15 +161,15 @@ const check = async (name, run) => {
 
   await check('changing tabs stops audio (header buttons and the browser back button)', async () => {
     const playbackState = () => page.evaluate(() => navigator.mediaSession.playbackState);
-    await openTab('New: Playlist');
+    await openTopTab('Playlist');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1000);
     assert.equal(await playbackState(), 'playing');
-    await click('Queue Management');
+    await openTopTab('Queue Management');
     await page.waitForTimeout(500);
     assert.notEqual(await playbackState(), 'playing', 'still playing after a header tab change');
 
-    await openTab('New: Playlist');
+    await openTab('New: Playback');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1000);
     assert.equal(await playbackState(), 'playing');

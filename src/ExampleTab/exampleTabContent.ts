@@ -46,11 +46,17 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
       'Toggle pause provides a convenient way to pause/resume with a single button press.'
     ]
   },
-  [ExampleTabs.PLAYLIST]: {
+  [ExampleTabs.PLAYBACK]: {
     description: [
       'Queue the playlist on Channel 0, then lock your phone or use your keyboard media keys: connectMediaSession() puts the title and artwork on the lock screen and makes its buttons control the channel.',
-      'Seek, change the speed, repeat, shuffle, add a gap or crossfade between tracks. The panel below reads position and history straight from the library.',
+      'Skip back and forward, change the speed (the pitch stays the same) and watch the live spectrum from getChannelAnalyser().',
       'Play an announcement on Channel 1 and the music ducks under it. By default sound keeps playing when you switch apps; turn on "Hold All Sounds While Hidden" to pause instead.'
+    ]
+  },
+  [ExampleTabs.PLAYLIST]: {
+    description: [
+      'Queue four tracks on Channel 0, then change how the queue plays: repeat one or all, shuffle what is coming up, add a gap of silence or crossfade from one track into the next.',
+      'The panel below shows the current track and the history of finished ones (getHistory), with why each one ended and how long it played.'
     ]
   },
   [ExampleTabs.PRIORITY_SOUNDS]: {

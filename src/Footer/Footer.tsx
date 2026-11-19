@@ -1,10 +1,11 @@
 import type { JSX } from 'react';
 import './Footer.css';
-import packageJson from '../../package.json';
+// The installed audioq (not the version range in package.json), so local builds show 3.x
+import audioqPackage from 'audioq/package.json';
 import DebugConsole from '../DebugConsole/DebugConsole';
 
 function Footer(): JSX.Element {
-  const packageVersion: string = packageJson.dependencies.audioq;
+  const packageVersion: string = audioqPackage.version;
 
   return (
     <div className="footer-container">

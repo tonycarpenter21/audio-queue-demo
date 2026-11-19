@@ -38,8 +38,10 @@ export default function ChannelsLayout({
   return (
     <div className="channels-container">
       {channelConfigs.map(
+        // A tab that only uses one channel shows only that channel
         ({ channelNumber, examples, visualizerRef }) =>
-          visualizerRef && (
+          visualizerRef !== undefined &&
+          examples.length > 0 && (
             <ChannelSection
               channelNumber={channelNumber}
               channelQueueLength={queueLengths[channelNumber] ?? 0}

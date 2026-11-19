@@ -29,7 +29,10 @@ export function getTabSpecificComponents(
       components.push(createVolumeControlsSection());
       break;
     case ExampleTabs.PLAYLIST:
-      components.push(<PlaylistPanel key={ExampleTabs.PLAYLIST} />);
+      components.push(<PlaylistPanel key={ExampleTabs.PLAYLIST} variant="playlist" />);
+      break;
+    case ExampleTabs.PLAYBACK:
+      components.push(<PlaylistPanel key={ExampleTabs.PLAYBACK} variant="playback" />);
       break;
     case ExampleTabs.SPRITES_CAPTIONS:
     case ExampleTabs.NOTIFICATIONS:

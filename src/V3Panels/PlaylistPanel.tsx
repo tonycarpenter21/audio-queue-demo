@@ -15,16 +15,22 @@ const formatTime = (ms: number): string => {
 const titleOf = (entry: { fileName: string; metadata?: { title?: unknown } | undefined }): string =>
   typeof entry.metadata?.title === 'string' ? entry.metadata.title : displayName(entry.fileName);
 
-/** Now playing, spectrum, position and history for the playlist channel. */
-function PlaylistPanel(): JSX.Element {
+interface PlaylistPanelProps {
+  /** playlist: with the history of finished tracks. playback: with the spectrum, and ducking for announcements. */
+  variant: 'playback' | 'playlist';
+}
+
+/** Now playing and position for the playlist channel, plus history or a spectrum. */
+function PlaylistPanel({ variant }: PlaylistPanelProps): JSX.Element {
   const { current: info } = useChannel(PLAYLIST_CHANNEL);
   // At most 20 entries (historySize), so reading it on each render is cheap
   const history = getHistory(PLAYLIST_CHANNEL).slice(-5).reverse();
 
   useEffect(() => {
+    if (variant !== 'playback') return undefined;
     setPlaylistDucking(true);
     return (): void => setPlaylistDucking(false);
-  }, []);
+  }, [variant]);
 
   return (
     <div className="v3-panel content-container">
@@ -32,7 +38,7 @@ function PlaylistPanel(): JSX.Element {
       {info ? (
         <>
           <div className="v3-now-playing">{titleOf(info)}</div>
-          <SpectrumBars channelNumber={PLAYLIST_CHANNEL} />
+          {variant === 'playback' && <SpectrumBars channelNumber={PLAYLIST_CHANNEL} />}
           <div className="v3-progress">
             <div className="v3-progress-fill" style={{ width: `${Math.round(info.progress * 100)}%` }} />
           </div>
@@ -44,7 +50,7 @@ function PlaylistPanel(): JSX.Element {
       ) : (
         <div className="v3-meta">Nothing playing. Queue the playlist, then try the lock screen or your media keys.</div>
       )}
-      {history.length > 0 && (
+      {variant === 'playlist' && history.length > 0 && (
         <>
           <div className="v3-panel-subtitle">Recently played: getHistory(0)</div>
           <ul className="v3-history">

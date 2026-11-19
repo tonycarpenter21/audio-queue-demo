@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { type JSX, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { setQueueConfig } from 'audioq';
 import './DebugConsole.css';
 
 interface LogEntry {
@@ -12,6 +13,13 @@ interface LogEntry {
 function DebugConsole(): JSX.Element {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  // audioq's debug log: every queue event, logged through console.debug into this console
+  const [isEventLogOn, setIsEventLogOn] = useState<boolean>(false);
+
+  const toggleEventLog = (): void => {
+    setQueueConfig({ debug: !isEventLogOn });
+    setIsEventLogOn(!isEventLogOn);
+  };
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -125,6 +133,14 @@ function DebugConsole(): JSX.Element {
       <div className="debug-console-header">
         <span className="debug-console-title">Debug Console ({logs.length})</span>
         <div className="debug-console-actions">
+          <button
+            aria-pressed={isEventLogOn}
+            className={`debug-console-button ${isEventLogOn ? 'debug-console-button-on' : ''}`}
+            onClick={toggleEventLog}
+            title="setQueueConfig({ debug: true }): log every audioq event here"
+          >
+            audioq events: {isEventLogOn ? 'On' : 'Off'}
+          </button>
           <button className="debug-console-button" onClick={handleClear} title="Clear logs">
             Clear
           </button>

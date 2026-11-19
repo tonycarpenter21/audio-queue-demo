@@ -36,15 +36,108 @@ const PLAYLIST: { src: string; title: string }[] = [
   { src: laserGunFiringRepeatedly, title: 'Laser Volley' }
 ];
 
+type PlaylistControl =
+  | 'announcement'
+  | 'back10'
+  | 'crossfade'
+  | 'forward10'
+  | 'gap'
+  | 'holdWhenHidden'
+  | 'nextTrack'
+  | 'queuePlaylist'
+  | 'repeat'
+  | 'shuffle'
+  | 'speed'
+  | 'togglePause';
+
 const randomLine = (): AnnouncerLine => pickRandom(announcerLineNames);
 
 const logCompletion = (label: string, finished: Promise<string>): void => {
   void finished.then((outcome) => log(`${label} finished: ${outcome}`));
 };
 
-function playlistExamples(settings: PlaylistSettings, actions: PlaylistSettingsActions): Example[] {
-  return [
-    {
+/** The playlist controls, by name; the Playlist and Playback tabs each show some of them. */
+function playlistControls(settings: PlaylistSettings, actions: PlaylistSettingsActions): Record<PlaylistControl, Example> {
+  return {
+    announcement: {
+      buttonFunction: (): void => {
+        announcer.play(randomLine(), 1).catch((error: unknown) => log('Could not queue:', error));
+      },
+      buttonText: 'Announcement Over The Music (Channel 1)',
+      buttonType: 'priority',
+      channel: 1,
+      codeExample: `// Music ducks to 30% while
+// channel 1 has audio
+setVolumeDucking({
+  duckingVolume: 0.3,
+  priorityChannel: 1,
+  priorityVolume: 1
+});
+await queueAudio(announcement, 1);`,
+      enabledWhen: 'always'
+    },
+    back10: {
+      buttonFunction: (): void => {
+        seekBy(0, -10000);
+      },
+      buttonText: 'Back 10 Seconds (Channel 0)',
+      buttonType: 'default',
+      channel: 0,
+      codeExample: 'seekBy(0, -10000);',
+      enabledWhen: 'hasAudio'
+    },
+    crossfade: {
+      buttonFunction: actions.toggleCrossfade,
+      buttonText: `Crossfade ${settings.crossfadeMs > 0 ? 'On' : 'Off'} (Channel 0)`,
+      buttonType: settings.crossfadeMs > 0 ? 'resume' : 'default',
+      channel: 0,
+      codeExample: `// Tracks overlap by ${CROSSFADE_MS / 1000} s
+setCrossfade(0, ${settings.crossfadeMs});`,
+      enabledWhen: 'always'
+    },
+    forward10: {
+      buttonFunction: (): void => {
+        seekBy(0, 10000);
+      },
+      buttonText: 'Forward 10 Seconds (Channel 0)',
+      buttonType: 'default',
+      channel: 0,
+      codeExample: 'seekBy(0, 10000);',
+      enabledWhen: 'hasAudio'
+    },
+    gap: {
+      buttonFunction: actions.toggleGap,
+      buttonText: `Gap Between Tracks ${settings.gapMs > 0 ? 'On' : 'Off'} (Channel 0)`,
+      buttonType: settings.gapMs > 0 ? 'resume' : 'default',
+      channel: 0,
+      codeExample: `// ${GAP_MS / 1000} s of silence between tracks
+setChannelGap(0, ${settings.gapMs});`,
+      enabledWhen: 'always'
+    },
+    holdWhenHidden: {
+      buttonFunction: actions.togglePauseWhenHidden,
+      buttonText: `Hold All Sounds While Hidden: ${settings.pauseWhenHidden ? 'On' : 'Off'}`,
+      buttonType: settings.pauseWhenHidden ? 'resume' : 'default',
+      channel: 'global',
+      codeExample: `// On: everything pauses when the
+// tab is hidden or the phone locks,
+// and resumes when you come back.
+// Off: keeps playing; use the
+// lock screen controls.
+setQueueConfig({
+  pauseWhenHidden: ${settings.pauseWhenHidden}
+});`,
+      enabledWhen: 'always'
+    },
+    nextTrack: {
+      buttonFunction: (): void => void stopCurrentAudioInChannel(0),
+      buttonText: 'Next Track (Channel 0)',
+      buttonType: 'default',
+      channel: 0,
+      codeExample: 'await stopCurrentAudioInChannel(0);',
+      enabledWhen: 'hasAudio'
+    },
+    queuePlaylist: {
       buttonFunction: (): void => {
         PLAYLIST.forEach(({ src, title }) => {
           void queueAudio(src, 0, { metadata: { album: 'AudioQ Demo', artist: 'AudioQ', artwork, title } });
@@ -66,52 +159,7 @@ await queueAudio(track, 0, {
 });`,
       enabledWhen: 'always'
     },
-    {
-      buttonFunction: (): void => void togglePauseChannel(0),
-      buttonText: 'Toggle Pause (Channel 0)',
-      buttonType: 'default',
-      channel: 0,
-      codeExample: 'await togglePauseChannel(0);',
-      enabledWhen: 'hasAudio'
-    },
-    {
-      buttonFunction: (): void => void stopCurrentAudioInChannel(0),
-      buttonText: 'Next Track (Channel 0)',
-      buttonType: 'default',
-      channel: 0,
-      codeExample: 'await stopCurrentAudioInChannel(0);',
-      enabledWhen: 'hasAudio'
-    },
-    {
-      buttonFunction: (): void => {
-        seekBy(0, -10000);
-      },
-      buttonText: 'Back 10 Seconds (Channel 0)',
-      buttonType: 'default',
-      channel: 0,
-      codeExample: 'seekBy(0, -10000);',
-      enabledWhen: 'hasAudio'
-    },
-    {
-      buttonFunction: (): void => {
-        seekBy(0, 10000);
-      },
-      buttonText: 'Forward 10 Seconds (Channel 0)',
-      buttonType: 'default',
-      channel: 0,
-      codeExample: 'seekBy(0, 10000);',
-      enabledWhen: 'hasAudio'
-    },
-    {
-      buttonFunction: actions.cycleRate,
-      buttonText: `Speed ${settings.rate}x (Channel 0)`,
-      buttonType: 'default',
-      channel: 0,
-      codeExample: `// Pitch is preserved
-setPlaybackRate(0, ${settings.rate});`,
-      enabledWhen: 'always'
-    },
-    {
+    repeat: {
       buttonFunction: actions.cycleRepeat,
       buttonText: `Repeat: ${settings.repeat} (Channel 0)`,
       buttonType: 'default',
@@ -120,7 +168,7 @@ setPlaybackRate(0, ${settings.rate});`,
 setRepeatMode(0, '${settings.repeat}');`,
       enabledWhen: 'always'
     },
-    {
+    shuffle: {
       buttonFunction: (): void => {
         void shuffleQueue(0).then((result) =>
           log(
@@ -137,57 +185,24 @@ await shuffleQueue(0);`,
       enabledWhen: 'hasAudio',
       minQueueLength: 3
     },
-    {
-      buttonFunction: actions.toggleCrossfade,
-      buttonText: `Crossfade ${settings.crossfadeMs > 0 ? 'On' : 'Off'} (Channel 0)`,
-      buttonType: settings.crossfadeMs > 0 ? 'resume' : 'default',
+    speed: {
+      buttonFunction: actions.cycleRate,
+      buttonText: `Speed ${settings.rate}x (Channel 0)`,
+      buttonType: 'default',
       channel: 0,
-      codeExample: `// Tracks overlap by ${CROSSFADE_MS / 1000} s
-setCrossfade(0, ${settings.crossfadeMs});`,
+      codeExample: `// Pitch is preserved
+setPlaybackRate(0, ${settings.rate});`,
       enabledWhen: 'always'
     },
-    {
-      buttonFunction: actions.toggleGap,
-      buttonText: `Gap Between Tracks ${settings.gapMs > 0 ? 'On' : 'Off'} (Channel 0)`,
-      buttonType: settings.gapMs > 0 ? 'resume' : 'default',
+    togglePause: {
+      buttonFunction: (): void => void togglePauseChannel(0),
+      buttonText: 'Toggle Pause (Channel 0)',
+      buttonType: 'default',
       channel: 0,
-      codeExample: `// ${GAP_MS / 1000} s of silence between tracks
-setChannelGap(0, ${settings.gapMs});`,
-      enabledWhen: 'always'
-    },
-    {
-      buttonFunction: (): void => {
-        announcer.play(randomLine(), 1).catch((error: unknown) => log('Could not queue:', error));
-      },
-      buttonText: 'Announcement Over The Music (Channel 1)',
-      buttonType: 'priority',
-      channel: 1,
-      codeExample: `// Music ducks to 30% while
-// channel 1 has audio
-setVolumeDucking({
-  duckingVolume: 0.3,
-  priorityChannel: 1,
-  priorityVolume: 1
-});
-await queueAudio(announcement, 1);`,
-      enabledWhen: 'always'
-    },
-    {
-      buttonFunction: actions.togglePauseWhenHidden,
-      buttonText: `Hold All Sounds While Hidden: ${settings.pauseWhenHidden ? 'On' : 'Off'}`,
-      buttonType: settings.pauseWhenHidden ? 'resume' : 'default',
-      channel: 'global',
-      codeExample: `// On: everything pauses when the
-// tab is hidden or the phone locks,
-// and resumes when you come back.
-// Off: keeps playing; use the
-// lock screen controls.
-setQueueConfig({
-  pauseWhenHidden: ${settings.pauseWhenHidden}
-});`,
-      enabledWhen: 'always'
+      codeExample: 'await togglePauseChannel(0);',
+      enabledWhen: 'hasAudio'
     }
-  ];
+  };
 }
 
 function spriteExamples(): Example[] {
@@ -288,19 +303,8 @@ await queueAudio(music, 1, {
   ];
 }
 
-function notificationExamples(settings: PlaylistSettings, actions: PlaylistSettingsActions): Example[] {
+function notificationExamples(): Example[] {
   return [
-    {
-      buttonFunction: actions.toggleDebug,
-      buttonText: `Debug Log ${settings.debug ? 'On' : 'Off'}`,
-      buttonType: settings.debug ? 'resume' : 'default',
-      channel: 'global',
-      codeExample: `// Logs every event with its channel
-// and payload (see the debug console
-// at the bottom of the page)
-setQueueConfig({ debug: ${settings.debug} });`,
-      enabledWhen: 'always'
-    },
     {
       buttonFunction: (): void => {
         void queueAudio(laserGunFiring, 0, { dedupeMs: 1000, volume: 0.6 }).then((item) => {
@@ -377,11 +381,47 @@ try {
   ];
 }
 
+/** Playlist tab: building and reshaping a queue. */
+function playlistTab(settings: PlaylistSettings, actions: PlaylistSettingsActions): Example[] {
+  const controls = playlistControls(settings, actions);
+  return [
+    {
+      ...controls.queuePlaylist,
+      codeExample: `await queueAudio(track, 0, {
+  metadata: { title: 'Background Music' }
+});
+// Repeat, shuffle, gaps and crossfades
+// change how the queue plays`
+    },
+    controls.togglePause,
+    controls.nextTrack,
+    controls.repeat,
+    controls.shuffle,
+    controls.crossfade,
+    controls.gap
+  ];
+}
+
+/** Playback & Lock Screen tab: moving within a track, speed, the lock screen and background play. */
+function playbackTab(settings: PlaylistSettings, actions: PlaylistSettingsActions): Example[] {
+  const controls = playlistControls(settings, actions);
+  return [
+    controls.queuePlaylist,
+    controls.togglePause,
+    controls.back10,
+    controls.forward10,
+    controls.speed,
+    controls.announcement,
+    controls.holdWhenHidden
+  ];
+}
+
 /** Examples for the tabs that show what is new in AudioQ 3. */
 export function createV3Examples(settings: PlaylistSettings, actions: PlaylistSettingsActions): Record<string, Example[]> {
   return {
-    [ExampleTabs.NOTIFICATIONS]: notificationExamples(settings, actions),
-    [ExampleTabs.PLAYLIST]: playlistExamples(settings, actions),
+    [ExampleTabs.NOTIFICATIONS]: notificationExamples(),
+    [ExampleTabs.PLAYBACK]: playbackTab(settings, actions),
+    [ExampleTabs.PLAYLIST]: playlistTab(settings, actions),
     [ExampleTabs.SPRITES_CAPTIONS]: spriteExamples()
   };
 }

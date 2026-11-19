@@ -8,13 +8,12 @@ const asyncNoop = (): Promise<void> => Promise.resolve();
 
 /** Every example the app renders, by tab. */
 const allExamples = (): Record<string, Example[]> => {
-  const settings = { crossfadeMs: 0, debug: false, gapMs: 0, pauseWhenHidden: false, rate: 1, repeat: 'off' as const };
+  const settings = { crossfadeMs: 0, gapMs: 0, pauseWhenHidden: false, rate: 1, repeat: 'off' as const };
   const actions = {
     cycleRate: noop,
     cycleRepeat: noop,
     reset: noop,
     toggleCrossfade: noop,
-    toggleDebug: noop,
     toggleGap: noop,
     togglePauseWhenHidden: noop
   };
