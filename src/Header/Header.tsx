@@ -18,6 +18,21 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
 
   const advancedFeatureOptions: AdvancedFeatureOption[] = [
     {
+      icon: '🎧',
+      label: 'New: Playlist & Lock Screen',
+      tab: ExampleTabs.PLAYLIST
+    },
+    {
+      icon: '💬',
+      label: 'New: Sprites & Captions',
+      tab: ExampleTabs.SPRITES_CAPTIONS
+    },
+    {
+      icon: '🔔',
+      label: 'New: Notifications & Voice',
+      tab: ExampleTabs.NOTIFICATIONS
+    },
+    {
       icon: '🎛️',
       label: 'Advanced Queue Manipulation',
       tab: ExampleTabs.ADVANCED_QUEUE_MANIPULATION

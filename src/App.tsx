@@ -17,24 +17,21 @@ import {
   resumeAllWithFade,
   togglePauseAllWithFade,
   onQueueChange,
-  offQueueChange,
   onAudioStart,
-  offAudioStart,
   onAudioComplete,
-  offAudioComplete,
   onAudioPause,
   onAudioResume,
-  offAudioPause,
-  offAudioResume,
   QueueSnapshot,
-  AudioStartInfo,
   AudioCompleteInfo,
   QueueItem,
-  cleanWebpackFilename,
+  Unsubscribe,
   clearQueueAfterCurrent,
+  connectMediaSession,
+  getCurrentAudioInfo,
   getQueueItemInfo,
   getQueueLength,
-  setGlobalVolume
+  setGlobalVolume,
+  clearVolumeDucking
 } from 'audioq';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -42,7 +39,8 @@ import './App.css';
 import './shared.css';
 import { audioFilesSoundEffectExamples, audioFilesVocalExamples, backgroundMusic, getRandomAudioFile } from './audio/audioFilesAndUtils';
 import { AudioQueueVisualizerHandle } from './AudioQueueVisualizer/AudioQueueVisualizer';
-import { createHandleAudioAndVisualizer, isAudioFileLooping, clearLoopingTracker } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
+import { createHandleAudioAndVisualizer, clearLoopingTracker } from './AudioQueueVisualizer/audioQueueVisualizerUtils';
+import { displayName } from './audio/displayName';
 import BackgroundVisualizer from './BackgroundVisualizer/BackgroundVisualizer';
 import Footer from './Footer/Footer';
 import Header from './Header/Header';
@@ -52,18 +50,12 @@ import AppRoutes from './routes/AppRoutes';
 import { usePageTitle } from './hooks/usePageTitle';
 import { useAudioQueue } from './context/AudioQueueContext';
 import { useAudioQueueActions } from './hooks/useAudioQueueActions';
-
-interface ProgressTracking {
-  duration: number;
-  isPlaying: boolean;
-  pausedAt?: number;
-  startTime: number;
-}
+import { usePlaylistSettings } from './hooks/usePlaylistSettings';
+import { createV3Examples } from './MultiChannelExampleBlock/v3Examples';
 
 function App(): JSX.Element {
   const visualizerRef0 = useRef<AudioQueueVisualizerHandle>(null);
   const visualizerRef1 = useRef<AudioQueueVisualizerHandle>(null);
-  const progressTrackingRef = useRef<{ [channelNumber: number]: ProgressTracking }>({});
 
   const visualizerRefs = useMemo(() => [visualizerRef0, visualizerRef1], []);
 
@@ -81,6 +73,8 @@ function App(): JSX.Element {
   const { setQueueState, setQueueLength, setPauseState, setFadeOption, resetAllStates } = useAudioQueueActions();
 
   const [isDuckingEnabled, setIsDuckingEnabled] = useState<boolean>(false);
+  const [playlistSettings, playlistActions] = usePlaylistSettings();
+  const resetPlaylistSettings = playlistActions.reset;
 
   // Get current tab from route
   const getCurrentTabFromRoute = useCallback((): ExampleTabs => {
@@ -110,14 +104,14 @@ function App(): JSX.Element {
     // Reset all state
     resetAllStates();
     setIsDuckingEnabled(false);
+    clearVolumeDucking();
 
-    // Reset global volume to 1
-    setGlobalVolume(1);
+    // Reset global volume and the settings the playlist tab changes
+    void setGlobalVolume(1);
+    resetPlaylistSettings();
 
-    // Clear progress tracking
-    progressTrackingRef.current = {};
     clearLoopingTracker();
-  }, [visualizerRefs, resetAllStates]);
+  }, [visualizerRefs, resetAllStates, resetPlaylistSettings]);
 
   // Custom fade option change handler that clears queues on pause/resume tab
   const handleFadeOptionChange = useCallback(
@@ -144,9 +138,6 @@ function App(): JSX.Element {
         setPauseState(0, false);
         setPauseState(1, false);
         setIsDuckingEnabled(false);
-
-        // Clear progress tracking
-        progressTrackingRef.current = {};
         clearLoopingTracker();
       }
     },
@@ -236,31 +227,10 @@ function App(): JSX.Element {
     }
   }, [selectedFadeOption, pauseState, setPauseState]);
 
-  const handleAudioPause = useCallback(
-    (channelNumber: number) => (): void => {
-      const trackingInfo: ProgressTracking | undefined = progressTrackingRef.current[channelNumber];
-      if (trackingInfo && trackingInfo.isPlaying) {
-        // Record the pause time to preserve progress
-        trackingInfo.isPlaying = false;
-        trackingInfo.pausedAt = Date.now();
-      }
-    },
-    []
-  );
-
-  const handleAudioResume = useCallback(
-    (channelNumber: number) => (): void => {
-      const trackingInfo: ProgressTracking | undefined = progressTrackingRef.current[channelNumber];
-      if (trackingInfo && !trackingInfo.isPlaying && trackingInfo.pausedAt) {
-        // Adjust start time to account for pause duration
-        const pauseDuration: number = Date.now() - trackingInfo.pausedAt;
-        trackingInfo.startTime += pauseDuration;
-        trackingInfo.isPlaying = true;
-        delete trackingInfo.pausedAt;
-      }
-    },
-    []
-  );
+  // Pauses can also come from outside the app (lock screen, phone calls, unplugged headphones),
+  // so the buttons follow the library's pause and resume events.
+  const handleAudioPause = useCallback((channelNumber: number) => (): void => setPauseState(channelNumber, true), [setPauseState]);
+  const handleAudioResume = useCallback((channelNumber: number) => (): void => setPauseState(channelNumber, false), [setPauseState]);
 
   const handleTabChange = useCallback(
     async (newTab: ExampleTabs) => {
@@ -281,10 +251,8 @@ function App(): JSX.Element {
         visualizer.clearQueue();
 
         snapshot.items.forEach((item: QueueItem) => {
-          const cleanFileName: string = cleanWebpackFilename(item.fileName);
-          // Check if this audio file is being tracked as looping
-          const isLooping: boolean = isAudioFileLooping(item.fileName, channelNumber);
-          visualizer.addAudioFile(cleanFileName, item.duration, isLooping);
+          const title: unknown = item.metadata?.title;
+          visualizer.addAudioFile(typeof title === 'string' ? title : displayName(item.fileName), item.duration, item.isLooping);
         });
 
         const hasItems: boolean = snapshot.totalItems > 0;
@@ -300,20 +268,10 @@ function App(): JSX.Element {
   );
 
   const handleAudioStart = useCallback(
-    (channelNumber: number) =>
-      (info: AudioStartInfo): void => {
-        const visualizer: AudioQueueVisualizerHandle | null = getVisualizer(channelNumber);
-
-        progressTrackingRef.current[channelNumber] = {
-          duration: info.duration,
-          isPlaying: true,
-          startTime: Date.now()
-          // pausedAt is undefined initially
-        };
-
-        visualizer?.setPlayingState(true);
-        setQueueState(channelNumber, false);
-      },
+    (channelNumber: number) => (): void => {
+      getVisualizer(channelNumber)?.setPlayingState(true);
+      setQueueState(channelNumber, false);
+    },
     [getVisualizer, setQueueState]
   );
 
@@ -321,8 +279,6 @@ function App(): JSX.Element {
     (channelNumber: number) =>
       (info: AudioCompleteInfo): void => {
         const visualizer: AudioQueueVisualizerHandle | null = getVisualizer(channelNumber);
-
-        delete progressTrackingRef.current[channelNumber];
 
         if (info.remainingInQueue === 0) {
           visualizer?.setPlayingState(false);
@@ -335,64 +291,28 @@ function App(): JSX.Element {
 
   const calculateProgress = useCallback((): void => {
     [0, 1].forEach((channelNumber) => {
-      const trackingInfo: ProgressTracking | undefined = progressTrackingRef.current[channelNumber];
       const visualizer: AudioQueueVisualizerHandle | null = getVisualizer(channelNumber);
-
-      if (trackingInfo && visualizer && trackingInfo.duration > 0) {
-        let progress: number;
-
-        if (trackingInfo.isPlaying) {
-          // Currently playing - calculate normal progress
-          const elapsed: number = Date.now() - trackingInfo.startTime;
-          progress = elapsed / trackingInfo.duration;
-
-          // For looping audio, restart progress when it exceeds 100%
-          if (progress >= 1.0) {
-            // Check if the current audio is looping
-            const nextAudio: { isLooping?: boolean } | null = visualizer.getNextAudio();
-            if (nextAudio?.isLooping) {
-              // Reset the start time to create a seamless loop animation
-              progressTrackingRef.current[channelNumber].startTime = Date.now() - (elapsed % trackingInfo.duration);
-              progress = (elapsed % trackingInfo.duration) / trackingInfo.duration;
-            } else {
-              progress = 1.0;
-            }
-          }
-        } else if (trackingInfo.pausedAt) {
-          // Currently paused - freeze progress at pause point
-          const elapsed: number = trackingInfo.pausedAt - trackingInfo.startTime;
-          progress = Math.min(1.0, elapsed / trackingInfo.duration);
-        } else {
-          // Not playing and no pause time recorded
-          return;
-        }
-
-        visualizer.updateProgress(progress);
-        // Always keep visualizer in playing state to show progress bar
-        visualizer.setPlayingState(true);
-      }
+      const info = getCurrentAudioInfo(channelNumber);
+      if (!visualizer || !info || info.duration <= 0) return;
+      visualizer.updateProgress(info.progress);
+      visualizer.setPlayingState(true);
     });
   }, [getVisualizer]);
+
+  // Show channel 0 on the lock screen and in media notifications, with working buttons
+  useEffect(() => connectMediaSession({ channel: 0, seekOffsetMs: 10000 }), []);
 
   useEffect(() => {
     const channels: number[] = [0, 1];
 
-    // Set up audio event listeners
-    channels.forEach((channel) => {
-      onQueueChange(channel, handleQueueChange(channel));
-      onAudioStart(channel, handleAudioStart(channel));
-      onAudioComplete(channel, handleAudioComplete(channel));
-      onAudioPause(channel, handleAudioPause(channel));
-      onAudioResume(channel, handleAudioResume(channel));
-    });
-
-    // Handle browser tab visibility changes
-    const handleVisibilityChange = async (): Promise<void> => {
-      if (document.hidden) {
-        stopAllAudio();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Set up audio event listeners; each on* call returns its own unsubscribe function
+    const unsubscribes: Unsubscribe[] = channels.flatMap((channel) => [
+      onQueueChange(channel, handleQueueChange(channel)),
+      onAudioStart(channel, handleAudioStart(channel)),
+      onAudioComplete(channel, handleAudioComplete(channel)),
+      onAudioPause(channel, handleAudioPause(channel)),
+      onAudioResume(channel, handleAudioResume(channel))
+    ]);
 
     // Start animation loop
     let animationFrameId: number;
@@ -404,17 +324,7 @@ function App(): JSX.Element {
 
     // Cleanup function
     return (): void => {
-      // Remove ALL audio event listeners to prevent state confusion
-      channels.forEach((channel) => {
-        offQueueChange(channel);
-        offAudioStart(channel);
-        offAudioComplete(channel);
-        offAudioPause(channel);
-        offAudioResume(channel);
-      });
-
-      // Remove visibility listener
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      unsubscribes.forEach((unsubscribe) => unsubscribe());
 
       // Cancel animation frame
       cancelAnimationFrame(animationFrameId);
@@ -432,30 +342,33 @@ function App(): JSX.Element {
     performFullCleanup
   ]);
 
-  const examples: Record<string, Example[]> = createExamples(
-    handleAudioAndVisualizer,
-    queueAudio,
-    stopCurrentAudioInChannel,
-    stopAllAudioInChannel,
-    stopAllAudio,
-    pauseChannelWithFade,
-    resumeChannelWithFade,
-    togglePauseChannelWithFade,
-    pauseAllChannelsWithFade,
-    resumeAllChannelsWithFade,
-    togglePauseAllChannelsWithFade,
-    queueAudioPriority,
-    getRandomAudioFile,
-    audioFilesVocalExamples,
-    audioFilesSoundEffectExamples,
-    backgroundMusic,
-    selectedFadeOption,
-    clearQueueAfterCurrent,
-    getQueueItemInfo,
-    getQueueLength,
-    isDuckingEnabled,
-    setIsDuckingEnabled
-  );
+  const examples: Record<string, Example[]> = {
+    ...createV3Examples(playlistSettings, playlistActions),
+    ...createExamples(
+      handleAudioAndVisualizer,
+      queueAudio,
+      stopCurrentAudioInChannel,
+      stopAllAudioInChannel,
+      stopAllAudio,
+      pauseChannelWithFade,
+      resumeChannelWithFade,
+      togglePauseChannelWithFade,
+      pauseAllChannelsWithFade,
+      resumeAllChannelsWithFade,
+      togglePauseAllChannelsWithFade,
+      queueAudioPriority,
+      getRandomAudioFile,
+      audioFilesVocalExamples,
+      audioFilesSoundEffectExamples,
+      backgroundMusic,
+      selectedFadeOption,
+      clearQueueAfterCurrent,
+      getQueueItemInfo,
+      getQueueLength,
+      isDuckingEnabled,
+      setIsDuckingEnabled
+    )
+  };
 
   return (
     <div className="app">

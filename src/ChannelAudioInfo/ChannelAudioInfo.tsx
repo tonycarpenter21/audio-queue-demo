@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { getCurrentAudioInfo, getQueueSnapshot, onAudioProgress, offAudioProgress, cleanWebpackFilename, QueueSnapshot } from 'audioq';
+import { getCurrentAudioInfo, getQueueSnapshot, onAudioProgress, QueueSnapshot } from 'audioq';
+import { displayName } from '../audio/displayName';
 import './ChannelAudioInfo.css';
 
 // Using types from audioq package
@@ -41,7 +42,7 @@ const ChannelAudioInfo: React.FC<ChannelAudioInfoProps> = ({ channelNumber }) =>
     };
 
     // Subscribe to progress updates
-    onAudioProgress(channelNumber, handleProgress);
+    const unsubscribe = onAudioProgress(channelNumber, handleProgress);
 
     // Initial update
     updateAudioInfo();
@@ -51,7 +52,7 @@ const ChannelAudioInfo: React.FC<ChannelAudioInfoProps> = ({ channelNumber }) =>
 
     return (): void => {
       // Clean up listener and interval
-      offAudioProgress(channelNumber);
+      unsubscribe();
       clearInterval(interval);
     };
   }, [channelNumber, updateAudioInfo]);
@@ -84,8 +85,8 @@ const ChannelAudioInfo: React.FC<ChannelAudioInfoProps> = ({ channelNumber }) =>
 
         <div className="info-row">
           <span className="info-label">File:</span>
-          <span className="file-name" title={audioInfo ? cleanWebpackFilename(audioInfo.fileName) : 'No file'}>
-            {audioInfo ? cleanWebpackFilename(audioInfo.fileName) : 'No file'}
+          <span className="file-name" title={audioInfo ? displayName(audioInfo.fileName) : 'No file'}>
+            {audioInfo ? displayName(audioInfo.fileName) : 'No file'}
           </span>
         </div>
 

@@ -1,4 +1,4 @@
-import { QueueManipulationResult, QueueItem, setVolumeDucking, togglePauseChannel } from 'audioq';
+import { QueueManipulationResult, QueueItem, clearVolumeDucking, setVolumeDucking, togglePauseChannel } from 'audioq';
 import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
 
@@ -329,24 +329,14 @@ export function createExamples(
               priorityVolume: 1.0 // Voice plays at full volume
             });
           } else {
-            // Disable ducking by setting all volumes to 100%
-            setVolumeDucking({
-              duckingVolume: 1.0, // No ducking
-              priorityChannel: 1,
-              priorityVolume: 1.0
-            });
+            clearVolumeDucking();
           }
         },
         buttonText: `${isDuckingEnabled ? '🔇 Disable' : '🔊 Enable'} Volume Ducking (Channel 1 Currently ${isDuckingEnabled ? 'On' : 'Off'})`,
         buttonType: isDuckingEnabled ? 'resume' : 'priority',
         codeExample: isDuckingEnabled
           ? `// Currently ON - Disable ducking
-setVolumeDucking({
-  // No ducking
-  duckingVolume: 1.0,
-  priorityChannel: 1,     
-  priorityVolume: 1.0     
-});`
+clearVolumeDucking();`
           : `// Currently OFF - Enable ducking  
 setVolumeDucking({
   // Duck to 25%

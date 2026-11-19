@@ -50,6 +50,27 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
       'Start the looping audio, then use pause/resume controls and volume sliders to test different volume levels.'
     ]
   },
+  [ExampleTabs.PLAYLIST]: {
+    description: [
+      'Queue the playlist on Channel 0, then lock your phone or use your keyboard media keys: connectMediaSession() puts the title and artwork on the lock screen and makes its buttons control the channel.',
+      'Seek, change the speed, repeat, shuffle, add a gap or crossfade between tracks. The panel below reads position and history straight from the library.',
+      'Play an announcement on Channel 1 and the music ducks under it. By default sound keeps playing when you switch apps; turn on "Hold All Sounds While Hidden" to pause instead.'
+    ]
+  },
+  [ExampleTabs.SPRITES_CAPTIONS]: {
+    description: [
+      'All nine announcer lines live in one file. defineSprite() names the segments, so one download serves every sound.',
+      'The captions come from a WebVTT file converted with parseWebVtt(). Cues are timed against the whole file, so each segment shows its own caption.',
+      'Channel 1 loops four seconds of the music with startAt/endAt, and point cues flash on every beat.'
+    ]
+  },
+  [ExampleTabs.NOTIFICATIONS]: {
+    description: [
+      'Patterns for notification sounds and voice: tap the laser button quickly and repeats within a second are ignored (dedupeMs).',
+      'Blobs play like URLs; the beep is generated in the browser as a WAV file. interrupt: true makes the newest sound replace whatever is playing.',
+      'maxQueueSize caps one call: once two announcements are queued, the next is rejected (see the debug console).'
+    ]
+  },
   [ExampleTabs.OTHER_FEATURES]: {
     description: [] // No description for this tab
   },

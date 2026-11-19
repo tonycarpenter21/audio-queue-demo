@@ -1,4 +1,6 @@
 import { ExampleTabs, FadeOption } from '../types';
+import CaptionPanel from '../V3Panels/CaptionPanel';
+import PlaylistPanel from '../V3Panels/PlaylistPanel';
 import FadeControls from './FadeControls';
 import VolumeControlsSection from './VolumeControlsSection';
 
@@ -24,6 +26,13 @@ export function getTabSpecificComponents(
       break;
     case ExampleTabs.VOLUME_LOOPING:
       components.push(createVolumeControlsSection());
+      break;
+    case ExampleTabs.PLAYLIST:
+      components.push(<PlaylistPanel key={ExampleTabs.PLAYLIST} />);
+      break;
+    case ExampleTabs.SPRITES_CAPTIONS:
+    case ExampleTabs.NOTIFICATIONS:
+      components.push(<CaptionPanel key={currentTab} />);
       break;
   }
 
