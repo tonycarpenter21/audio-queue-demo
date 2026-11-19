@@ -232,6 +232,14 @@ function App(): JSX.Element {
   const handleAudioPause = useCallback((channelNumber: number) => (): void => setPauseState(channelNumber, true), [setPauseState]);
   const handleAudioResume = useCallback((channelNumber: number) => (): void => setPauseState(channelNumber, false), [setPauseState]);
 
+  // The browser's back and forward buttons change tabs without handleTabChange, so they clean up
+  // here. popstate fires before the router renders the new tab, so its own setup is kept.
+  useEffect(() => {
+    const onHistoryNavigation = (): void => void performFullCleanup();
+    window.addEventListener('popstate', onHistoryNavigation);
+    return (): void => window.removeEventListener('popstate', onHistoryNavigation);
+  }, [performFullCleanup]);
+
   const handleTabChange = useCallback(
     async (newTab: ExampleTabs) => {
       await performFullCleanup();

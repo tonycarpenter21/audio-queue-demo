@@ -137,6 +137,25 @@ const check = async (name, run) => {
     assert.match(await text('.volume-controls-section'), /setChannelPan\(1, 0\);/);
   });
 
+  await check('changing tabs stops audio (header buttons and the browser back button)', async () => {
+    const playbackState = () => page.evaluate(() => navigator.mediaSession.playbackState);
+    await openTab('New: Playlist');
+    await click('Queue A Playlist (Channel 0)');
+    await page.waitForTimeout(1000);
+    assert.equal(await playbackState(), 'playing');
+    await click('Queue Management');
+    await page.waitForTimeout(500);
+    assert.notEqual(await playbackState(), 'playing', 'still playing after a header tab change');
+
+    await openTab('New: Playlist');
+    await click('Queue A Playlist (Channel 0)');
+    await page.waitForTimeout(1000);
+    assert.equal(await playbackState(), 'playing');
+    await page.goBack();
+    await page.waitForTimeout(500);
+    assert.notEqual(await playbackState(), 'playing', 'still playing after the back button');
+  });
+
   await check('no page errors', async () => assert.deepEqual(errors, []));
 
   await browser.close();
