@@ -26,14 +26,15 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "npx eslint src/ --ignore-pattern \"eslint.config.mjs\"",
+    "lint": "eslint src --max-warnings 0",
     "lint:styles": "npx stylelint \"**/*.css\"",
     "format": "npx prettier . --write",
     "prepare": "husky install",
     "predeploy": "npm run build",
     "deploy": "node deploy.js",
     "e2e": "npm run build && node scripts/e2e/run.js",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "validate": "node scripts/validate.mjs"
   },
   "eslintConfig": {
     "extends": [
@@ -59,6 +60,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.35.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "gh-pages": "^6.1.1",
     "globals": "^15.9.0",
     "husky": "^9.1.6",

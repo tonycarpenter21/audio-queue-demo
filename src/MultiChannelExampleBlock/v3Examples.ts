@@ -20,6 +20,7 @@ import longTeleportation from '../audio/long_teleportation.mp3';
 import longTeleportationThree from '../audio/long_teleportation_3.mp3';
 import { CROSSFADE_MS, GAP_MS, PlaylistSettings, PlaylistSettingsActions } from '../hooks/usePlaylistSettings';
 import { Example, ExampleTabs } from '../types';
+import { pickRandom } from '../utils/pick';
 
 const log = (...args: unknown[]): void => {
   // eslint-disable-next-line no-console
@@ -35,7 +36,7 @@ const PLAYLIST: { src: string; title: string }[] = [
   { src: laserGunFiringRepeatedly, title: 'Laser Volley' }
 ];
 
-const randomLine = (): AnnouncerLine => announcerLineNames[Math.floor(Math.random() * announcerLineNames.length)];
+const randomLine = (): AnnouncerLine => pickRandom(announcerLineNames);
 
 const logCompletion = (label: string, finished: Promise<string>): void => {
   void finished.then((outcome) => log(`${label} finished: ${outcome}`));
@@ -51,6 +52,7 @@ function playlistExamples(settings: PlaylistSettings, actions: PlaylistSettingsA
       },
       buttonText: 'Queue A Playlist (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `// Lock screen, notification and
 // media keys follow channel 0
 connectMediaSession({ channel: 0 });
@@ -62,21 +64,23 @@ await queueAudio(track, 0, {
     title: 'Background Music'
   }
 });`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => void togglePauseChannel(0),
       buttonText: 'Toggle Pause (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: 'await togglePauseChannel(0);',
-      isDisabledWhenQueueIsEmpty: true
+      enabledWhen: 'hasAudio'
     },
     {
       buttonFunction: (): void => void stopCurrentAudioInChannel(0),
       buttonText: 'Next Track (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: 'await stopCurrentAudioInChannel(0);',
-      isDisabledWhenQueueIsEmpty: true
+      enabledWhen: 'hasAudio'
     },
     {
       buttonFunction: (): void => {
@@ -84,8 +88,9 @@ await queueAudio(track, 0, {
       },
       buttonText: 'Back 10 Seconds (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: 'seekBy(0, -10000);',
-      isDisabledWhenQueueIsEmpty: true
+      enabledWhen: 'hasAudio'
     },
     {
       buttonFunction: (): void => {
@@ -93,24 +98,27 @@ await queueAudio(track, 0, {
       },
       buttonText: 'Forward 10 Seconds (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: 'seekBy(0, 10000);',
-      isDisabledWhenQueueIsEmpty: true
+      enabledWhen: 'hasAudio'
     },
     {
       buttonFunction: actions.cycleRate,
       buttonText: `Speed ${settings.rate}x (Channel 0)`,
       buttonType: 'default',
+      channel: 0,
       codeExample: `// Pitch is preserved
 setPlaybackRate(0, ${settings.rate});`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: actions.cycleRepeat,
       buttonText: `Repeat: ${settings.repeat} (Channel 0)`,
       buttonType: 'default',
+      channel: 0,
       codeExample: `// 'off' | 'all' | 'one'
 setRepeatMode(0, '${settings.repeat}');`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
@@ -123,26 +131,29 @@ setRepeatMode(0, '${settings.repeat}');`,
       },
       buttonText: 'Shuffle Upcoming Tracks (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `// The current track keeps playing
 await shuffleQueue(0);`,
-      isDisabledWhenQueueIsEmpty: true,
+      enabledWhen: 'hasAudio',
       minQueueLength: 3
     },
     {
       buttonFunction: actions.toggleCrossfade,
-      buttonText: `Crossfade ${settings.crossfadeMs ? 'On' : 'Off'} (Channel 0)`,
-      buttonType: settings.crossfadeMs ? 'resume' : 'default',
+      buttonText: `Crossfade ${settings.crossfadeMs > 0 ? 'On' : 'Off'} (Channel 0)`,
+      buttonType: settings.crossfadeMs > 0 ? 'resume' : 'default',
+      channel: 0,
       codeExample: `// Tracks overlap by ${CROSSFADE_MS / 1000} s
 setCrossfade(0, ${settings.crossfadeMs});`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: actions.toggleGap,
-      buttonText: `Gap Between Tracks ${settings.gapMs ? 'On' : 'Off'} (Channel 0)`,
-      buttonType: settings.gapMs ? 'resume' : 'default',
+      buttonText: `Gap Between Tracks ${settings.gapMs > 0 ? 'On' : 'Off'} (Channel 0)`,
+      buttonType: settings.gapMs > 0 ? 'resume' : 'default',
+      channel: 0,
       codeExample: `// ${GAP_MS / 1000} s of silence between tracks
 setChannelGap(0, ${settings.gapMs});`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
@@ -150,6 +161,7 @@ setChannelGap(0, ${settings.gapMs});`,
       },
       buttonText: 'Announcement Over The Music (Channel 1)',
       buttonType: 'priority',
+      channel: 1,
       codeExample: `// Music ducks to 30% while
 // channel 1 has audio
 setVolumeDucking({
@@ -158,12 +170,13 @@ setVolumeDucking({
   priorityVolume: 1
 });
 await queueAudio(announcement, 1);`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: actions.togglePauseWhenHidden,
       buttonText: `Hold All Sounds While Hidden: ${settings.pauseWhenHidden ? 'On' : 'Off'}`,
       buttonType: settings.pauseWhenHidden ? 'resume' : 'default',
+      channel: 'global',
       codeExample: `// On: everything pauses when the
 // tab is hidden or the phone locks,
 // and resumes when you come back.
@@ -172,7 +185,7 @@ await queueAudio(announcement, 1);`,
 setQueueConfig({
   pauseWhenHidden: ${settings.pauseWhenHidden}
 });`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     }
   ];
 }
@@ -182,13 +195,14 @@ function spriteExamples(): Example[] {
     {
       buttonFunction: (): void => {
         void preloadAudio(announcerSpriteSource).then(([result]) => {
-          if (result?.ok) log(`Sprite preloaded: ${Math.round(result.bytes / 1024)} KB, now plays from memory`);
+          if (result?.ok === true) log(`Sprite preloaded: ${Math.round(result.bytes / 1024)} KB, now plays from memory`);
           else log('Preload failed, the sprite will stream:', result?.error?.message);
           log('isAudioPreloaded:', isAudioPreloaded(announcerSpriteSource));
         });
       },
       buttonText: 'Preload The Sprite Into Memory (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `// Instant starts, works offline, and
 // seeks even without Range support
 const [result] = await preloadAudio(spriteUrl);
@@ -196,7 +210,7 @@ console.log(result.ok, result.bytes);
 
 // Later: free the memory
 releasePreloadedAudio(spriteUrl);`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
@@ -205,6 +219,7 @@ releasePreloadedAudio(spriteUrl);`,
       },
       buttonText: 'Play A Random Line From The Sprite (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `// One file, nine sounds
 const announcer = defineSprite(spriteUrl, {
   blueWins: [5000, 6330],
@@ -215,7 +230,7 @@ const announcer = defineSprite(spriteUrl, {
 // Captions from a WebVTT file
 const cues = parseWebVtt(vttText);
 await announcer.play('oneMinute', 0, { cues });`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
@@ -225,17 +240,19 @@ await announcer.play('oneMinute', 0, { cues });`,
       },
       buttonText: 'Queue Three Lines (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `await announcer.play('oneMinute', 0, { cues });
 await announcer.play('redCaptured', 0, { cues });
 await announcer.play('blueWins', 0, { cues });`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => void stopAllAudioInChannel(0),
       buttonText: 'Stop Lines (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: 'await stopAllAudioInChannel(0);',
-      isDisabledWhenQueueIsEmpty: true
+      enabledWhen: 'hasAudio'
     },
     {
       buttonFunction: (): void => {
@@ -249,6 +266,7 @@ await announcer.play('blueWins', 0, { cues });`,
       },
       buttonText: 'Loop A 4-Second Segment Of The Music (Channel 1)',
       buttonType: 'default',
+      channel: 1,
       codeExample: `// Point cues (no endMs) fire once
 // each time playback passes them
 await queueAudio(music, 1, {
@@ -257,15 +275,15 @@ await queueAudio(music, 1, {
   loop: true,
   startAt: 30000
 });`,
-      isDisabledWhenChannelPlaying: true,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'idle'
     },
     {
       buttonFunction: (): void => void stopAllAudioInChannel(1),
       buttonText: 'Stop Segment (Channel 1)',
       buttonType: 'default',
+      channel: 1,
       codeExample: 'await stopAllAudioInChannel(1);',
-      isDisabledWhenQueueIsEmpty: true
+      enabledWhen: 'hasAudio'
     }
   ];
 }
@@ -280,6 +298,7 @@ function notificationExamples(): Example[] {
       },
       buttonText: 'Tap Fast: Laser With 1 s Dedupe (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `// Repeats of the same sound within
 // 1 s are ignored
 const item = await queueAudio(laser, 0, {
@@ -288,7 +307,7 @@ const item = await queueAudio(laser, 0, {
 });
 console.log(await item.finished);
 // 'ended' | 'skipped' | 'stopped' | ...`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
@@ -296,6 +315,7 @@ console.log(await item.finished);
       },
       buttonText: 'Generated Beep From A Blob (Channel 0)',
       buttonType: 'default',
+      channel: 0,
       codeExample: `// Blobs and Files work like URLs
 // (recordings, text-to-speech,
 // file inputs). Object URLs are
@@ -306,7 +326,7 @@ const blob = new Blob([wav], {
 await queueAudio(blob, 0, {
   interrupt: true
 });`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
@@ -315,20 +335,24 @@ await queueAudio(blob, 0, {
       },
       buttonText: 'Newest Announcement Wins (Channel 1)',
       buttonType: 'priority',
+      channel: 1,
       codeExample: `// Stops what is playing and clears
 // the queue, then plays this
 await queueAudio(announcement, 1, {
   interrupt: true
 });`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     },
     {
       buttonFunction: (): void => {
         const line: AnnouncerLine = randomLine();
-        void announcer.play(line, 1, { cues: announcerCues, maxQueueSize: 2 }).catch((error: Error) => log('Rejected:', error.message));
+        void announcer
+          .play(line, 1, { cues: announcerCues, maxQueueSize: 2 })
+          .catch((error: unknown) => log('Rejected:', error instanceof Error ? error.message : error));
       },
       buttonText: 'Queue Up To 2 Announcements (Channel 1)',
       buttonType: 'default',
+      channel: 1,
       codeExample: `// Rejects once 2 are queued
 try {
   await queueAudio(announcement, 1, {
@@ -337,7 +361,7 @@ try {
 } catch (error) {
   console.log('Rejected:', error.message);
 }`,
-      isDisabledWhenQueueIsEmpty: false
+      enabledWhen: 'always'
     }
   ];
 }

@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import { type JSX, MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
 import ChannelSection from '../ChannelSection/ChannelSection';
 import { Example } from '../types';
@@ -6,15 +6,9 @@ import { Example } from '../types';
 interface ChannelsLayoutProps {
   channel0Examples: Example[];
   channel1Examples: Example[];
-  queueState: {
-    [channelNumber: number]: boolean;
-  };
-  queueLengths: {
-    [channelNumber: number]: number;
-  };
-  pauseState: {
-    [channelNumber: number]: boolean;
-  };
+  queueState: Record<number, boolean>;
+  queueLengths: Record<number, number>;
+  pauseState: Record<number, boolean>;
   visualizerRefs: MutableRefObject<AudioQueueVisualizerHandle | null>[];
   enableReordering: boolean;
   showAudioInfo: boolean;
@@ -37,28 +31,31 @@ export default function ChannelsLayout({
   onRemoveItem
 }: ChannelsLayoutProps): JSX.Element {
   const channelConfigs = [
-    { channelNumber: 0, examples: channel0Examples },
-    { channelNumber: 1, examples: channel1Examples }
+    { channelNumber: 0, examples: channel0Examples, visualizerRef: visualizerRefs[0] },
+    { channelNumber: 1, examples: channel1Examples, visualizerRef: visualizerRefs[1] }
   ];
 
   return (
     <div className="channels-container">
-      {channelConfigs.map(({ channelNumber, examples }) => (
-        <ChannelSection
-          channelNumber={channelNumber}
-          channelQueueLength={queueLengths[channelNumber]}
-          enableReordering={enableReordering}
-          examples={examples}
-          isChannelQueueEmpty={queueState[channelNumber]}
-          key={channelNumber}
-          onMoveDown={onMoveDown}
-          onMoveUp={onMoveUp}
-          onRemoveItem={onRemoveItem}
-          pauseState={pauseState[channelNumber]}
-          showAudioInfo={showAudioInfo}
-          visualizerRef={visualizerRefs[channelNumber]}
-        />
-      ))}
+      {channelConfigs.map(
+        ({ channelNumber, examples, visualizerRef }) =>
+          visualizerRef && (
+            <ChannelSection
+              channelNumber={channelNumber}
+              channelQueueLength={queueLengths[channelNumber] ?? 0}
+              enableReordering={enableReordering}
+              examples={examples}
+              isChannelQueueEmpty={queueState[channelNumber] ?? true}
+              key={channelNumber}
+              onMoveDown={(from, channel) => void onMoveDown(from, channel)}
+              onMoveUp={(from, channel) => void onMoveUp(from, channel)}
+              onRemoveItem={(from, channel) => void onRemoveItem(from, channel)}
+              pauseState={pauseState[channelNumber] ?? false}
+              showAudioInfo={showAudioInfo}
+              visualizerRef={visualizerRef}
+            />
+          )
+      )}
     </div>
   );
 }

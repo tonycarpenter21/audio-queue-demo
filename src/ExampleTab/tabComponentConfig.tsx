@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { ExampleTabs, FadeOption } from '../types';
 import CaptionPanel from '../V3Panels/CaptionPanel';
 import PlaylistPanel from '../V3Panels/PlaylistPanel';
@@ -22,7 +23,7 @@ export function getTabSpecificComponents(
 
   switch (currentTab) {
     case ExampleTabs.PAUSE_RESUME:
-      components.push(createFadeControls(selectedFadeOption || 'None', onFadeOptionChange || ((): void => {})));
+      components.push(createFadeControls(selectedFadeOption ?? 'None', onFadeOptionChange ?? ((): void => undefined)));
       break;
     case ExampleTabs.VOLUME_LOOPING:
       components.push(createVolumeControlsSection());

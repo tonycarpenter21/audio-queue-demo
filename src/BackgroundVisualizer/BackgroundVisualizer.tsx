@@ -88,7 +88,7 @@ const BackgroundVisualizer: React.FC = () => {
         });
       }
 
-      cachedHeightsRef.current = new Array(spikeCount).fill(0);
+      cachedHeightsRef.current = Array.from({ length: spikeCount }, () => 0);
       return spikes;
     },
     [generateRandomColor]
@@ -142,7 +142,7 @@ const BackgroundVisualizer: React.FC = () => {
 
       // Draw all spikes cleanly
       spikesRef.current.forEach((spike, i) => {
-        const height: number = heights[i];
+        const height: number = heights[i] ?? 0;
 
         if (height < 2) return;
 
@@ -203,7 +203,7 @@ const BackgroundVisualizer: React.FC = () => {
     animationFrameRef.current = requestAnimationFrame(animate);
 
     return (): void => {
-      if (animationFrameRef.current) {
+      if (animationFrameRef.current !== undefined) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };

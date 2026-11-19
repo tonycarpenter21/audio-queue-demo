@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { useState, useEffect, useRef } from 'react';
+import { type JSX, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import './DebugConsole.css';
 
@@ -29,7 +29,7 @@ function DebugConsole(): JSX.Element {
             try {
               return JSON.stringify(arg, null, 2);
             } catch {
-              return String(arg);
+              return Object.prototype.toString.call(arg);
             }
           }
           return String(arg);
@@ -98,20 +98,9 @@ function DebugConsole(): JSX.Element {
       await navigator.clipboard.writeText(logText);
       alert('Logs copied to clipboard!');
     } catch {
-      // Fallback for older browsers
-      const textArea: HTMLTextAreaElement = document.createElement('textarea');
-      textArea.value = logText;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        alert('Logs copied to clipboard!');
-      } catch {
-        alert('Failed to copy logs');
-      }
-      document.body.removeChild(textArea);
+      // The Clipboard API needs HTTPS (or localhost) and permission; there is no fallback left
+      // (document.execCommand('copy') is deprecated).
+      alert('Failed to copy logs');
     }
   };
 
@@ -131,7 +120,7 @@ function DebugConsole(): JSX.Element {
           <button className="debug-console-button" onClick={handleClear} title="Clear logs">
             Clear
           </button>
-          <button className="debug-console-button" onClick={handleCopy} title="Copy all logs">
+          <button className="debug-console-button" onClick={() => void handleCopy()} title="Copy all logs">
             Copy
           </button>
           <button className="debug-console-button" onClick={handleClose} title="Close">

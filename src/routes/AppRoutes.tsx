@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { MutableRefObject } from 'react';
+import { type JSX, MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
 import ExampleTab from '../ExampleTab';
 import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from '../types';

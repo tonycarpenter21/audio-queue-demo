@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import './Divider.css';
 
 export enum DividerOrientation {
@@ -22,7 +23,7 @@ function Divider({
 }: DividerProps): JSX.Element {
   const classNames: string[] = ['divider'];
 
-  if (orientation === 'vertical') {
+  if (orientation === DividerOrientation.Vertical) {
     classNames.push('divider-vertical');
   }
 

@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 interface TabDescriptionProps {
   descriptions: string[];
 }

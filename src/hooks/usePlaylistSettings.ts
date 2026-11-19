@@ -1,5 +1,6 @@
 import { RepeatMode, setChannelGap, setCrossfade, setPlaybackRate, setQueueConfig, setRepeatMode } from 'audioq';
 import { useCallback, useState } from 'react';
+import { nextInCycle as next } from '../utils/pick';
 
 const RATES: number[] = [1, 1.5, 2, 0.75];
 const REPEAT_MODES: RepeatMode[] = ['off', 'all', 'one'];
@@ -26,8 +27,6 @@ export interface PlaylistSettingsActions {
 
 const DEFAULTS: PlaylistSettings = { crossfadeMs: 0, gapMs: 0, pauseWhenHidden: false, rate: 1, repeat: 'off' };
 
-const next = <T>(values: T[], current: T): T => values[(values.indexOf(current) + 1) % values.length];
-
 /** Channel settings the Playlist tab changes, mirrored in React state so the buttons can show them. */
 export function usePlaylistSettings(): [PlaylistSettings, PlaylistSettingsActions] {
   const [settings, setSettings] = useState<PlaylistSettings>(DEFAULTS);
@@ -50,7 +49,7 @@ export function usePlaylistSettings(): [PlaylistSettings, PlaylistSettingsAction
 
   const toggleCrossfade = useCallback((): void => {
     setSettings((current) => {
-      const crossfadeMs: number = current.crossfadeMs ? 0 : CROSSFADE_MS;
+      const crossfadeMs: number = current.crossfadeMs > 0 ? 0 : CROSSFADE_MS;
       setCrossfade(PLAYLIST_CHANNEL, crossfadeMs);
       return { ...current, crossfadeMs };
     });
@@ -58,7 +57,7 @@ export function usePlaylistSettings(): [PlaylistSettings, PlaylistSettingsAction
 
   const toggleGap = useCallback((): void => {
     setSettings((current) => {
-      const gapMs: number = current.gapMs ? 0 : GAP_MS;
+      const gapMs: number = current.gapMs > 0 ? 0 : GAP_MS;
       setChannelGap(PLAYLIST_CHANNEL, gapMs);
       return { ...current, gapMs };
     });

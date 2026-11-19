@@ -32,13 +32,27 @@ export const ExampleTabRoutes: Record<ExampleTabs, string> = {
 
 export type FadeOption = 'None' | FadeType;
 
+/** Where an example's button is shown: a channel's column, or the global row. */
+export type ExampleChannel = 0 | 1 | 'global';
+
+/**
+ * When an example's button is enabled. For the global row, "the channel" means any channel.
+ * - always: never disabled
+ * - hasAudio: the channel has audio queued
+ * - idle: the channel has nothing queued (start buttons that must not stack)
+ * - playing: the channel has audio and is not paused (pause buttons)
+ * - paused: the channel is paused (resume buttons)
+ */
+export type ExampleEnabledWhen = 'always' | 'hasAudio' | 'idle' | 'playing' | 'paused';
+
 export interface Example {
-  buttonFunction: () => void;
+  buttonFunction: () => void | Promise<void>;
   buttonText: string;
   buttonType?: 'default' | 'priority' | 'pause' | 'resume';
+  channel: ExampleChannel;
   codeExample: string;
-  isDisabledWhenQueueIsEmpty?: boolean;
-  isDisabledWhenChannelPlaying?: boolean;
+  enabledWhen: ExampleEnabledWhen;
+  /** Also requires at least this many items in the channel's queue. */
   minQueueLength?: number;
 }
 

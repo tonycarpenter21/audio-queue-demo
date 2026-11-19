@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { type JSX, useCallback, useState } from 'react';
 import './VolumeSlider.css';
 
 interface VolumeSliderProps {
@@ -13,7 +13,7 @@ function VolumeSlider({ channelNumber, initialVolume = 1, label, onVolumeChange,
   const [internalVolume, setInternalVolume] = useState<number>(initialVolume);
 
   // Use external volume if provided (for controlled component), otherwise use internal state
-  const volume: number = externalVolume !== undefined ? externalVolume : internalVolume;
+  const volume: number = externalVolume ?? internalVolume;
 
   const handleVolumeChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,7 @@ function VolumeSlider({ channelNumber, initialVolume = 1, label, onVolumeChange,
   };
 
   const getVolumeLabel = (): string => {
-    if (label) return label;
+    if (label !== undefined && label !== '') return label;
     return `Channel ${channelNumber} Volume`;
   };
 

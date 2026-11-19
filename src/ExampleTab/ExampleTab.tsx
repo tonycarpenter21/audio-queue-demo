@@ -1,5 +1,7 @@
+import type { JSX } from 'react';
 import { ExampleTabProps, ExampleTabs, Example } from '../types';
 import './ExampleTab.css';
+import './ChannelGroupedLayout.css';
 import GlobalControls from '../GlobalControls/GlobalControls';
 import TabDescription from './TabDescription';
 import ChannelsLayout from './ChannelsLayout';
@@ -18,7 +20,7 @@ function ExampleTab(props: ExampleTabProps): JSX.Element {
 
   // Get descriptions for current tab
   const currentContent = tabContentDescriptions[currentExampleTab];
-  const currentExamples: Example[] = examples[currentExampleTab] || [];
+  const currentExamples: Example[] = examples[currentExampleTab] ?? [];
 
   // Organize examples by channel
   const { channel0, channel1, global } = organizeExamplesByChannel(currentExamples);

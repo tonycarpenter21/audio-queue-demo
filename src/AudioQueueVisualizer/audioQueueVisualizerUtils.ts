@@ -1,13 +1,13 @@
 import { extractFileName } from 'audioq';
 
 // Track looping audio files per channel
-const loopingAudioTracker: { [channelNumber: number]: Set<string> } = {};
+const loopingAudioTracker: Record<number, Set<string>> = {};
 
 export const createHandleAudioAndVisualizer = () => {
   return (
     fileName: string,
     channelNumber: number,
-    queueFunction: (url: string, channelNumber: number, options?: Record<string, unknown>) => void,
+    queueFunction: (url: string, channelNumber: number, options?: Record<string, unknown>) => unknown,
     isLooping: boolean = false
   ): void => {
     // Extract the base filename for consistency with our loop tracking system
@@ -15,15 +15,12 @@ export const createHandleAudioAndVisualizer = () => {
 
     if (isLooping) {
       // Add to loop tracking
-      if (!loopingAudioTracker[channelNumber]) {
-        loopingAudioTracker[channelNumber] = new Set<string>();
-      }
-      loopingAudioTracker[channelNumber].add(baseFileName);
+      const tracked: Set<string> = loopingAudioTracker[channelNumber] ?? new Set<string>();
+      tracked.add(baseFileName);
+      loopingAudioTracker[channelNumber] = tracked;
     } else {
       // Remove from loop tracking (only if the Set exists)
-      if (loopingAudioTracker[channelNumber]) {
-        loopingAudioTracker[channelNumber].delete(baseFileName);
-      }
+      loopingAudioTracker[channelNumber]?.delete(baseFileName);
     }
 
     // The queue function handles the actual audio queueing
@@ -35,7 +32,7 @@ export const createHandleAudioAndVisualizer = () => {
 // Helper function to check if an audio file is looping
 export const isAudioFileLooping = (fileName: string, channelNumber: number): boolean => {
   const baseFileName: string = extractFileName(fileName);
-  const isLooping: boolean = loopingAudioTracker[channelNumber]?.has(baseFileName) || false;
+  const isLooping: boolean = loopingAudioTracker[channelNumber]?.has(baseFileName) ?? false;
   return isLooping;
 };
 

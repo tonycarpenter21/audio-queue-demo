@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { FadeOption } from '../types';
 import { FadeType } from 'audioq';
 import './FadeControls.css';

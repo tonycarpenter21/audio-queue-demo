@@ -1,14 +1,16 @@
+import type { JSX } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Example } from '../types';
+import { anyChannelActivity, channelActivity, isExampleEnabled } from '../ExampleTab/exampleOrganizer';
 import Divider, { DividerOrientation } from '../Divider/Divider';
 import './GlobalControls.css';
 import React from 'react';
 
 interface GlobalControlsProps {
   examples: Example[];
-  queueState: { [channelNumber: number]: boolean };
-  pauseState: { [channelNumber: number]: boolean };
+  queueState: Record<number, boolean>;
+  pauseState: Record<number, boolean>;
 }
 
 function GlobalControls({ examples, queueState, pauseState }: GlobalControlsProps): JSX.Element {
@@ -18,30 +20,21 @@ function GlobalControls({ examples, queueState, pauseState }: GlobalControlsProp
 
       <div className="global-controls-container">
         {examples.map((example, index) => {
-          // For global controls, check if all queues are empty
-          const isQueueEmpty: boolean = queueState[0] && queueState[1];
-          let isDisabled: boolean = (example.isDisabledWhenQueueIsEmpty ?? false) && isQueueEmpty;
-
-          // Special logic for global pause/resume buttons
-          const buttonText: string = example.buttonText.toLowerCase();
-          if (buttonText.includes('resume all')) {
-            // Resume All should only be enabled when at least one channel is paused
-            isDisabled = !pauseState[0] && !pauseState[1];
-          } else if (buttonText.includes('pause all')) {
-            // Pause All should only be enabled when at least one channel is not paused and has audio
-            const hasNonPausedWithAudio: boolean = (!pauseState[0] && !queueState[0]) || (!pauseState[1] && !queueState[1]);
-            isDisabled = !hasNonPausedWithAudio;
-          } else if (buttonText.includes('toggle all')) {
-            // Toggle All should be enabled when any channel has audio (the function handles the toggle logic)
-            isDisabled = isQueueEmpty;
-          }
+          const activity = anyChannelActivity(
+            [0, 1].map((channel) => channelActivity(queueState[channel] ?? true, pauseState[channel] ?? false, 0))
+          );
+          const isDisabled: boolean = !isExampleEnabled(example, activity);
 
           const isLastItem: boolean = index === examples.length - 1;
 
           return (
             <React.Fragment key={example.buttonText}>
               <div className="global-control-item">
-                <button className={`button ${isDisabled ? 'disabled' : ''}`} disabled={isDisabled} onClick={() => example.buttonFunction()}>
+                <button
+                  className={`button ${isDisabled ? 'disabled' : ''}`}
+                  disabled={isDisabled}
+                  onClick={() => void example.buttonFunction()}
+                >
                   {example.buttonText}
                 </button>
 

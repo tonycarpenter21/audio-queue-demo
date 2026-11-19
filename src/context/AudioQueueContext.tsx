@@ -1,17 +1,11 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { type JSX, createContext, useContext, useReducer, ReactNode } from 'react';
 import { FadeOption } from '../types';
 
 // State interface
 interface AudioQueueState {
-  pauseState: {
-    [channelNumber: number]: boolean;
-  };
-  queueLengths: {
-    [channelNumber: number]: number;
-  };
-  queueState: {
-    [channelNumber: number]: boolean;
-  };
+  pauseState: Record<number, boolean>;
+  queueLengths: Record<number, number>;
+  queueState: Record<number, boolean>;
   selectedFadeOption: FadeOption;
 }
 

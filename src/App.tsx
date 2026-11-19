@@ -33,7 +33,7 @@ import {
   setGlobalVolume,
   clearVolumeDucking
 } from 'audioq';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import './shared.css';
@@ -60,7 +60,7 @@ function App(): JSX.Element {
   const visualizerRefs = useMemo(() => [visualizerRef0, visualizerRef1], []);
 
   const getVisualizer = useCallback(
-    (channelNumber: number): AudioQueueVisualizerHandle | null => visualizerRefs[channelNumber].current,
+    (channelNumber: number): AudioQueueVisualizerHandle | null => visualizerRefs[channelNumber]?.current ?? null,
     [visualizerRefs]
   );
 
@@ -149,7 +149,7 @@ function App(): JSX.Element {
       // Immediately update UI state for responsive feedback
       setPauseState(channelNumber, true);
       if (selectedFadeOption === 'None') {
-        pauseChannel(channelNumber);
+        void pauseChannel(channelNumber);
       } else {
         await pauseWithFade(selectedFadeOption, channelNumber);
       }
@@ -162,7 +162,7 @@ function App(): JSX.Element {
       // Immediately update UI state for responsive feedback
       setPauseState(channelNumber, false);
       if (selectedFadeOption === 'None') {
-        resumeChannel(channelNumber);
+        void resumeChannel(channelNumber);
       } else {
         await resumeWithFade(selectedFadeOption, channelNumber);
       }
@@ -173,14 +173,14 @@ function App(): JSX.Element {
   const togglePauseChannelWithFade = useCallback(
     async (channelNumber: number = 0): Promise<void> => {
       // Determine new state before toggle operation
-      const currentlyPaused: boolean = pauseState[channelNumber] || false;
+      const currentlyPaused: boolean = pauseState[channelNumber] ?? false;
       const newPausedState: boolean = !currentlyPaused;
 
       // Update UI state immediately for responsive feedback
       setPauseState(channelNumber, newPausedState);
 
       if (selectedFadeOption === 'None') {
-        togglePauseChannel(channelNumber);
+        void togglePauseChannel(channelNumber);
       } else {
         await togglePauseWithFade(selectedFadeOption, channelNumber);
       }
@@ -193,7 +193,7 @@ function App(): JSX.Element {
     setPauseState(0, true);
     setPauseState(1, true);
     if (selectedFadeOption === 'None') {
-      pauseAllChannels();
+      void pauseAllChannels();
     } else {
       await pauseAllWithFade(selectedFadeOption);
     }
@@ -204,7 +204,7 @@ function App(): JSX.Element {
     setPauseState(0, false);
     setPauseState(1, false);
     if (selectedFadeOption === 'None') {
-      resumeAllChannels();
+      void resumeAllChannels();
     } else {
       await resumeAllWithFade();
     }
@@ -221,7 +221,7 @@ function App(): JSX.Element {
     setPauseState(1, newPausedState);
 
     if (selectedFadeOption === 'None') {
-      togglePauseAllChannels();
+      void togglePauseAllChannels();
     } else {
       await togglePauseAllWithFade(selectedFadeOption);
     }
@@ -237,7 +237,7 @@ function App(): JSX.Element {
       await performFullCleanup();
 
       // Navigate to new tab
-      navigate(ExampleTabRoutes[newTab]);
+      void navigate(ExampleTabRoutes[newTab]);
     },
     [navigate, performFullCleanup]
   );
@@ -256,7 +256,7 @@ function App(): JSX.Element {
         });
 
         const hasItems: boolean = snapshot.totalItems > 0;
-        const isPlaying: boolean = snapshot.items[0]?.isCurrentlyPlaying || false;
+        const isPlaying: boolean = snapshot.items[0]?.isCurrentlyPlaying ?? false;
 
         visualizer.setPlayingState(isPlaying);
         // Update queue state: true = empty, false = has items
@@ -330,7 +330,7 @@ function App(): JSX.Element {
       cancelAnimationFrame(animationFrameId);
 
       // Perform full cleanup on unmount
-      performFullCleanup();
+      void performFullCleanup();
     };
   }, [
     handleQueueChange,
@@ -374,8 +374,12 @@ function App(): JSX.Element {
     <div className="app">
       <BackgroundVisualizer />
       <div className="example-container">
-        <Header currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
-        <AppRoutes examples={examples} onFadeOptionChange={handleFadeOptionChange} visualizerRefs={visualizerRefs} />
+        <Header currentExampleTab={currentExampleTab} onTabChange={(tab) => void handleTabChange(tab)} />
+        <AppRoutes
+          examples={examples}
+          onFadeOptionChange={(option) => void handleFadeOptionChange(option)}
+          visualizerRefs={visualizerRefs}
+        />
         <Footer />
       </div>
     </div>

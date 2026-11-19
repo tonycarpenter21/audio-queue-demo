@@ -1,3 +1,4 @@
+import { pickRandom } from '../utils/pick';
 import blueCaptureBase from './blue_team_capture_base.mp3';
 import blueLostBase from './blue_team_lost_base.mp3';
 import backgroundMusic from './background_music.mp3';
@@ -33,10 +34,10 @@ export const audioFilesSoundEffectExamples: string[] = [
 ];
 
 // Export background music separately for specific use cases
-export { backgroundMusic };
+export { backgroundMusic, longTeleportationOne as longTeleportation };
 
 export function getRandomAudioFile(audioFiles: string[]): string {
-  return audioFiles[Math.floor(Math.random() * audioFiles.length)];
+  return pickRandom(audioFiles);
 }
 
 // Unused Audio Files:

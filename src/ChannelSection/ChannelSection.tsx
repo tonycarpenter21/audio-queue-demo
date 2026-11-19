@@ -1,9 +1,10 @@
-import { MutableRefObject } from 'react';
+import { type JSX, MutableRefObject } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import AudioQueueVisualizer, { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
 import ChannelAudioInfo from '../ChannelAudioInfo/ChannelAudioInfo';
 import { Example } from '../types';
+import { channelActivity, isExampleEnabled } from '../ExampleTab/exampleOrganizer';
 import Divider from '../Divider/Divider';
 import './ChannelSection.css';
 
@@ -40,42 +41,17 @@ function ChannelSection({
 
       <div className="channel-controls">
         {examples.map((example, index) => {
-          // Standard disabled logic for queue-empty dependent buttons
-          let isDisabled: boolean = false;
-
-          if (example.isDisabledWhenQueueIsEmpty !== undefined) {
-            isDisabled = example.isDisabledWhenQueueIsEmpty ? isChannelQueueEmpty : false;
-          }
-
-          // Check minimum queue length requirement
-          if (example.minQueueLength !== undefined) {
-            isDisabled = isDisabled || channelQueueLength < example.minQueueLength;
-          }
-
-          // Additional disabled logic for buttons that should be disabled when channel is playing
-          const isChannelPlaying: boolean = !isChannelQueueEmpty; // If queue is not empty, channel is playing
-          if (example.isDisabledWhenChannelPlaying !== undefined) {
-            isDisabled = isDisabled || (example.isDisabledWhenChannelPlaying && isChannelPlaying);
-          }
-
-          // Special logic for pause/resume buttons based on current pause state
-          const buttonText: string = example.buttonText.toLowerCase();
-          if (buttonText.includes('resume') && !buttonText.includes('all')) {
-            // Resume buttons should only be enabled when channel is paused
-            isDisabled = !pauseState;
-          } else if (buttonText.includes('pause') && !buttonText.includes('all') && !buttonText.includes('toggle')) {
-            // Pause buttons should only be enabled when channel is not paused and has audio
-            isDisabled = pauseState || isChannelQueueEmpty;
-          } else if (buttonText.includes('toggle')) {
-            // Toggle buttons should always be enabled when there are audio files in queue
-            isDisabled = isChannelQueueEmpty;
-          }
+          const isDisabled: boolean = !isExampleEnabled(example, channelActivity(isChannelQueueEmpty, pauseState, channelQueueLength));
 
           const isLastItem: boolean = index === examples.length - 1;
 
           return (
             <div className="channel-control-item" key={example.buttonText}>
-              <button className={`button ${isDisabled ? 'disabled' : ''}`} disabled={isDisabled} onClick={() => example.buttonFunction()}>
+              <button
+                className={`button ${isDisabled ? 'disabled' : ''}`}
+                disabled={isDisabled}
+                onClick={() => void example.buttonFunction()}
+              >
                 {example.buttonText}
               </button>
 

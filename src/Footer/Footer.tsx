@@ -1,9 +1,10 @@
+import type { JSX } from 'react';
 import './Footer.css';
 import packageJson from '../../package.json';
 import DebugConsole from '../DebugConsole/DebugConsole';
 
 function Footer(): JSX.Element {
-  const packageVersion: string = packageJson.dependencies['audioq'];
+  const packageVersion: string = packageJson.dependencies.audioq;
 
   return (
     <div className="footer-container">

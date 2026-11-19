@@ -1,6 +1,6 @@
 import VolumeSlider from '../VolumeSlider/VolumeSlider';
 import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume, setMuted, setChannelMuted, setChannelPan } from 'audioq';
-import { useState, useEffect } from 'react';
+import { type JSX, useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Divider, { DividerOrientation } from '../Divider/Divider';
@@ -53,10 +53,10 @@ export default function VolumeControlsSection(): JSX.Element {
   useEffect(() => {
     return (): void => {
       // Reset all volumes to default when leaving the Volume & Looping tab
-      setChannelVolume(0, 1);
-      setChannelVolume(1, 1);
-      setAllChannelsVolume(1);
-      setGlobalVolume(1);
+      void setChannelVolume(0, 1);
+      void setChannelVolume(1, 1);
+      void setAllChannelsVolume(1);
+      void setGlobalVolume(1);
       setMuted(false);
       setChannelMuted(0, false);
       setChannelPan(1, 0);
@@ -64,7 +64,7 @@ export default function VolumeControlsSection(): JSX.Element {
   }, []);
 
   const handleChannelVolumeChange = (volume: number, channelNumber: number): void => {
-    setChannelVolume(channelNumber, volume);
+    void setChannelVolume(channelNumber, volume);
     setVolumeStates((prev) => ({
       ...prev,
       [`channel${channelNumber}`]: Math.round(volume * 100)
@@ -72,7 +72,7 @@ export default function VolumeControlsSection(): JSX.Element {
   };
 
   const handleSetAllChannelsVolumeChange = (volume: number): void => {
-    setAllChannelsVolume(volume);
+    void setAllChannelsVolume(volume);
     // Update all channel sliders to match
     setVolumeStates({
       channel0: Math.round(volume * 100),
@@ -83,7 +83,7 @@ export default function VolumeControlsSection(): JSX.Element {
   };
 
   const handleGlobalVolumeChange = (volume: number): void => {
-    setGlobalVolume(volume);
+    void setGlobalVolume(volume);
     setVolumeStates((prev) => ({
       ...prev,
       global: Math.round(volume * 100)

@@ -1,5 +1,5 @@
 import { getHistory } from 'audioq';
-import { useEffect } from 'react';
+import { type JSX, useEffect } from 'react';
 import { displayName } from '../audio/displayName';
 import { useChannel } from '../hooks/useChannel';
 import { PLAYLIST_CHANNEL } from '../hooks/usePlaylistSettings';

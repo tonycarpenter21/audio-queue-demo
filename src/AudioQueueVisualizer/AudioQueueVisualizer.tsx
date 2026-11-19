@@ -4,16 +4,16 @@ import './AudioQueueVisualizer.css';
 interface AudioFile {
   currentTime: number;
   duration: number;
-  isLooping?: boolean;
+  isLooping?: boolean | undefined;
   name: string;
 }
 
 interface AudioQueueVisualizerProps {
   channelNumber: number;
-  enableReordering?: boolean;
-  onMoveUp?: (fromIndex: number, channelNumber: number) => void;
-  onMoveDown?: (fromIndex: number, channelNumber: number) => void;
-  onRemoveItem?: (fromIndex: number, channelNumber: number) => void;
+  enableReordering?: boolean | undefined;
+  onMoveUp?: ((fromIndex: number, channelNumber: number) => void) | undefined;
+  onMoveDown?: ((fromIndex: number, channelNumber: number) => void) | undefined;
+  onRemoveItem?: ((fromIndex: number, channelNumber: number) => void) | undefined;
 }
 
 export interface AudioQueueVisualizerHandle {
@@ -38,7 +38,7 @@ const truncateFilename = (filename: string, maxLength: number = 25): string => {
     return filename.substring(0, maxLength - 3) + '...';
   }
 
-  const extension: string = parts.pop() || '';
+  const extension: string = parts.pop() ?? '';
   const nameWithoutExt: string = parts.join('.');
   const availableLength: number = maxLength - extension.length - 4; // -4 for "..." + "."
 
@@ -66,7 +66,8 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer(
   }, []);
 
   const getNextAudio = useCallback(() => {
-    return queue.length > 0 ? { duration: queue[0].duration, isLooping: queue[0].isLooping, name: queue[0].name } : null;
+    const first: AudioFile | undefined = queue[0];
+    return first ? { duration: first.duration, isLooping: first.isLooping, name: first.name } : null;
   }, [queue]);
 
   const isQueueEmpty = useCallback(() => {
@@ -89,9 +90,8 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer(
     setQueue((prevQueue) => {
       if (prevQueue.length === 0) return prevQueue;
 
-      const updatedQueue: AudioFile[] = [...prevQueue];
-      updatedQueue[0] = { ...updatedQueue[0], duration };
-      return updatedQueue;
+      const [first, ...rest] = prevQueue;
+      return first ? [{ ...first, duration }, ...rest] : prevQueue;
     });
   }, []);
 
@@ -116,7 +116,7 @@ const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer(
               <div className="audio-file-progress" style={{ width: `${currentPlayingPercentage * 100}%` }} />
             )}
             <span className={`audio-file-text ${enableReordering && fileIndex > 0 ? 'with-buttons' : ''}`}>
-              {file.isLooping && <span>🔁 </span>}
+              {file.isLooping === true && <span>🔁 </span>}
               {truncateFilename(file.name, enableReordering && fileIndex > 0 ? 20 : 25)}
             </span>
             {enableReordering && fileIndex > 0 && (

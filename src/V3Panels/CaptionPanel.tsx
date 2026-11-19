@@ -1,5 +1,5 @@
 import { AudioCueInfo, onAudioCue } from 'audioq';
-import { useEffect, useState } from 'react';
+import { type JSX, useEffect, useState } from 'react';
 import './V3Panels.css';
 
 interface Caption {
@@ -39,7 +39,7 @@ function CaptionPanel(): JSX.Element {
         {[0, 1].map((channel) => {
           const caption: Caption | null | undefined = captions[channel];
           return (
-            <div className={`v3-caption v3-team-${String(caption?.team ?? 'none')}`} key={channel}>
+            <div className={`v3-caption v3-team-${typeof caption?.team === 'string' ? caption.team : 'none'}`} key={channel}>
               <span className="v3-meta">Channel {channel}</span>
               <span>{caption ? caption.text : '…'}</span>
             </div>

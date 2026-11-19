@@ -9,6 +9,6 @@ const PAGE_TITLES: Record<ExampleTabs, string> = Object.fromEntries(
 
 export function usePageTitle(currentTab: ExampleTabs): void {
   useEffect(() => {
-    document.title = PAGE_TITLES[currentTab] || siteName;
+    document.title = PAGE_TITLES[currentTab];
   }, [currentTab]);
 }
