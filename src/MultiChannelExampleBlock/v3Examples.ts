@@ -380,9 +380,9 @@ try {
 /** Examples for the tabs that show what is new in AudioQ 3. */
 export function createV3Examples(settings: PlaylistSettings, actions: PlaylistSettingsActions): Record<string, Example[]> {
   return {
+    [ExampleTabs.NOTIFICATIONS]: notificationExamples(settings, actions),
     [ExampleTabs.PLAYLIST]: playlistExamples(settings, actions),
-    [ExampleTabs.SPRITES_CAPTIONS]: spriteExamples(),
-    [ExampleTabs.NOTIFICATIONS]: notificationExamples(settings, actions)
+    [ExampleTabs.SPRITES_CAPTIONS]: spriteExamples()
   };
 }
 

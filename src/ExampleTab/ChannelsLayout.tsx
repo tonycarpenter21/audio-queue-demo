@@ -20,15 +20,15 @@ interface ChannelsLayoutProps {
 export default function ChannelsLayout({
   channel0Examples,
   channel1Examples,
-  queueState,
-  queueLengths,
-  pauseState,
-  visualizerRefs,
   enableReordering,
-  showAudioInfo,
-  onMoveUp,
   onMoveDown,
-  onRemoveItem
+  onMoveUp,
+  onRemoveItem,
+  pauseState,
+  queueLengths,
+  queueState,
+  showAudioInfo,
+  visualizerRefs
 }: ChannelsLayoutProps): JSX.Element {
   const channelConfigs = [
     { channelNumber: 0, examples: channel0Examples, visualizerRef: visualizerRefs[0] },

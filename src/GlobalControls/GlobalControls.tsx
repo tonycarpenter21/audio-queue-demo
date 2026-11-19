@@ -13,7 +13,7 @@ interface GlobalControlsProps {
   pauseState: Record<number, boolean>;
 }
 
-function GlobalControls({ examples, queueState, pauseState }: GlobalControlsProps): JSX.Element {
+function GlobalControls({ examples, pauseState, queueState }: GlobalControlsProps): JSX.Element {
   return (
     <div className="global-controls content-container global-container">
       <h3 className="section-title section-title-primary">Global Controls</h3>

@@ -215,8 +215,8 @@ const BackgroundVisualizer: React.FC = () => {
       <div
         className="background-visualizer-overlay"
         style={{
-          WebkitBackdropFilter: `blur(${BASE_CONFIG.blurIntensity}px)`,
-          backdropFilter: `blur(${BASE_CONFIG.blurIntensity}px)`
+          backdropFilter: `blur(${BASE_CONFIG.blurIntensity}px)`,
+          WebkitBackdropFilter: `blur(${BASE_CONFIG.blurIntensity}px)`
         }}
       />
     </div>

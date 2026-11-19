@@ -29,41 +29,6 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
       'Add audio to either channel using the buttons below to see the information update in real-time.'
     ]
   },
-  [ExampleTabs.QUEUE_MANAGEMENT]: {
-    description: [
-      'This example shows how to add and remove audio files from queues. Channel-specific controls let you manage each audio channel independently.',
-      'Audio files will never overlap within their given channel. Use different channels when you want audio to play simultaneously.',
-      'To test this functionality, click the "Add Sound" buttons to queue audio, then use the stop controls to manage playback.'
-    ]
-  },
-  [ExampleTabs.PAUSE_RESUME]: {
-    description: [
-      'This example demonstrates the new pause and resume functionality for fine-grained audio control.',
-      'You can pause individual channels or all channels at once, and resume them later without losing your place in the audio.',
-      'Toggle pause provides a convenient way to pause/resume with a single button press.'
-    ]
-  },
-  [ExampleTabs.VOLUME_LOOPING]: {
-    description: [
-      'Control the volume of individual channels, all channels simultaneously, and global volume using the volume sliders below.',
-      'This example uses looping audio files to demonstrate volume control - you can adjust levels while audio is playing.',
-      'Start the looping audio, then use pause/resume controls and volume sliders to test different volume levels.'
-    ]
-  },
-  [ExampleTabs.PLAYLIST]: {
-    description: [
-      'Queue the playlist on Channel 0, then lock your phone or use your keyboard media keys: connectMediaSession() puts the title and artwork on the lock screen and makes its buttons control the channel.',
-      'Seek, change the speed, repeat, shuffle, add a gap or crossfade between tracks. The panel below reads position and history straight from the library.',
-      'Play an announcement on Channel 1 and the music ducks under it. By default sound keeps playing when you switch apps; turn on "Hold All Sounds While Hidden" to pause instead.'
-    ]
-  },
-  [ExampleTabs.SPRITES_CAPTIONS]: {
-    description: [
-      'All nine announcer lines live in one file. defineSprite() names the segments, so one download serves every sound. Preload it first and every line starts instantly from memory.',
-      'The captions come from a WebVTT file converted with parseWebVtt(). Cues are timed against the whole file, so each segment shows its own caption.',
-      'Channel 1 loops four seconds of the music with startAt/endAt, and point cues flash on every beat.'
-    ]
-  },
   [ExampleTabs.NOTIFICATIONS]: {
     description: [
       'Patterns for notification sounds and voice: tap the laser button quickly and repeats within a second are ignored (dedupeMs).',
@@ -74,11 +39,46 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
   [ExampleTabs.OTHER_FEATURES]: {
     description: [] // No description for this tab
   },
+  [ExampleTabs.PAUSE_RESUME]: {
+    description: [
+      'This example demonstrates the new pause and resume functionality for fine-grained audio control.',
+      'You can pause individual channels or all channels at once, and resume them later without losing your place in the audio.',
+      'Toggle pause provides a convenient way to pause/resume with a single button press.'
+    ]
+  },
+  [ExampleTabs.PLAYLIST]: {
+    description: [
+      'Queue the playlist on Channel 0, then lock your phone or use your keyboard media keys: connectMediaSession() puts the title and artwork on the lock screen and makes its buttons control the channel.',
+      'Seek, change the speed, repeat, shuffle, add a gap or crossfade between tracks. The panel below reads position and history straight from the library.',
+      'Play an announcement on Channel 1 and the music ducks under it. By default sound keeps playing when you switch apps; turn on "Hold All Sounds While Hidden" to pause instead.'
+    ]
+  },
   [ExampleTabs.PRIORITY_SOUNDS]: {
     description: [
       'This example demonstrates how to add priority sounds to the audio queue.',
       'Priority sounds will queue after the currently playing sound.',
       'To test this functionality, click the "Add Priority Sound" button to add a priority sound to the queue.'
+    ]
+  },
+  [ExampleTabs.QUEUE_MANAGEMENT]: {
+    description: [
+      'This example shows how to add and remove audio files from queues. Channel-specific controls let you manage each audio channel independently.',
+      'Audio files will never overlap within their given channel. Use different channels when you want audio to play simultaneously.',
+      'To test this functionality, click the "Add Sound" buttons to queue audio, then use the stop controls to manage playback.'
+    ]
+  },
+  [ExampleTabs.SPRITES_CAPTIONS]: {
+    description: [
+      'All nine announcer lines live in one file. defineSprite() names the segments, so one download serves every sound. Preload it first and every line starts instantly from memory.',
+      'The captions come from a WebVTT file converted with parseWebVtt(). Cues are timed against the whole file, so each segment shows its own caption.',
+      'Channel 1 loops four seconds of the music with startAt/endAt, and point cues flash on every beat.'
+    ]
+  },
+  [ExampleTabs.VOLUME_LOOPING]: {
+    description: [
+      'Control the volume of individual channels, all channels simultaneously, and global volume using the volume sliders below.',
+      'This example uses looping audio files to demonstrate volume control - you can adjust levels while audio is playing.',
+      'Start the looping audio, then use pause/resume controls and volume sliders to test different volume levels.'
     ]
   }
 };

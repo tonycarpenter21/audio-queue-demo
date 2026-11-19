@@ -50,7 +50,7 @@ const truncateFilename = (filename: string, maxLength: number = 25): string => {
 };
 
 const AudioQueueVisualizer = forwardRef(function AudioQueueVisualizer(
-  { channelNumber, enableReordering = false, onMoveUp, onMoveDown, onRemoveItem }: AudioQueueVisualizerProps,
+  { channelNumber, enableReordering = false, onMoveDown, onMoveUp, onRemoveItem }: AudioQueueVisualizerProps,
   ref
 ) {
   const [currentPlayingPercentage, setCurrentPlayingPercentage] = useState<number>(0);

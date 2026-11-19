@@ -70,7 +70,7 @@ function App(): JSX.Element {
   // Get state and actions from context
   const { state } = useAudioQueue();
   const { pauseState, selectedFadeOption } = state;
-  const { setQueueState, setQueueLength, setPauseState, setFadeOption, resetAllStates } = useAudioQueueActions();
+  const { resetAllStates, setFadeOption, setPauseState, setQueueLength, setQueueState } = useAudioQueueActions();
 
   const [isDuckingEnabled, setIsDuckingEnabled] = useState<boolean>(false);
   const [playlistSettings, playlistActions] = usePlaylistSettings();

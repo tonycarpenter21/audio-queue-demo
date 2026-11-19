@@ -12,11 +12,11 @@ import { getTabSpecificComponents } from './tabComponentConfig';
 import { useAudioQueue } from '../context/AudioQueueContext';
 
 function ExampleTab(props: ExampleTabProps): JSX.Element {
-  const { currentExampleTab, examples, visualizerRefs, onFadeOptionChange } = props;
+  const { currentExampleTab, examples, onFadeOptionChange, visualizerRefs } = props;
 
   // Get state from context
   const { state } = useAudioQueue();
-  const { queueState, queueLengths, pauseState, selectedFadeOption } = state;
+  const { pauseState, queueLengths, queueState, selectedFadeOption } = state;
 
   // Get descriptions for current tab
   const currentContent = tabContentDescriptions[currentExampleTab];
@@ -26,7 +26,7 @@ function ExampleTab(props: ExampleTabProps): JSX.Element {
   const { channel0, channel1, global } = organizeExamplesByChannel(currentExamples);
 
   // Use queue manipulation hook
-  const { handleMoveUp, handleMoveDown, handleRemoveItem } = useQueueManipulation();
+  const { handleMoveDown, handleMoveUp, handleRemoveItem } = useQueueManipulation();
 
   // Get tab-specific components
   const tabSpecificComponents = getTabSpecificComponents(currentExampleTab, selectedFadeOption, onFadeOptionChange);

@@ -1,9 +1,10 @@
-/* eslint-disable sort-keys */
+/* eslint-disable perfectionist/sort-objects */
 import globals from 'globals';
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
 import pluginReactHooks from 'eslint-plugin-react-hooks';
+import perfectionist from 'eslint-plugin-perfectionist';
 
 export default [
   { ignores: ['eslint.config.mjs', 'build/**', 'dist/**', 'scripts/**', 'src/audio/*.mp3'] },
@@ -18,6 +19,7 @@ export default [
     }
   },
   pluginReact.configs.flat.recommended,
+  { plugins: { perfectionist } },
   {
     plugins: { 'react-hooks': pluginReactHooks },
     rules: {
@@ -35,7 +37,8 @@ export default [
       'keyword-spacing': 'error',
       'no-console': 'error',
       'object-curly-spacing': ['error', 'always'],
-      'sort-keys': ['error', 'asc', { caseSensitive: true, minKeys: 2, natural: true }],
+      // Object keys in natural order; unlike the built-in sort-keys, eslint --fix sorts them.
+      'perfectionist/sort-objects': ['error', { ignoreCase: false, order: 'asc', type: 'natural' }],
       'space-before-blocks': 'error',
 
       // TypeScript rules

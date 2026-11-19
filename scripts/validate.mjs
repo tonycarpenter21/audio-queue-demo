@@ -99,6 +99,7 @@ const checks = [
       );
       rules.add('react-hooks/rules-of-hooks');
       rules.add('react-hooks/exhaustive-deps');
+      rules.add('perfectionist/sort-objects');
       const config = await new ESLint({ cwd: root }).calculateConfigForFile(join(root, 'src/App.tsx'));
       const problems = [...rules].filter((rule) => {
         const setting = config.rules?.[rule];

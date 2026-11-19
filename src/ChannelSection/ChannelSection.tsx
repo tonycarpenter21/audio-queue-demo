@@ -25,15 +25,15 @@ interface ChannelSectionProps {
 function ChannelSection({
   channelNumber,
   channelQueueLength,
+  enableReordering = false,
   examples,
   isChannelQueueEmpty,
+  onMoveDown,
+  onMoveUp,
+  onRemoveItem,
   pauseState,
   showAudioInfo = false,
-  visualizerRef,
-  enableReordering = false,
-  onMoveUp,
-  onMoveDown,
-  onRemoveItem
+  visualizerRef
 }: ChannelSectionProps): JSX.Element {
   return (
     <div className="channel-section content-container channel-container">

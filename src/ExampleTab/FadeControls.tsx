@@ -37,7 +37,7 @@ const fadeOptions: FadeOptionConfig[] = [
   }
 ];
 
-export default function FadeControls({ selectedFadeOption, onFadeOptionChange }: FadeControlsProps): JSX.Element {
+export default function FadeControls({ onFadeOptionChange, selectedFadeOption }: FadeControlsProps): JSX.Element {
   return (
     <div className="fade-controls">
       <h3 className="fade-controls-title">🎵 Audio Fade Options</h3>
