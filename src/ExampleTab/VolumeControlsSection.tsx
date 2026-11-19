@@ -1,5 +1,5 @@
 import VolumeSlider from '../VolumeSlider/VolumeSlider';
-import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume } from 'audioq';
+import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume, setMuted, setChannelMuted } from 'audioq';
 import { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -21,6 +21,18 @@ export default function VolumeControlsSection(): JSX.Element {
     setAllChannels: 100
   });
 
+  const [muted, setMutedState] = useState<{ all: boolean; channel0: boolean }>({ all: false, channel0: false });
+
+  const toggleMuteAll = (): void => {
+    setMuted(!muted.all);
+    setMutedState((prev) => ({ ...prev, all: !prev.all }));
+  };
+
+  const toggleMuteChannel0 = (): void => {
+    setChannelMuted(0, !muted.channel0);
+    setMutedState((prev) => ({ ...prev, channel0: !prev.channel0 }));
+  };
+
   // Initialize global volume on mount
   useEffect(() => {
     const currentGlobalVolume: number = getGlobalVolume();
@@ -38,6 +50,8 @@ export default function VolumeControlsSection(): JSX.Element {
       setChannelVolume(1, 1);
       setAllChannelsVolume(1);
       setGlobalVolume(1);
+      setMuted(false);
+      setChannelMuted(0, false);
     };
   }, []);
 
@@ -161,6 +175,34 @@ getGlobalVolume(); // Returns ${volumeStates.global / 100}
 // while preserving their 
 // relative volume levels
 `}
+          </SyntaxHighlighter>
+        </div>
+
+        <Divider hideOnMobile noMargin spanFullWidth />
+        <Divider hideOnDesktop noMargin />
+
+        {/* Muting */}
+        <div className="volume-control-item volume-control-wide">
+          <div className="volume-mute-buttons">
+            <button className={`button ${muted.all ? 'button-active' : ''}`} onClick={toggleMuteAll}>
+              {muted.all ? '🔈 Unmute Everything' : '🔇 Mute Everything'}
+            </button>
+            <button className={`button ${muted.channel0 ? 'button-active' : ''}`} onClick={toggleMuteChannel0}>
+              {muted.channel0 ? '🔈 Unmute Channel 0' : '🔇 Mute Channel 0'}
+            </button>
+          </div>
+          <SyntaxHighlighter
+            customStyle={{
+              borderRadius: '10px',
+              padding: '10px 20px'
+            }}
+            language="typescript"
+            style={vscDarkPlus}
+          >
+            {`setMuted(${!muted.all});
+setChannelMuted(0, ${!muted.channel0});
+// Volumes are kept: unmuting
+// restores the mix exactly`}
           </SyntaxHighlighter>
         </div>
       </div>
