@@ -31,7 +31,9 @@
     "format": "npx prettier . --write",
     "prepare": "husky install",
     "predeploy": "npm run build",
-    "deploy": "node deploy.js"
+    "deploy": "node deploy.js",
+    "e2e": "npm run build && node scripts/e2e/run.js",
+    "typecheck": "tsc --noEmit -p ."
   },
   "eslintConfig": {
     "extends": [
