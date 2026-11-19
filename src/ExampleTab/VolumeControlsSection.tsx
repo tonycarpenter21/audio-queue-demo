@@ -1,5 +1,5 @@
 import VolumeSlider from '../VolumeSlider/VolumeSlider';
-import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume, setMuted, setChannelMuted } from 'audioq';
+import { setChannelVolume, setAllChannelsVolume, setGlobalVolume, getGlobalVolume, setMuted, setChannelMuted, setChannelPan } from 'audioq';
 import { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -28,6 +28,13 @@ export default function VolumeControlsSection(): JSX.Element {
     setMutedState((prev) => ({ ...prev, all: !prev.all }));
   };
 
+  const [pan1, setPan1] = useState<number>(0);
+
+  const panChannel1 = (pan: number): void => {
+    setChannelPan(1, pan);
+    setPan1(pan);
+  };
+
   const toggleMuteChannel0 = (): void => {
     setChannelMuted(0, !muted.channel0);
     setMutedState((prev) => ({ ...prev, channel0: !prev.channel0 }));
@@ -52,6 +59,7 @@ export default function VolumeControlsSection(): JSX.Element {
       setGlobalVolume(1);
       setMuted(false);
       setChannelMuted(0, false);
+      setChannelPan(1, 0);
     };
   }, []);
 
@@ -203,6 +211,35 @@ getGlobalVolume(); // Returns ${volumeStates.global / 100}
 setChannelMuted(0, ${!muted.channel0});
 // Volumes are kept: unmuting
 // restores the mix exactly`}
+          </SyntaxHighlighter>
+        </div>
+
+        <Divider hideOnMobile noMargin spanFullWidth />
+        <Divider hideOnDesktop noMargin />
+
+        {/* Stereo panning */}
+        <div className="volume-control-item volume-control-wide">
+          <div className="volume-mute-buttons">
+            {[
+              { label: '⬅️ Channel 1 Left', pan: -1 },
+              { label: '⏺️ Channel 1 Center', pan: 0 },
+              { label: 'Channel 1 Right ➡️', pan: 1 }
+            ].map(({ label, pan }) => (
+              <button className={`button ${pan1 === pan ? 'button-active' : ''}`} key={pan} onClick={() => panChannel1(pan)}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <SyntaxHighlighter
+            customStyle={{
+              borderRadius: '10px',
+              padding: '10px 20px'
+            }}
+            language="typescript"
+            style={vscDarkPlus}
+          >
+            {`// -1 left, 0 center, 1 right
+setChannelPan(1, ${pan1});`}
           </SyntaxHighlighter>
         </div>
       </div>

@@ -116,6 +116,13 @@ const check = async (name, run) => {
     assert.equal(await page.getByRole('button', { name: /Everything/ }).innerText(), '🔈 Unmute Everything');
   });
 
+  await check('volume: stereo panning buttons update the code example', async () => {
+    await click('Channel 1 Left');
+    assert.match(await text('.volume-controls-section'), /setChannelPan\(1, -1\);/);
+    await click('Channel 1 Center');
+    assert.match(await text('.volume-controls-section'), /setChannelPan\(1, 0\);/);
+  });
+
   await check('no page errors', async () => assert.deepEqual(errors, []));
 
   await browser.close();
