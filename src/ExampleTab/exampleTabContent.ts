@@ -59,7 +59,7 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
   },
   [ExampleTabs.SPRITES_CAPTIONS]: {
     description: [
-      'All nine announcer lines live in one file. defineSprite() names the segments, so one download serves every sound.',
+      'All nine announcer lines live in one file. defineSprite() names the segments, so one download serves every sound. Preload it first and every line starts instantly from memory.',
       'The captions come from a WebVTT file converted with parseWebVtt(). Cues are timed against the whole file, so each segment shows its own caption.',
       'Channel 1 loops four seconds of the music with startAt/endAt, and point cues flash on every beat.'
     ]

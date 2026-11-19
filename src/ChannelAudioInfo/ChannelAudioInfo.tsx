@@ -1,61 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { getCurrentAudioInfo, getQueueSnapshot, onAudioProgress, QueueSnapshot } from 'audioq';
+import React from 'react';
 import { displayName } from '../audio/displayName';
+import { useChannel } from '../hooks/useChannel';
 import './ChannelAudioInfo.css';
-
-// Using types from audioq package
-interface AudioInfo {
-  currentTime: number;
-  duration: number;
-  fileName: string;
-  isLooping: boolean;
-  isPaused: boolean;
-  isPlaying: boolean;
-  progress: number;
-  src: string;
-  volume: number;
-}
 
 interface ChannelAudioInfoProps {
   channelNumber: number;
 }
 
 const ChannelAudioInfo: React.FC<ChannelAudioInfoProps> = ({ channelNumber }) => {
-  const [audioInfo, setAudioInfo] = useState<AudioInfo | null>(null);
-  const [queueInfo, setQueueInfo] = useState<QueueSnapshot | null>(null);
-
-  const updateAudioInfo = useCallback((): void => {
-    // Get current audio info for this channel
-    const info: AudioInfo | null = getCurrentAudioInfo(channelNumber);
-    setAudioInfo(info);
-
-    // Get queue snapshot for this channel
-    const queue: QueueSnapshot | null = getQueueSnapshot(channelNumber);
-    setQueueInfo(queue);
-  }, [channelNumber]);
-
-  // Set up progress listener for real-time updates
-  useEffect(() => {
-    const handleProgress = (info: AudioInfo): void => {
-      setAudioInfo(info);
-      updateAudioInfo();
-    };
-
-    // Subscribe to progress updates
-    const unsubscribe = onAudioProgress(channelNumber, handleProgress);
-
-    // Initial update
-    updateAudioInfo();
-
-    // Set up interval for regular updates (fallback)
-    const interval: NodeJS.Timeout = setInterval(updateAudioInfo, 1000);
-
-    return (): void => {
-      // Clean up listener and interval
-      unsubscribe();
-      clearInterval(interval);
-    };
-  }, [channelNumber, updateAudioInfo]);
+  // Live channel state from createChannelStore: no polling, no manual listeners
+  const { current: audioInfo, items } = useChannel(channelNumber);
 
   const formatTime = (milliseconds: number): string => {
     if (!milliseconds || milliseconds === 0) return '0:00';
@@ -115,7 +69,7 @@ const ChannelAudioInfo: React.FC<ChannelAudioInfoProps> = ({ channelNumber }) =>
 
         <div className="info-row">
           <span className="info-label">Items:</span>
-          <span className="volume-display">{queueInfo?.totalItems || 0}</span>
+          <span className="volume-display">{items.length}</span>
         </div>
       </div>
     </div>

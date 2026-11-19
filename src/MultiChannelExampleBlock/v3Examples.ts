@@ -1,6 +1,8 @@
 import {
   AudioMetadata,
   clearVolumeDucking,
+  isAudioPreloaded,
+  preloadAudio,
   queueAudio,
   seekBy,
   setVolumeDucking,
@@ -9,7 +11,7 @@ import {
   stopCurrentAudioInChannel,
   togglePauseChannel
 } from 'audioq';
-import { announcer, announcerCues, announcerLineNames, AnnouncerLine } from '../audio/announcerSprite';
+import { announcer, announcerCues, announcerLineNames, AnnouncerLine, announcerSpriteSource } from '../audio/announcerSprite';
 import { createBeep } from '../audio/beep';
 import backgroundMusic from '../audio/background_music.mp3';
 import laserGunFiring from '../audio/laser_gun_firing.mp3';
@@ -177,6 +179,25 @@ setQueueConfig({
 
 function spriteExamples(): Example[] {
   return [
+    {
+      buttonFunction: (): void => {
+        void preloadAudio(announcerSpriteSource).then(([result]) => {
+          if (result?.ok) log(`Sprite preloaded: ${Math.round(result.bytes / 1024)} KB, now plays from memory`);
+          else log('Preload failed, the sprite will stream:', result?.error?.message);
+          log('isAudioPreloaded:', isAudioPreloaded(announcerSpriteSource));
+        });
+      },
+      buttonText: 'Preload The Sprite Into Memory (Channel 0)',
+      buttonType: 'default',
+      codeExample: `// Instant starts, works offline, and
+// seeks even without Range support
+const [result] = await preloadAudio(spriteUrl);
+console.log(result.ok, result.bytes);
+
+// Later: free the memory
+releasePreloadedAudio(spriteUrl);`,
+      isDisabledWhenQueueIsEmpty: false
+    },
     {
       buttonFunction: (): void => {
         const line: AnnouncerLine = randomLine();
