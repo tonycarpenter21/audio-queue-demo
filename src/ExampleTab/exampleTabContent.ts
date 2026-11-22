@@ -17,8 +17,8 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
   },
   [ExampleTabs.AUDIO_DUCKING]: {
     description: [
-      'This example demonstrates automatic audio ducking - when sound effects play, background music volume automatically reduces to 50%.',
-      'Start the background music on Channel 0, then play sound effects on Channel 1 to hear the ducking effect.',
+      'Audio ducking lowers other channels while a priority channel plays: here the background music drops to 25% whenever a voice line plays on Channel 1. It is on when you open this tab; turn it off to compare.',
+      'Start the background music on Channel 0, then play voice lines on Channel 1 to hear the ducking effect.',
       'The music volume will automatically restore to full volume when the sound effect completes.'
     ]
   },
@@ -49,7 +49,7 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
   [ExampleTabs.PLAYBACK]: {
     description: [
       'Queue the playlist on Channel 0, then lock your phone or use your keyboard media keys: connectMediaSession() puts the title and artwork on the lock screen and makes its buttons control the channel.',
-      'Skip back and forward, change the speed (the pitch stays the same) and watch the live spectrum from getChannelAnalyser().',
+      'Skip back and forward and change the speed (the pitch stays the same). The panel shows the position live.',
       'Play an announcement on Channel 1 and the music ducks under it. By default sound keeps playing when you switch apps; turn on "Hold All Sounds While Hidden" to pause instead.'
     ]
   },
@@ -75,9 +75,14 @@ export const tabContentDescriptions: Record<ExampleTabs, TabContentDescription> 
   },
   [ExampleTabs.SPRITES_CAPTIONS]: {
     description: [
-      'All nine announcer lines live in one file. defineSprite() names the segments, so one download serves every sound. Preload it first and every line starts instantly from memory.',
-      'The captions come from a WebVTT file converted with parseWebVtt(). Cues are timed against the whole file, so each segment shows its own caption.',
-      'Channel 1 loops four seconds of the music with startAt/endAt, and point cues flash on every beat.'
+      'An audio sprite is one audio file holding many short sounds back to back, like a sprite sheet of images in a game. Here all nine announcer lines are one file: defineSprite() names where each line starts and ends, and play("oneMinute") plays just that part. One download instead of nine, and every sound is ready once it has loaded (preload it to keep it in memory).',
+      'The captions come from a WebVTT (.vtt) file: the standard caption format for web video, a text file listing each line with its start and end time. It is not generated from the audio: you write it, or export it from a transcription tool, and ship it next to the audio file. parseWebVtt() turns it into cues, and onAudioCue() reports each caption as it starts and ends.'
+    ]
+  },
+  [ExampleTabs.VISUALIZER]: {
+    description: [
+      'getChannelAnalyser() returns a standard Web Audio AnalyserNode for a channel, measuring what you actually hear after volume, fades and panning. Read frequency data from it every frame to draw bars, meters or waveforms.',
+      'Play music on Channel 0 and lasers or announcements on Channel 1: the panel shows each channel and both together (a plain AnalyserNode that both channel analysers feed).'
     ]
   },
   [ExampleTabs.VOLUME_LOOPING]: {

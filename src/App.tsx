@@ -31,7 +31,8 @@ import {
   getQueueItemInfo,
   getQueueLength,
   setGlobalVolume,
-  clearVolumeDucking
+  clearVolumeDucking,
+  setVolumeDucking
 } from 'audioq';
 import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -44,7 +45,7 @@ import { displayName } from './audio/displayName';
 import BackgroundVisualizer from './BackgroundVisualizer/BackgroundVisualizer';
 import Footer from './Footer/Footer';
 import Header from './Header/Header';
-import { createExamples } from './MultiChannelExampleBlock/exampleData';
+import { createExamples, DEMO_DUCKING } from './MultiChannelExampleBlock/exampleData';
 import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from './types';
 import AppRoutes from './routes/AppRoutes';
 import { usePageTitle } from './hooks/usePageTitle';
@@ -85,14 +86,23 @@ function App(): JSX.Element {
 
   const currentExampleTab: ExampleTabs = getCurrentTabFromRoute();
 
+  // The Audio Ducking tab opens with ducking on (leaving any tab turns it off again)
+  useEffect(() => {
+    if (currentExampleTab !== ExampleTabs.AUDIO_DUCKING) return;
+    setVolumeDucking(DEMO_DUCKING);
+    setIsDuckingEnabled(true);
+  }, [currentExampleTab]);
+
   // Update page title based on current tab
   usePageTitle(currentExampleTab);
 
   const handleAudioAndVisualizer = createHandleAudioAndVisualizer();
 
   // Comprehensive cleanup function to ensure all audio stops
-  const performFullCleanup = useCallback(async (): Promise<void> => {
-    await stopAllAudio();
+  // Synchronous on purpose: stopAllAudio takes effect immediately, and the next tab's own setup
+  // (ducking on the Audio Ducking tab) must come after this, never be undone by it.
+  const performFullCleanup = useCallback((): void => {
+    void stopAllAudio();
 
     visualizerRefs.forEach((ref) => {
       if (ref.current) {
@@ -235,14 +245,14 @@ function App(): JSX.Element {
   // The browser's back and forward buttons change tabs without handleTabChange, so they clean up
   // here. popstate fires before the router renders the new tab, so its own setup is kept.
   useEffect(() => {
-    const onHistoryNavigation = (): void => void performFullCleanup();
+    const onHistoryNavigation = (): void => performFullCleanup();
     window.addEventListener('popstate', onHistoryNavigation);
     return (): void => window.removeEventListener('popstate', onHistoryNavigation);
   }, [performFullCleanup]);
 
   const handleTabChange = useCallback(
-    async (newTab: ExampleTabs) => {
-      await performFullCleanup();
+    (newTab: ExampleTabs): void => {
+      performFullCleanup();
 
       // Navigate to new tab
       void navigate(ExampleTabRoutes[newTab]);
@@ -338,7 +348,7 @@ function App(): JSX.Element {
       cancelAnimationFrame(animationFrameId);
 
       // Perform full cleanup on unmount
-      void performFullCleanup();
+      performFullCleanup();
     };
   }, [
     handleQueueChange,
@@ -382,7 +392,7 @@ function App(): JSX.Element {
     <div className="app">
       <BackgroundVisualizer />
       <div className="example-container">
-        <Header currentExampleTab={currentExampleTab} onTabChange={(tab) => void handleTabChange(tab)} />
+        <Header currentExampleTab={currentExampleTab} onTabChange={handleTabChange} />
         <AppRoutes
           examples={examples}
           onFadeOptionChange={(option) => void handleFadeOptionChange(option)}

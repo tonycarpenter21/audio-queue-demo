@@ -16,6 +16,16 @@
   width: 100%;
 }
 
+/*
+ * clip hides the background's overflow like hidden, without making .app a scroll container,
+ * which would stop position: sticky (the side panels) from working.
+ */
+@supports (overflow-x: clip) {
+  .app {
+    overflow-x: clip;
+  }
+}
+
 .example-container {
   backdrop-filter: blur(40px);
   background: rgb(26 31 46 / 70%);

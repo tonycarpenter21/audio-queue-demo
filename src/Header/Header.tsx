@@ -17,41 +17,15 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const advancedFeatureOptions: AdvancedFeatureOption[] = [
-    {
-      icon: '🔒',
-      label: 'New: Playback & Lock Screen',
-      tab: ExampleTabs.PLAYBACK
-    },
-    {
-      icon: '💬',
-      label: 'New: Sprites & Captions',
-      tab: ExampleTabs.SPRITES_CAPTIONS
-    },
-    {
-      icon: '🔔',
-      label: 'New: Notifications & Voice',
-      tab: ExampleTabs.NOTIFICATIONS
-    },
-    {
-      icon: '🎛️',
-      label: 'Advanced Queue Manipulation',
-      tab: ExampleTabs.ADVANCED_QUEUE_MANIPULATION
-    },
-    {
-      icon: '🦆',
-      label: 'Audio Ducking',
-      tab: ExampleTabs.AUDIO_DUCKING
-    },
-    {
-      icon: '📊',
-      label: 'Audio Info',
-      tab: ExampleTabs.AUDIO_INFO
-    },
-    {
-      icon: '🔝',
-      label: 'Add Priority Sound',
-      tab: ExampleTabs.PRIORITY_SOUNDS
-    }
+    { icon: '🎧', label: ExampleTabs.PLAYLIST, tab: ExampleTabs.PLAYLIST },
+    { icon: '🔒', label: ExampleTabs.PLAYBACK, tab: ExampleTabs.PLAYBACK },
+    { icon: '📈', label: ExampleTabs.VISUALIZER, tab: ExampleTabs.VISUALIZER },
+    { icon: '💬', label: ExampleTabs.SPRITES_CAPTIONS, tab: ExampleTabs.SPRITES_CAPTIONS },
+    { icon: '🔔', label: ExampleTabs.NOTIFICATIONS, tab: ExampleTabs.NOTIFICATIONS },
+    { icon: '🎛️', label: ExampleTabs.ADVANCED_QUEUE_MANIPULATION, tab: ExampleTabs.ADVANCED_QUEUE_MANIPULATION },
+    { icon: '🦆', label: ExampleTabs.AUDIO_DUCKING, tab: ExampleTabs.AUDIO_DUCKING },
+    { icon: '📊', label: ExampleTabs.AUDIO_INFO, tab: ExampleTabs.AUDIO_INFO },
+    { icon: '🔝', label: 'Add Priority Sound', tab: ExampleTabs.PRIORITY_SOUNDS }
   ];
 
   const handleTabClick = (tab: ExampleTabs): void => {
@@ -102,13 +76,6 @@ function Header({ currentExampleTab, onTabChange }: HeaderProps): JSX.Element {
           >
             <span className="feature-icon">🔊</span>
             <span className="feature-text">{ExampleTabs.VOLUME_LOOPING}</span>
-          </button>
-          <button
-            className={`feature ${currentExampleTab === ExampleTabs.PLAYLIST ? 'active' : ''}`}
-            onClick={() => handleTabClick(ExampleTabs.PLAYLIST)}
-          >
-            <span className="feature-icon">🎧</span>
-            <span className="feature-text">{ExampleTabs.PLAYLIST}</span>
           </button>
           <div className="advanced-features-container">
             <button

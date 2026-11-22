@@ -58,21 +58,17 @@
   justify-content: center;
   min-width: 0;
   padding: var(--space-4);
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+  transition: background 0.2s ease;
   width: 100%;
 }
 
 .feature:hover {
   background: rgb(255 255 255 / 15%);
-  transform: translateY(-2px);
 }
 
 .feature.active {
   background: rgb(255 255 255 / 25%);
   border-color: rgb(255 255 255 / 40%);
-  transform: translateY(-2px);
 }
 
 .feature.active:hover {

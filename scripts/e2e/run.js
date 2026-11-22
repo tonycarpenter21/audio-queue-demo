@@ -39,7 +39,7 @@ const check = async (name, run) => {
   const click = (name) => page.getByRole('button', { exact: false, name }).first().click();
   const openTab = async (label) => {
     await click('More Examples');
-    await click(label);
+    await page.locator('.dropdown-menu button', { hasText: label }).first().click();
     await page.waitForTimeout(300);
   };
   const openTopTab = async (label) => {
@@ -60,8 +60,14 @@ const check = async (name, run) => {
     assert.match(await text('.channel-visualizer'), /\.mp3/);
   });
 
-  await check('playlist: plays, skips and records history', async () => {
-    await openTopTab('Playlist');
+  await check('header tiles do not move on hover or when selected', async () => {
+    const tile = page.locator('.feature-highlights > button.active').first();
+    await tile.hover();
+    assert.equal(await tile.evaluate((element) => getComputedStyle(element).transform), 'none');
+  });
+
+  await check('playlist: plays, skips and records history; the panel sits beside the controls', async () => {
+    await openTab('Playlist');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1500);
     assert.match(await text('.v3-panel'), /Background Music 0:0\d \/ 2:47 · 1x · playing · 3 up next/);
@@ -70,12 +76,22 @@ const check = async (name, run) => {
     await click('Next Track (Channel 0)');
     await page.waitForTimeout(1200);
     assert.match(await text('.v3-panel'), /Teleporter Hum .*Recently played: getHistory\(0\) Background Music \(stopped/);
-    assert.equal(await page.locator('.v3-spectrum').count(), 0, 'the spectrum belongs to the Playback tab');
     assert.equal(await page.locator('.channel-section').count(), 1, 'only channel 0 has examples here');
+    const panel = await page.locator('.example-side-panel').boundingBox();
+    const controls = await page.locator('.channel-section').first().boundingBox();
+    assert.ok(panel && controls && panel.x > controls.x + controls.width - 1, 'the panel is not to the right of the controls');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(200);
+    const scrolled = await page.locator('.example-side-panel').boundingBox();
+    assert.ok(scrolled && scrolled.y >= 0 && scrolled.y < 900, 'the panel scrolled out of view (sticky broken)');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await click('Stop All Sounds');
+    await page.waitForTimeout(300);
+    assert.match(await text('.v3-panel'), /Nothing playing/);
   });
 
-  await check('playback: seeks, changes speed and shows the spectrum', async () => {
-    await openTab('New: Playback');
+  await check('playback: seeks and changes speed', async () => {
+    await openTab('Playback & Lock Screen');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1500);
     assert.match(await text('.v3-panel'), /Background Music 0:0\d \/ 2:47 · 1x/);
@@ -83,13 +99,24 @@ const check = async (name, run) => {
     await click('Speed 1x (Channel 0)');
     await page.waitForTimeout(1000);
     assert.match(await text('.v3-panel'), /Background Music 0:1\d \/ 2:47 · 1\.5x/);
-    const heights = await page.locator('.v3-spectrum-bar').evaluateAll((bars) => bars.map((bar) => parseFloat(bar.style.height)));
-    assert.equal(heights.length, 16);
-    assert.ok(Math.max(...heights) > 4, `spectrum shows no signal: ${heights.join(', ')}`);
+  });
+
+  await check('visualizer: channel 0, channel 1 and the combined spectrum all show signal', async () => {
+    await openTab('Visualizer');
+    await click('Play Music (Channel 0)');
+    await click('Play Laser Fire (Channel 1)');
+    await page.waitForTimeout(1500);
+    const peaks = await page
+      .locator('.v3-spectrum')
+      .evaluateAll((spectrums) =>
+        spectrums.map((spectrum) => Math.max(...Array.from(spectrum.children, (bar) => parseFloat(bar.style.height))))
+      );
+    assert.equal(peaks.length, 3);
+    peaks.forEach((peak, index) => assert.ok(peak > 4, `spectrum ${index} shows no signal (${peaks.join(', ')})`));
   });
 
   await check('sprites: preloads, and captions follow the segments that play', async () => {
-    await openTab('New: Sprites');
+    await openTab('Sprites & Captions');
     await click('Preload The Sprite');
     await page.waitForTimeout(800);
     assert.ok(
@@ -97,13 +124,10 @@ const check = async (name, run) => {
       'no "Sprite preloaded" log'
     );
     await click('Queue Three Lines (Channel 0)');
-    await click('Loop A 4-Second Segment');
     const captions = new Set();
-    const beats = new Set();
     for (let i = 0; i < 40; i++) {
       await page.waitForTimeout(150);
       captions.add(await text('.v3-caption'));
-      beats.add(await page.locator('.v3-beat').innerText());
     }
     for (const line of ['One minute left', 'Red team captured the base', 'Blue team wins!']) {
       assert.ok(
@@ -111,7 +135,20 @@ const check = async (name, run) => {
         `caption "${line}" not shown`
       );
     }
-    assert.ok(beats.has('beat 1') && beats.has('beat 4'), `beats seen: ${[...beats].join(', ')}`);
+  });
+
+  await check('audio ducking: on when the tab opens', async () => {
+    await openTab('Audio Ducking');
+    assert.equal(await page.getByRole('button', { name: /Volume Ducking/ }).count(), 1);
+    assert.match(await page.getByRole('button', { name: /Volume Ducking/ }).innerText(), /Disable Volume Ducking/);
+  });
+
+  await check('advanced queue manipulation: queue details open the debug console', async () => {
+    await openTab('Advanced Queue Manipulation');
+    await click('Log Queue Details');
+    await page.waitForTimeout(300);
+    assert.match(await text('.debug-console-body'), /Queue lengths/);
+    await page.getByRole('button', { name: '✕' }).click();
   });
 
   await check('audio info: the channel store shows the playing sound', async () => {
@@ -122,7 +159,7 @@ const check = async (name, run) => {
   });
 
   await check('debug console: the audioq event log shows queue events', async () => {
-    await openTab('New: Notifications');
+    await openTab('Notifications & Voice');
     await click('Show Debug Console');
     await click('audioq events: Off');
     await click('Generated Beep');
@@ -161,7 +198,7 @@ const check = async (name, run) => {
 
   await check('changing tabs stops audio (header buttons and the browser back button)', async () => {
     const playbackState = () => page.evaluate(() => navigator.mediaSession.playbackState);
-    await openTopTab('Playlist');
+    await openTab('Playlist');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1000);
     assert.equal(await playbackState(), 'playing');
@@ -169,7 +206,7 @@ const check = async (name, run) => {
     await page.waitForTimeout(500);
     assert.notEqual(await playbackState(), 'playing', 'still playing after a header tab change');
 
-    await openTab('New: Playback');
+    await openTab('Playback & Lock Screen');
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1000);
     assert.equal(await playbackState(), 'playing');

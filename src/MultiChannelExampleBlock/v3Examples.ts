@@ -7,6 +7,7 @@ import {
   seekBy,
   setVolumeDucking,
   shuffleQueue,
+  stopAllAudio,
   stopAllAudioInChannel,
   stopCurrentAudioInChannel,
   togglePauseChannel
@@ -38,6 +39,7 @@ const PLAYLIST: { src: string; title: string }[] = [
 
 type PlaylistControl =
   | 'announcement'
+  | 'stopAll'
   | 'back10'
   | 'crossfade'
   | 'forward10'
@@ -194,6 +196,14 @@ await shuffleQueue(0);`,
 setPlaybackRate(0, ${settings.rate});`,
       enabledWhen: 'always'
     },
+    stopAll: {
+      buttonFunction: (): Promise<void> => stopAllAudio(),
+      buttonText: 'Stop All Sounds',
+      buttonType: 'default',
+      channel: 'global',
+      codeExample: '// Every channel, now\nawait stopAllAudio();',
+      enabledWhen: 'hasAudio'
+    },
     togglePause: {
       buttonFunction: (): void => void togglePauseChannel(0),
       buttonText: 'Toggle Pause (Channel 0)',
@@ -267,37 +277,6 @@ await announcer.play('blueWins', 0, { cues });`,
       buttonType: 'default',
       channel: 0,
       codeExample: 'await stopAllAudioInChannel(0);',
-      enabledWhen: 'hasAudio'
-    },
-    {
-      buttonFunction: (): void => {
-        void queueAudio(backgroundMusic, 1, {
-          cues: [0, 1, 2, 3].map((beat) => ({ data: { beat }, startMs: 30000 + beat * 1000 })),
-          endAt: 34000,
-          loop: true,
-          metadata: { title: 'Music 0:30-0:34 (loop)' },
-          startAt: 30000
-        });
-      },
-      buttonText: 'Loop A 4-Second Segment Of The Music (Channel 1)',
-      buttonType: 'default',
-      channel: 1,
-      codeExample: `// Point cues (no endMs) fire once
-// each time playback passes them
-await queueAudio(music, 1, {
-  cues: [{ startMs: 30000, data: { beat: 0 } }, ...],
-  endAt: 34000,
-  loop: true,
-  startAt: 30000
-});`,
-      enabledWhen: 'idle'
-    },
-    {
-      buttonFunction: (): void => void stopAllAudioInChannel(1),
-      buttonText: 'Stop Segment (Channel 1)',
-      buttonType: 'default',
-      channel: 1,
-      codeExample: 'await stopAllAudioInChannel(1);',
       enabledWhen: 'hasAudio'
     }
   ];
@@ -398,7 +377,8 @@ function playlistTab(settings: PlaylistSettings, actions: PlaylistSettingsAction
     controls.repeat,
     controls.shuffle,
     controls.crossfade,
-    controls.gap
+    controls.gap,
+    controls.stopAll
   ];
 }
 
@@ -412,7 +392,57 @@ function playbackTab(settings: PlaylistSettings, actions: PlaylistSettingsAction
     controls.forward10,
     controls.speed,
     controls.announcement,
-    controls.holdWhenHidden
+    controls.holdWhenHidden,
+    controls.stopAll
+  ];
+}
+
+/** Visualizer tab: something to look at on each channel. */
+function visualizerTab(settings: PlaylistSettings, actions: PlaylistSettingsActions): Example[] {
+  return [
+    {
+      buttonFunction: (): void => {
+        void queueAudio(backgroundMusic, 0, { metadata: { title: 'Background Music' } });
+      },
+      buttonText: 'Play Music (Channel 0)',
+      buttonType: 'default',
+      channel: 0,
+      codeExample: `// One AnalyserNode per channel,
+// after volume, fades and panning
+const analyser = getChannelAnalyser(0);
+const bands = new Uint8Array(
+  analyser.frequencyBinCount
+);
+analyser.getByteFrequencyData(bands);`,
+      enabledWhen: 'idle'
+    },
+    {
+      buttonFunction: (): void => {
+        void queueAudio(laserGunFiringRepeatedly, 1, { interrupt: true });
+      },
+      buttonText: 'Play Laser Fire (Channel 1)',
+      buttonType: 'default',
+      channel: 1,
+      codeExample: `await queueAudio(lasers, 1, {
+  interrupt: true
+});`,
+      enabledWhen: 'always'
+    },
+    {
+      buttonFunction: (): void => {
+        void announcer.play(randomLine(), 1);
+      },
+      buttonText: 'Play An Announcement (Channel 1)',
+      buttonType: 'default',
+      channel: 1,
+      codeExample: `// Both channels together: a plain
+// Web Audio analyser fed by both
+const mix = analyser0.context.createAnalyser();
+analyser0.connect(mix);
+analyser1.connect(mix);`,
+      enabledWhen: 'always'
+    },
+    playlistControls(settings, actions).stopAll
   ];
 }
 
@@ -422,7 +452,8 @@ export function createV3Examples(settings: PlaylistSettings, actions: PlaylistSe
     [ExampleTabs.NOTIFICATIONS]: notificationExamples(),
     [ExampleTabs.PLAYBACK]: playbackTab(settings, actions),
     [ExampleTabs.PLAYLIST]: playlistTab(settings, actions),
-    [ExampleTabs.SPRITES_CAPTIONS]: spriteExamples()
+    [ExampleTabs.SPRITES_CAPTIONS]: spriteExamples(),
+    [ExampleTabs.VISUALIZER]: visualizerTab(settings, actions)
   };
 }
 

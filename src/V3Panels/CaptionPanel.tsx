@@ -7,36 +7,28 @@ interface Caption {
   text: string;
 }
 
-/** Shows ranged cues as captions and flashes on point cues, for both channels. */
-function CaptionPanel(): JSX.Element {
+interface CaptionPanelProps {
+  /** Channels whose captions are shown. */
+  channels: readonly number[];
+}
+
+/** Shows the captions (ranged cues) of the given channels as they play, from onAudioCue. */
+function CaptionPanel({ channels }: CaptionPanelProps): JSX.Element {
   const [captions, setCaptions] = useState<Record<number, Caption | null>>({});
-  const [beat, setBeat] = useState<number | null>(null);
 
   useEffect(() => {
-    let beatTimer: ReturnType<typeof setTimeout> | undefined;
     const handleCue = ({ active, channelNumber, cue }: AudioCueInfo): void => {
-      if (cue.endMs === undefined) {
-        // A point cue: flash the beat number
-        const data = cue.data as { beat?: number } | undefined;
-        setBeat(data?.beat ?? null);
-        clearTimeout(beatTimer);
-        beatTimer = setTimeout(() => setBeat(null), 300);
-        return;
-      }
       setCaptions((current) => ({ ...current, [channelNumber]: active ? { team: cue.data, text: cue.text ?? '' } : null }));
     };
-    const unsubscribes = [onAudioCue(0, handleCue), onAudioCue(1, handleCue)];
-    return (): void => {
-      clearTimeout(beatTimer);
-      unsubscribes.forEach((unsubscribe) => unsubscribe());
-    };
-  }, []);
+    const unsubscribes = channels.map((channel) => onAudioCue(channel, handleCue));
+    return (): void => unsubscribes.forEach((unsubscribe) => unsubscribe());
+  }, [channels]);
 
   return (
     <div className="v3-panel content-container">
       <div className="v3-panel-title">💬 Captions from onAudioCue</div>
       <div className="v3-captions">
-        {[0, 1].map((channel) => {
+        {channels.map((channel) => {
           const caption: Caption | null | undefined = captions[channel];
           return (
             <div className={`v3-caption v3-team-${typeof caption?.team === 'string' ? caption.team : 'none'}`} key={channel}>
@@ -45,7 +37,6 @@ function CaptionPanel(): JSX.Element {
             </div>
           );
         })}
-        <div className={`v3-beat ${beat === null ? '' : 'v3-beat-on'}`}>{beat === null ? 'beat' : `beat ${beat + 1}`}</div>
       </div>
     </div>
   );

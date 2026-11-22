@@ -34,7 +34,8 @@
     "deploy": "node deploy.js",
     "e2e": "npm run build && node scripts/e2e/run.js",
     "typecheck": "tsc --noEmit -p .",
-    "validate": "node scripts/validate.mjs"
+    "validate": "node scripts/validate.mjs",
+    "phone": "npm run build && node scripts/phone.js"
   },
   "eslintConfig": {
     "extends": [

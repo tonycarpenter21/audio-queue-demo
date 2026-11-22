@@ -4,6 +4,13 @@ import { createPortal } from 'react-dom';
 import { setQueueConfig } from 'audioq';
 import './DebugConsole.css';
 
+const SHOW_EVENT: string = 'audioq-demo:show-debug-console';
+
+/** Opens the debug console, for buttons whose result is a log. */
+export function showDebugConsole(): void {
+  window.dispatchEvent(new Event(SHOW_EVENT));
+}
+
 interface LogEntry {
   message: string;
   timestamp: string;
@@ -100,6 +107,12 @@ function DebugConsole(): JSX.Element {
       console.info = originalInfo;
       console.debug = originalDebug;
     };
+  }, []);
+
+  useEffect(() => {
+    const show = (): void => setIsVisible(true);
+    window.addEventListener(SHOW_EVENT, show);
+    return (): void => window.removeEventListener(SHOW_EVENT, show);
   }, []);
 
   // Auto-scroll to bottom when new logs added

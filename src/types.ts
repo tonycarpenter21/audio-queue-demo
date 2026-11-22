@@ -14,6 +14,7 @@ export enum ExampleTabs {
   PRIORITY_SOUNDS = 'Priority Sounds',
   QUEUE_MANAGEMENT = 'Queue Management',
   SPRITES_CAPTIONS = 'Sprites & Captions',
+  VISUALIZER = 'Visualizer',
   VOLUME_LOOPING = 'Volume & Looping'
 }
 
@@ -29,6 +30,7 @@ export const ExampleTabRoutes: Record<ExampleTabs, string> = {
   [ExampleTabs.PRIORITY_SOUNDS]: '/priority-sounds',
   [ExampleTabs.QUEUE_MANAGEMENT]: '/queue-management',
   [ExampleTabs.SPRITES_CAPTIONS]: '/sprites-and-captions',
+  [ExampleTabs.VISUALIZER]: '/visualizer',
   [ExampleTabs.VOLUME_LOOPING]: '/volume-and-looping'
 };
 

@@ -21,6 +21,25 @@
   width: 100%;
 }
 
+/* Tabs with a live panel: controls on the left, the panel on the right, kept in view */
+.example-with-panel {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-8);
+  width: 100%;
+}
+
+.example-with-panel > .channel-grouped-layout {
+  flex: 1;
+  min-width: 0;
+}
+
+.example-side-panel {
+  flex: 0 0 360px;
+  position: sticky;
+  top: var(--space-4);
+}
+
 @media (width <= 1200px) {
   .channels-container {
     align-items: center;
@@ -41,5 +60,20 @@
   .channels-container {
     gap: var(--space-4);
     padding: 0 var(--space-2);
+  }
+
+  /* On phones the panel follows the controls and sticks to the bottom: a mini player */
+  .example-with-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .example-side-panel {
+    bottom: 0;
+    flex-basis: auto;
+    max-height: 40vh;
+    overflow-y: auto;
+    top: auto;
+    z-index: 5;
   }
 }

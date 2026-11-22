@@ -1,5 +1,6 @@
-import { QueueManipulationResult, QueueItem, clearVolumeDucking, setVolumeDucking, togglePauseChannel } from 'audioq';
+import { clearVolumeDucking, QueueItem, QueueManipulationResult, setVolumeDucking, togglePauseChannel, VolumeConfig } from 'audioq';
 import { longTeleportation } from '../audio/audioFilesAndUtils';
+import { showDebugConsole } from '../DebugConsole/DebugConsole';
 import { Example, FadeOption } from '../types';
 import { ExampleTabs } from '../types';
 
@@ -9,6 +10,13 @@ type HandleAudioAndVisualizer = (
   queueFunction: (url: string, channelNumber: number, options?: Record<string, unknown>) => unknown,
   isLooping?: boolean
 ) => void;
+
+/** The Audio Ducking tab's settings: music on channel 0 drops to 25% while voice plays on channel 1. */
+export const DEMO_DUCKING: VolumeConfig = {
+  duckingVolume: 0.25,
+  priorityChannel: 1,
+  priorityVolume: 1
+};
 
 type PauseAction = 'pause' | 'resume' | 'toggle';
 
@@ -154,37 +162,23 @@ export function createExamples(
       // Utility examples
       {
         buttonFunction: (): void => {
-          const length0: number = getQueueLength(0);
-          const length1: number = getQueueLength(1);
-          const item0: QueueItem | null = getQueueItemInfo(1, 0);
-          const item1: QueueItem | null = getQueueItemInfo(1, 1);
-
           // eslint-disable-next-line no-console
-          console.log(`Channel 0 queue length: ${length0}`);
+          console.log('Queue lengths:', { channel0: getQueueLength(0), channel1: getQueueLength(1) });
           // eslint-disable-next-line no-console
-          console.log(`Channel 1 queue length: ${length1}`);
-          // eslint-disable-next-line no-console
-          console.log('Channel 0 item at index 1:', item0);
-          // eslint-disable-next-line no-console
-          console.log('Channel 1 item at index 1:', item1);
+          console.log('Next item on each channel:', { channel0: getQueueItemInfo(1, 0), channel1: getQueueItemInfo(1, 1) });
+          showDebugConsole();
         },
-        buttonText: 'Show Queue Manipulation Result Interface',
+        buttonText: 'Log Queue Details (Opens The Debug Console)',
         buttonType: 'default',
         channel: 'global',
-        codeExample: `// All queue manipulation functions return a QueueManipulationResult:
-interface QueueManipulationResult {
-  success: boolean;          // Whether the operation was successful
-  error?: string;            // Error message if operation failed
-  updatedQueue?: QueueSnapshot; // The queue snapshot after the operation (if successful)
-}
+        codeExample: `// Reading the queue
+getQueueLength(0); // items on channel 0
+getQueueItemInfo(1, 0); // next item on channel 0
 
-// Example usage:
+// Rearranging calls return a result:
+// { success, error?, updatedQueue? }
 const result = await removeQueuedItem(1, 0);
-if (result.success) {
-  console.log('Success!', result.updatedQueue);
-} else {
-  console.log('Error:', result.error);
-}`,
+if (!result.success) console.log(result.error);`,
         enabledWhen: 'always'
       }
     ],
@@ -196,11 +190,7 @@ if (result.success) {
           setIsDuckingEnabled(newDuckingState);
 
           if (newDuckingState) {
-            setVolumeDucking({
-              duckingVolume: 0.25, // Background music reduced to 25%
-              priorityChannel: 1, // Channel 1 (voice) has priority
-              priorityVolume: 1.0 // Voice plays at full volume
-            });
+            setVolumeDucking(DEMO_DUCKING);
           } else {
             clearVolumeDucking();
           }

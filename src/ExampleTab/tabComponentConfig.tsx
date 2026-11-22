@@ -2,43 +2,48 @@ import type { JSX } from 'react';
 import { ExampleTabs, FadeOption } from '../types';
 import CaptionPanel from '../V3Panels/CaptionPanel';
 import PlaylistPanel from '../V3Panels/PlaylistPanel';
+import VisualizerPanel from '../V3Panels/VisualizerPanel';
 import FadeControls from './FadeControls';
 import VolumeControlsSection from './VolumeControlsSection';
 
-// Type-safe factory functions for each component
-function createFadeControls(selectedFadeOption: FadeOption, onFadeOptionChange: (option: FadeOption) => void): JSX.Element {
-  return <FadeControls key={ExampleTabs.PAUSE_RESUME} onFadeOptionChange={onFadeOptionChange} selectedFadeOption={selectedFadeOption} />;
-}
-
-function createVolumeControlsSection(): JSX.Element {
-  return <VolumeControlsSection key={ExampleTabs.VOLUME_LOOPING} />;
+/** Extra components a tab shows: settings above its controls, and a live panel beside them. */
+export interface TabComponents {
+  /** Shown above the controls (settings the buttons use). */
+  above: JSX.Element[];
+  /** Shown beside the controls (stays in view while scrolling; a mini player on phones). */
+  beside: JSX.Element | undefined;
 }
 
 export function getTabSpecificComponents(
   currentTab: ExampleTabs,
   selectedFadeOption?: FadeOption,
   onFadeOptionChange?: (option: FadeOption) => void
-): JSX.Element[] {
-  const components: JSX.Element[] = [];
-
+): TabComponents {
   switch (currentTab) {
     case ExampleTabs.PAUSE_RESUME:
-      components.push(createFadeControls(selectedFadeOption ?? 'None', onFadeOptionChange ?? ((): void => undefined)));
-      break;
+      return {
+        above: [
+          <FadeControls
+            key={currentTab}
+            onFadeOptionChange={onFadeOptionChange ?? ((): void => undefined)}
+            selectedFadeOption={selectedFadeOption ?? 'None'}
+          />
+        ],
+        beside: undefined
+      };
     case ExampleTabs.VOLUME_LOOPING:
-      components.push(createVolumeControlsSection());
-      break;
+      return { above: [<VolumeControlsSection key={currentTab} />], beside: undefined };
     case ExampleTabs.PLAYLIST:
-      components.push(<PlaylistPanel key={ExampleTabs.PLAYLIST} variant="playlist" />);
-      break;
+      return { above: [], beside: <PlaylistPanel variant="playlist" /> };
     case ExampleTabs.PLAYBACK:
-      components.push(<PlaylistPanel key={ExampleTabs.PLAYBACK} variant="playback" />);
-      break;
+      return { above: [], beside: <PlaylistPanel variant="playback" /> };
+    case ExampleTabs.VISUALIZER:
+      return { above: [], beside: <VisualizerPanel /> };
     case ExampleTabs.SPRITES_CAPTIONS:
+      return { above: [], beside: <CaptionPanel channels={[0]} /> };
     case ExampleTabs.NOTIFICATIONS:
-      components.push(<CaptionPanel key={currentTab} />);
-      break;
+      return { above: [], beside: <CaptionPanel channels={[1]} /> };
+    default:
+      return { above: [], beside: undefined };
   }
-
-  return components;
 }

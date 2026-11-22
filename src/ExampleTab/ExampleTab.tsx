@@ -29,34 +29,45 @@ function ExampleTab(props: ExampleTabProps): JSX.Element {
   const { handleMoveDown, handleMoveUp, handleRemoveItem } = useQueueManipulation();
 
   // Get tab-specific components
-  const tabSpecificComponents = getTabSpecificComponents(currentExampleTab, selectedFadeOption, onFadeOptionChange);
+  const { above, beside } = getTabSpecificComponents(currentExampleTab, selectedFadeOption, onFadeOptionChange);
 
   // Determine which features are enabled for current tab
   const enableReordering = currentExampleTab === ExampleTabs.ADVANCED_QUEUE_MANIPULATION;
   const showAudioInfo = currentExampleTab === ExampleTabs.AUDIO_INFO;
 
+  const controls: JSX.Element = (
+    <div className="channel-grouped-layout">
+      {global.length > 0 && <GlobalControls examples={global} pauseState={pauseState} queueState={queueState} />}
+      <ChannelsLayout
+        channel0Examples={channel0}
+        channel1Examples={channel1}
+        enableReordering={enableReordering}
+        onMoveDown={handleMoveDown}
+        onMoveUp={handleMoveUp}
+        onRemoveItem={handleRemoveItem}
+        pauseState={pauseState}
+        queueLengths={queueLengths}
+        queueState={queueState}
+        showAudioInfo={showAudioInfo}
+        visualizerRefs={visualizerRefs}
+      />
+    </div>
+  );
+
   return (
     <div className="description-and-channel-example-container">
       <TabDescription descriptions={currentContent.description} />
 
-      {tabSpecificComponents}
+      {above}
 
-      <div className="channel-grouped-layout">
-        {global.length > 0 && <GlobalControls examples={global} pauseState={pauseState} queueState={queueState} />}
-        <ChannelsLayout
-          channel0Examples={channel0}
-          channel1Examples={channel1}
-          enableReordering={enableReordering}
-          onMoveDown={handleMoveDown}
-          onMoveUp={handleMoveUp}
-          onRemoveItem={handleRemoveItem}
-          pauseState={pauseState}
-          queueLengths={queueLengths}
-          queueState={queueState}
-          showAudioInfo={showAudioInfo}
-          visualizerRefs={visualizerRefs}
-        />
-      </div>
+      {beside === undefined ? (
+        controls
+      ) : (
+        <div className="example-with-panel">
+          {controls}
+          <aside className="example-side-panel">{beside}</aside>
+        </div>
+      )}
     </div>
   );
 }
