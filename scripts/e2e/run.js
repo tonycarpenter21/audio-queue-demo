@@ -71,11 +71,16 @@ const check = async (name, run) => {
     await click('Queue A Playlist (Channel 0)');
     await page.waitForTimeout(1500);
     assert.match(await text('.v3-panel'), /Background Music 0:0\d \/ 2:47 · 1x · playing · 3 up next/);
+    const upNext = async () => page.locator('.v3-up-next li').allInnerTexts();
+    assert.deepEqual((await upNext()).sort(), ['Laser Volley', 'Teleporter Hum', 'Teleporter Wind-Down']);
+    await click('Shuffle Upcoming Tracks (Channel 0)');
+    await page.waitForTimeout(200);
+    assert.deepEqual((await upNext()).sort(), ['Laser Volley', 'Teleporter Hum', 'Teleporter Wind-Down'], 'shuffle lost tracks');
     await click('Repeat: off (Channel 0)');
     assert.equal(await page.getByRole('button', { name: /Repeat:/ }).innerText(), 'Repeat: all (Channel 0)');
     await click('Next Track (Channel 0)');
     await page.waitForTimeout(1200);
-    assert.match(await text('.v3-panel'), /Teleporter Hum .*Recently played: getHistory\(0\) Background Music \(stopped/);
+    assert.match(await text('.v3-panel'), /Recently played: getHistory\(0\) Background Music \(stopped/);
     assert.equal(await page.locator('.channel-section').count(), 1, 'only channel 0 has examples here');
     const panel = await page.locator('.example-side-panel').boundingBox();
     const controls = await page.locator('.channel-section').first().boundingBox();

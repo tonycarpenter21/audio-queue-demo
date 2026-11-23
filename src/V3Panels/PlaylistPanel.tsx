@@ -21,7 +21,8 @@ interface PlaylistPanelProps {
 
 /** Now playing and position for the playlist channel, plus the history on the Playlist tab. */
 function PlaylistPanel({ variant }: PlaylistPanelProps): JSX.Element {
-  const { current: info } = useChannel(PLAYLIST_CHANNEL);
+  const { current: info, items } = useChannel(PLAYLIST_CHANNEL);
+  const upNext = items.slice(1);
   // At most 20 entries (historySize), so reading it on each render is cheap
   const history = getHistory(PLAYLIST_CHANNEL).slice(-5).reverse();
 
@@ -47,6 +48,16 @@ function PlaylistPanel({ variant }: PlaylistPanelProps): JSX.Element {
         </>
       ) : (
         <div className="v3-meta">Nothing playing. Queue the playlist, then try the lock screen or your media keys.</div>
+      )}
+      {variant === 'playlist' && upNext.length > 0 && (
+        <>
+          <div className="v3-panel-subtitle">Up next (shuffle changes this order)</div>
+          <ol className="v3-history v3-up-next">
+            {upNext.map((item) => (
+              <li key={item.id}>{titleOf(item)}</li>
+            ))}
+          </ol>
+        </>
       )}
       {variant === 'playlist' && history.length > 0 && (
         <>
