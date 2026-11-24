@@ -5,7 +5,7 @@
  * the first sound. Everything is measured, not judged by ear: play() results, events, and the
  * playback position against wall-clock time.
  */
-import { createAudioQueue } from 'audioq';
+import { createAudioQueue, QueueConfig } from 'audioq';
 import { createBeep } from '../audio/beep';
 
 /** What happened to one clip of a sequence. Times are milliseconds since the experiment began. */
@@ -16,6 +16,8 @@ export interface ClipRecord {
   error?: string;
   /** How an audioq item finished ('ended', 'error', ...). */
   outcome?: string;
+  /** How far it played (ms): 0 for a clip that started but never moved. */
+  playedToMs?: number;
   playCalled?: number;
   playing?: number;
   playResult?: string;
@@ -24,6 +26,10 @@ export interface ClipRecord {
 /** One position sample: the element's position against the time since play() was called. */
 export interface PositionSample {
   currentTimeMs: number;
+  /** The duration reported at that moment (-1 while unknown). */
+  durationMs: number;
+  /** audioq's progress (0-1), for the audioq sample. */
+  progress?: number;
   paused: boolean;
   readyState: number;
   wallMs: number;
@@ -87,9 +93,14 @@ const waitForEnd = (element: HTMLAudioElement, record: ClipRecord, now: () => nu
   });
 
 const summarizeClips = (clips: ClipRecord[]): string => {
-  const played = clips.filter((clip) => clip.playing !== undefined).length;
+  const finished = clips.filter((clip) => (clip.playedToMs ?? 0) > 200).length;
+  const stuck = clips.find((clip) => clip.playing !== undefined && (clip.playedToMs ?? 0) <= 200);
   const refused = clips.find((clip) => clip.playResult !== undefined && clip.playResult !== 'resolved');
-  return `${played} of ${clips.length} clips played${refused ? `; first refusal: clip ${clips.indexOf(refused) + 1} (${refused.playResult ?? ''})` : ''}`;
+  return [
+    `${finished} of ${clips.length} clips played through`,
+    ...(stuck ? [`clip ${clips.indexOf(stuck) + 1} started but did not move (${stuck.playedToMs ?? 0} ms)`] : []),
+    ...(refused ? [`first refusal: clip ${clips.indexOf(refused) + 1} (${refused.playResult ?? ''})`] : [])
+  ].join('; ');
 };
 
 /**
@@ -100,7 +111,8 @@ const runSequence = (
   id: string,
   title: string,
   clips: readonly string[],
-  elementFor: (index: number, clip: string) => HTMLAudioElement
+  elementFor: (index: number, clip: string) => HTMLAudioElement,
+  onStarted?: (index: number) => void
 ): Promise<ExperimentResult> => {
   const startedAt = new Date().toISOString();
   const now = elapsed(performance.now());
@@ -112,8 +124,17 @@ const runSequence = (
     const record: ClipRecord = { clip: clip.split('/').pop() ?? clip, created: now() };
     records.push(record);
     const element = elementFor(index, clip);
-    element.addEventListener('playing', () => (record.playing ??= now()), { once: true });
-    const ended = waitForEnd(element, record, now);
+    element.addEventListener(
+      'playing',
+      () => {
+        record.playing ??= now();
+        onStarted?.(index);
+      },
+      { once: true }
+    );
+    const ended = waitForEnd(element, record, now).then(() => {
+      record.playedToMs = Math.round(element.currentTime * 1000);
+    });
     record.playCalled = now();
     element.play().then(
       () => (record.playResult = 'resolved'),
@@ -152,6 +173,7 @@ const samplePosition = (element: HTMLAudioElement, durationMs: number): Promise<
     const timer = setInterval(() => {
       samples.push({
         currentTimeMs: Math.round(element.currentTime * 1000),
+        durationMs: Number.isFinite(element.duration) ? Math.round(element.duration * 1000) : -1,
         paused: element.paused,
         readyState: element.readyState,
         wallMs: Math.round(performance.now() - start)
@@ -170,55 +192,112 @@ const summarizeSamples = (samples: PositionSample[]): string => {
     const previous = samples[index - 1];
     return previous ? Math.max(largest, sample.currentTimeMs - previous.currentTimeMs) : largest;
   }, 0);
-  return first
+  // Each distinct duration the browser reported, in order (the demo's target is ES5: no Set spread)
+  const durations = samples.map((sample) => sample.durationMs).filter((value, index, all) => all.indexOf(value) === index);
+  const moved = first
     ? `position first moved at ${first.wallMs} ms (to ${first.currentTimeMs} ms); largest step between 100 ms samples: ${jump} ms`
     : 'position never moved';
+  return `${moved}; durations reported: ${durations.join(' → ')} ms`;
+};
+
+/** Queues the clips on one audioq channel from the tap, recording events and audioq's debug log. */
+const runAudioqQueue = (id: string, title: string, clips: readonly string[], config: Partial<QueueConfig>): Promise<ExperimentResult> => {
+  const startedAt = new Date().toISOString();
+  const now = elapsed(performance.now());
+  const log: string[] = [];
+  const write =
+    (level: string) =>
+    (...args: unknown[]): void => {
+      log.push(`${now()} ms ${level} ${args.map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')}`);
+    };
+  const queue = createAudioQueue({ ...config, debug: true, logger: { debug: write('debug'), error: write('error'), warn: write('warn') } });
+  const records: ClipRecord[] = [];
+  const byId = new Map<number, ClipRecord>();
+  queue.onAudioComplete(0, (info) => {
+    const record = byId.get(info.id);
+    if (record) record.playedToMs = Math.round(info.playedMs);
+  });
+  const handles = clips.map((clip) => {
+    const record: ClipRecord = { clip: clip.split('/').pop() ?? clip, created: now() };
+    records.push(record);
+    return queue.queueAudio(clip).then((item) => {
+      byId.set(item.id, record);
+      void item.started.then((started) => {
+        if (started) record.playing = now();
+      });
+      return item.finished.then((outcome) => {
+        record.ended = now();
+        record.outcome = outcome;
+      });
+    });
+  });
+  const timeout = new Promise<void>((resolve) => setTimeout(resolve, clips.length * CLIP_TIMEOUT_MS));
+  return Promise.race([Promise.all(handles).then(() => undefined), timeout]).then(() => {
+    void queue.destroyAllChannels();
+    return { clips: records, durationMs: now(), id, log, samples: [], startedAt, summary: summarizeClips(records), title };
+  });
 };
 
 export const EXPERIMENTS: readonly Experiment[] = [
   {
     description: 'The Queue Management case: four clips queued on one channel by this tap.',
     id: 'audioq-queue',
-    run: (clips) => {
-      const startedAt = new Date().toISOString();
-      const now = elapsed(performance.now());
-      const log: string[] = [];
-      const write =
-        (level: string) =>
-        (...args: unknown[]): void => {
-          log.push(`${now()} ms ${level} ${args.map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')}`);
-        };
-      const queue = createAudioQueue({ debug: true, logger: { debug: write('debug'), error: write('error'), warn: write('warn') } });
-      const records: ClipRecord[] = [];
-      const handles = clips.map((clip) => {
-        const record: ClipRecord = { clip: clip.split('/').pop() ?? clip, created: now() };
-        records.push(record);
-        return queue.queueAudio(clip).then((item) => {
-          void item.started.then((started) => {
-            if (started) record.playing = now();
-          });
-          return item.finished.then((outcome) => {
-            record.ended = now();
-            record.outcome = outcome;
-          });
-        });
-      });
-      const timeout = new Promise<void>((resolve) => setTimeout(resolve, clips.length * CLIP_TIMEOUT_MS));
-      return Promise.race([Promise.all(handles).then(() => undefined), timeout]).then(() => {
-        void queue.destroyAllChannels();
-        return {
-          clips: records,
-          durationMs: now(),
-          id: 'audioq-queue',
-          log,
-          samples: [],
-          startedAt,
-          summary: summarizeClips(records),
-          title: 'audioq queue'
-        };
-      });
-    },
+    run: (clips) => runAudioqQueue('audioq-queue', 'audioq queue', clips, {}),
     title: 'audioq queue (current library)'
+  },
+  {
+    description: 'The same queue with preloading off (prefetchCount: 0): each element is created when it plays.',
+    id: 'audioq-no-prefetch',
+    run: (clips) => runAudioqQueue('audioq-no-prefetch', 'audioq queue, no preloading', clips, { prefetchCount: 0 }),
+    title: 'audioq queue, preloading off'
+  },
+  {
+    description: 'audioq’s preloading with plain elements: when a clip starts, the next element is created and preloads (preload = auto).',
+    id: 'preload-next-auto',
+    run: (clips) => {
+      const elements: HTMLAudioElement[] = [];
+      const prepare = (index: number): HTMLAudioElement => {
+        const element = new Audio();
+        element.preload = 'auto';
+        element.src = clips[index] ?? '';
+        elements[index] = element;
+        return element;
+      };
+      return runSequence(
+        'preload-next-auto',
+        'Next element preloaded during playback (auto)',
+        clips,
+        (index) => elements[index] ?? prepare(index),
+        (index) => {
+          if (index + 1 < clips.length) prepare(index + 1);
+        }
+      );
+    },
+    title: 'Next element preloaded during playback'
+  },
+  {
+    description: 'The same, but the next element does not preload (preload = none) until it is played.',
+    id: 'preload-next-none',
+    run: (clips) => {
+      const elements: HTMLAudioElement[] = [];
+      const prepare = (index: number): HTMLAudioElement => {
+        const element = new Audio();
+        element.preload = 'none';
+        element.src = clips[index] ?? '';
+        elements[index] = element;
+        return element;
+      };
+      return runSequence(
+        'preload-next-none',
+        'Next element created during playback (preload none)',
+        clips,
+        (index) => elements[index] ?? prepare(index),
+        (index) => {
+          if (index + 1 < clips.length) prepare(index + 1);
+        }
+      );
+    },
+    title: 'Next element created during playback, no preload'
   },
   {
     description: 'A new element per clip, created when the previous clip ends (outside the tap).',
@@ -337,7 +416,9 @@ export const EXPERIMENTS: readonly Experiment[] = [
           const info = queue.getCurrentAudioInfo(0);
           samples.push({
             currentTimeMs: Math.round(info?.currentTime ?? 0),
+            durationMs: Math.round(info?.duration ?? -1),
             paused: info?.isPaused ?? true,
+            progress: info?.progress ?? 0,
             readyState: info?.isLoading === true ? 0 : 4,
             wallMs: Math.round(performance.now() - start)
           });
