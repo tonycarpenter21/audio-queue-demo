@@ -247,13 +247,15 @@ export const EXPERIMENTS: readonly Experiment[] = [
     title: 'audioq queue (current library)'
   },
   {
-    description: 'The same queue with preloading off (prefetchCount: 0): each element is created when it plays.',
+    description:
+      'The same queue with preloading off (prefetchCount: 0). On iOS audioq now never preloads, so there this should match the run above.',
     id: 'audioq-no-prefetch',
     run: (clips) => runAudioqQueue('audioq-no-prefetch', 'audioq queue, no preloading', clips, { prefetchCount: 0 }),
     title: 'audioq queue, preloading off'
   },
   {
-    description: 'audioq’s preloading with plain elements: when a clip starts, the next element is created and preloads (preload = auto).',
+    description:
+      'What audioq used to do, with plain elements: when a clip starts, the next element is created and preloads (preload = auto). Expected to stall on iOS.',
     id: 'preload-next-auto',
     run: (clips) => {
       const elements: HTMLAudioElement[] = [];
