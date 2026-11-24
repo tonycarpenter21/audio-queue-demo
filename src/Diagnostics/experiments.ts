@@ -5,7 +5,8 @@
  * the first sound. Everything is measured, not judged by ear: play() results, events, and the
  * playback position against wall-clock time.
  */
-import { createAudioQueue, QueueConfig } from 'audioq';
+import type { QueueConfig } from 'audioq';
+import { createAudioQueue, destroyAllChannels, getCurrentAudioInfo, onAudioComplete, queueAudio } from 'audioq/queue';
 import { createBeep } from '../audio/beep';
 
 /** What happened to one clip of a sequence. Times are milliseconds since the experiment began. */
@@ -213,14 +214,14 @@ const runAudioqQueue = (id: string, title: string, clips: readonly string[], con
   const queue = createAudioQueue({ ...config, debug: true, logger: { debug: write('debug'), error: write('error'), warn: write('warn') } });
   const records: ClipRecord[] = [];
   const byId = new Map<number, ClipRecord>();
-  queue.onAudioComplete(0, (info) => {
+  onAudioComplete(queue, 0, (info) => {
     const record = byId.get(info.id);
     if (record) record.playedToMs = Math.round(info.playedMs);
   });
   const handles = clips.map((clip) => {
     const record: ClipRecord = { clip: clip.split('/').pop() ?? clip, created: now() };
     records.push(record);
-    return queue.queueAudio(clip).then((item) => {
+    return queueAudio(queue, clip).then((item) => {
       byId.set(item.id, record);
       void item.started.then((started) => {
         if (started) record.playing = now();
@@ -233,7 +234,7 @@ const runAudioqQueue = (id: string, title: string, clips: readonly string[], con
   });
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, clips.length * CLIP_TIMEOUT_MS));
   return Promise.race([Promise.all(handles).then(() => undefined), timeout]).then(() => {
-    void queue.destroyAllChannels();
+    void destroyAllChannels(queue);
     return { clips: records, durationMs: now(), id, log, samples: [], startedAt, summary: summarizeClips(records), title };
   });
 };
@@ -408,12 +409,12 @@ export const EXPERIMENTS: readonly Experiment[] = [
     run: (_, longTrack) => {
       const startedAt = new Date().toISOString();
       const queue = createAudioQueue({ logger: null });
-      void queue.queueAudio(longTrack);
+      void queueAudio(queue, longTrack);
       const start = performance.now();
       const samples: PositionSample[] = [];
       return new Promise<ExperimentResult>((resolve) => {
         const timer = setInterval(() => {
-          const info = queue.getCurrentAudioInfo(0);
+          const info = getCurrentAudioInfo(queue, 0);
           samples.push({
             currentTimeMs: Math.round(info?.currentTime ?? 0),
             durationMs: Math.round(info?.duration ?? -1),
@@ -424,7 +425,7 @@ export const EXPERIMENTS: readonly Experiment[] = [
           });
           if (performance.now() - start >= 5000) {
             clearInterval(timer);
-            void queue.destroyAllChannels();
+            void destroyAllChannels(queue);
             resolve({
               clips: [],
               durationMs: 5000,
