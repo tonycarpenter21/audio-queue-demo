@@ -12,9 +12,43 @@ const types = {
   '.json': 'application/json',
   '.svg': 'image/svg+xml'
 };
-const startServer = (root, port) =>
+const REPORT_LIMIT_BYTES = 5 * 1024 * 1024;
+const defaultReportDir = path.join(__dirname, '..', '..', 'qa-reports');
+
+/** Saves a diagnostics report POSTed by the /diagnostics page; answers with its path. */
+const saveReport = (req, res, reportDir) => {
+  const chunks = [];
+  let size = 0;
+  req.on('data', (chunk) => {
+    size += chunk.length;
+    if (size > REPORT_LIMIT_BYTES) req.destroy();
+    else chunks.push(chunk);
+  });
+  req.on('end', () => {
+    try {
+      JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    } catch {
+      res.writeHead(400);
+      return res.end('not JSON');
+    }
+    fs.mkdirSync(reportDir, { recursive: true });
+    const name = `report-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    const file = path.join(reportDir, name);
+    fs.writeFileSync(file, Buffer.concat(chunks));
+    console.log(`Diagnostics report saved: ${file}`);
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end(path.join(path.basename(reportDir), name));
+  });
+};
+
+/**
+ * Serves the build at /audio-queue-demo/, with Range support; POST /audio-queue-demo/__qa saves a
+ * diagnostics report into `reportDir` (qa-reports/ in the demo by default).
+ */
+const startServer = (root, port, reportDir = defaultReportDir) =>
   http
     .createServer((req, res) => {
+      if (req.method === 'POST' && req.url.split('?')[0] === `${base}/__qa`) return saveReport(req, res, reportDir);
       let p = decodeURIComponent(req.url.split('?')[0]);
       if (!p.startsWith(base)) {
         res.writeHead(404);

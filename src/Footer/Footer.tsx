@@ -14,6 +14,7 @@ function Footer(): JSX.Element {
         <a href="https://github.com/tonycarpenter21/audioq">NPM Package Github Repo</a>
         <a href="https://github.com/tonycarpenter21/audio-queue-demo">Demo Github Repo</a>
         <a href="https://tonycarpenter21.github.io/audio-queue-docs/">Documentation</a>
+        <a href={`${process.env.PUBLIC_URL}/diagnostics`}>Device Diagnostics</a>
       </div>
       <div>
         This project is licensed under the <a href="https://github.com/tonycarpenter21/audioq/blob/main/LICENSE">MIT License</a>

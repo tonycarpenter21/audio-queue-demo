@@ -31,6 +31,8 @@ server.on('listening', () => {
   for (const { address, name } of addresses) {
     console.log(`  http://${address}:${PORT}${BASE}   (${name}${isPrivate(address) ? '' : ', probably not your Wi-Fi'})`);
   }
+  console.log(`\nDevice diagnostics: open /audio-queue-demo/diagnostics on the phone (link at the bottom of every page).`);
+  console.log(`Reports are saved in ${path.join(__dirname, '..', 'qa-reports')}`);
   console.log(
     '\nIf the phone cannot connect: allow Node.js through the firewall for private networks, and make ' +
       'sure your Wi-Fi is set to a private network (Windows: Settings > Network & internet > Wi-Fi > ' +

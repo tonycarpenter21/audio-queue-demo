@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { type JSX, MutableRefObject } from 'react';
 import { AudioQueueVisualizerHandle } from '../AudioQueueVisualizer/AudioQueueVisualizer';
+import DiagnosticsPage from '../Diagnostics/DiagnosticsPage';
 import ExampleTab from '../ExampleTab';
 import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from '../types';
 
@@ -21,6 +22,7 @@ function AppRoutes({ examples, onFadeOptionChange, visualizerRefs }: AppRoutesPr
   return (
     <Routes>
       <Route element={<Navigate replace to={ExampleTabRoutes[ExampleTabs.QUEUE_MANAGEMENT]} />} path="/" />
+      <Route element={<DiagnosticsPage />} path="/diagnostics" />
       {routableTabs.map((tab: ExampleTabs) => (
         <Route element={createExampleTabRoute(tab)} key={tab} path={ExampleTabRoutes[tab]} />
       ))}

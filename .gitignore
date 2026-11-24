@@ -25,3 +25,6 @@ yarn-error.log*
 
 # cursor
 .cursorrules
+
+# Device diagnostics reports (npm run phone)
+/qa-reports

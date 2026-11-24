@@ -220,6 +220,24 @@ const check = async (name, run) => {
     assert.notEqual(await playbackState(), 'playing', 'still playing after the back button');
   });
 
+  await check('diagnostics: an experiment runs and its report is saved', async () => {
+    await page.goto(`${BASE}/diagnostics`);
+    const item = page.locator('.diagnostics-item', { hasText: 'audioq queue (current library)' });
+    await item.getByRole('button', { name: 'Run' }).click();
+    await item.locator('.diagnostics-result').waitFor({ timeout: 40000 });
+    assert.match(await item.locator('.diagnostics-result').innerText(), /4 of 4 clips played/);
+    await page.locator('.diagnostics-saved').waitFor({ timeout: 5000 });
+    const saved = await page.locator('.diagnostics-saved').innerText();
+    const file = path.join(__dirname, '..', '..', saved.replace(/^.*: /, '').trim());
+    const report = JSON.parse(require('node:fs').readFileSync(file, 'utf8'));
+    assert.equal(report.results[0].id, 'audioq-queue');
+    assert.ok(
+      report.results[0].log.some((line) => line.includes('audioq [channel 0] start')),
+      'no debug log in the report'
+    );
+    require('node:fs').unlinkSync(file);
+  });
+
   await check('no page errors', async () => assert.deepEqual(errors, []));
 
   await browser.close();
