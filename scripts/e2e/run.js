@@ -247,16 +247,27 @@ const check = async (name, run) => {
   };
 
   await check('diagnostics: pause tests resume where they paused, and record what was heard', async () => {
-    for (const title of ['Pause: plain element', 'Pause: audioq, full volume', 'Pause: audioq, half volume']) {
+    for (const title of [
+      'Pause: Full volume: play() only',
+      'Pause: Full volume: fresh element',
+      'Pause: Web Audio: fresh element',
+      'Pause: audioq, full volume',
+      'Pause: audioq, half volume'
+    ]) {
       const item = page.locator('.diagnostics-item', { hasText: title });
       await item.getByRole('button', { name: 'Run' }).click();
       await item.locator('.diagnostics-result').waitFor({ timeout: 15000 });
-      const [, atPause, , fromPause] =
-        /paused at (\d+) ms.*resumed from (\d+) ms \(([+-]\d+) ms/.exec(await item.locator('.diagnostics-result').innerText()) ?? [];
-      assert.ok(Number(atPause) >= 700, `${title}: paused at ${atPause} ms`);
-      assert.ok(Math.abs(Number(fromPause)) <= 60, `${title}: resumed ${fromPause} ms from the pause`);
+      const summary = await item.locator('.diagnostics-result').innerText();
+      const atPause = Number(/paused at (\d+) ms/.exec(summary)?.[1]);
+      const later = Number(/(\d+) ms 300 ms later/.exec(summary)?.[1]);
+      assert.ok(atPause >= 700, `${title}: paused at ${atPause} ms`);
+      // A fresh element reads 0 until it has loaded, so judge by where it is 300 ms after resuming.
+      assert.ok(later >= atPause && later <= atPause + 450, `${title}: ${later} ms 300 ms after resuming from ${atPause} ms`);
     }
-    await page.locator('.diagnostics-item', { hasText: 'Pause: plain element' }).getByRole('button', { name: 'Every word once' }).click();
+    await page
+      .locator('.diagnostics-item', { hasText: 'Pause: Full volume: play() only' })
+      .getByRole('button', { name: 'Every word once' })
+      .click();
     await page.waitForTimeout(500);
     const report = await savedReport('.diagnostics-saved');
     assert.equal(report.results.find((result) => result.id === 'pause-plain').heard, 'Every word once');

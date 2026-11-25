@@ -3,10 +3,10 @@
  * plays a short sentence, pauses it after PAUSE_AT_MS, waits, and resumes, recording the position
  * at each step. Whether a word was skipped or repeated can only be heard, so the page also asks.
  *
- * Variants: a plain element; an element routed through Web Audio (as audioq does on iOS when a
- * volume is between 0 and 1) with no seek, with a seek to the position read at resume (what audioq
- * did), and with a seek back to the position saved at the pause; and audioq itself, at full volume
- * and at half volume (routed on iOS).
+ * What round 1 on an iPhone showed: a plain element jumps ~600 ms forward in the first 100 ms
+ * after play() (words skipped), and an element routed through Web Audio replays old buffered audio
+ * (words repeated) whether or not it seeks first. These variants try ways around both: seeking
+ * back to the paused position, reloading the same element, and switching to a fresh element.
  */
 import {
   createAudioQueue,
@@ -77,30 +77,100 @@ const runPauseTest = async (id: string, title: string, player: Player): Promise<
     startedAt,
     summary:
       `paused at ${atPause} ms; moved ${signed(beforeResume - atPause)} while paused; ` +
-      `resumed from ${atResume} ms (${signed(atResume - atPause)} from the pause); ${after300} ms 300 ms later`,
+      `resumed from ${atResume} ms (${signed(atResume - atPause)} from the pause); ` +
+      `first 100 ms after resuming moved ${signed(after100 - atResume)} (about +100 ms is right); ${after300} ms 300 ms later`,
     title
   };
 };
 
 /** Resolves when the element ends, or after GIVE_UP_MS. */
-const ended = (element: HTMLAudioElement): Promise<void> =>
-  Promise.race([new Promise<void>((resolve) => element.addEventListener('ended', () => resolve(), { once: true })), delay(GIVE_UP_MS)]);
+const ended = (element: () => HTMLAudioElement): Promise<void> =>
+  new Promise((resolve) => {
+    const start = performance.now();
+    const timer = setInterval(() => {
+      if (element().ended || performance.now() - start > GIVE_UP_MS) {
+        clearInterval(timer);
+        resolve();
+      }
+    }, 50);
+  });
+
+/** Web Audio routing at half volume, as audioq does on iOS for volumes between 0 and 1. */
+interface Route {
+  /** Routes an element (each element can be routed once). */
+  attach: (element: HTMLAudioElement) => void;
+  close: () => void;
+}
+
+const createRoute = (): Route => {
+  const scope = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
+  const Context = scope.AudioContext ?? scope.webkitAudioContext;
+  if (!Context) return { attach: (): void => undefined, close: (): void => undefined };
+  const context = new Context();
+  void context.resume();
+  const gain = context.createGain();
+  gain.gain.value = 0.5;
+  gain.connect(context.destination);
+  return {
+    attach: (element): void => {
+      context.createMediaElementSource(element).connect(gain);
+    },
+    close: (): void => {
+      void context.close();
+    }
+  };
+};
+
+/** Sets the position now if the element knows its duration, otherwise as soon as it does. */
+const seekWhenReady = (element: HTMLAudioElement, seconds: number): void => {
+  if (element.readyState >= 1) element.currentTime = seconds;
+  else element.addEventListener('loadedmetadata', () => (element.currentTime = seconds), { once: true });
+};
 
 /**
- * A plain element (already playing). `beforeResume` runs just before play() on resume, with the
- * position saved at the pause (seconds).
+ * How to resume: gets the paused element and the position saved at the pause (seconds), and
+ * returns the element to play (the same one or a new one).
  */
-const elementPlayer = (
-  element: HTMLAudioElement,
-  beforeResume: (element: HTMLAudioElement, pausedAt: number) => void,
-  release: () => void = (): void => undefined
-): Player => {
+type ResumeStrategy = (element: HTMLAudioElement, pausedAt: number, route: Route | undefined) => HTMLAudioElement;
+
+const playAgain: ResumeStrategy = (element) => element;
+
+const seekBack: ResumeStrategy = (element, pausedAt) => {
+  element.currentTime = pausedAt;
+  return element;
+};
+
+/** Reloads the same element (it keeps being allowed to play), then seeks back. */
+const reload: ResumeStrategy = (element, pausedAt) => {
+  const source = element.src;
+  element.src = source;
+  element.load();
+  seekWhenReady(element, pausedAt);
+  return element;
+};
+
+/** Moves to a new element (routed too, if the old one was) positioned at the pause. */
+const freshElement: ResumeStrategy = (element, pausedAt, route) => {
+  const next = new Audio(element.src);
+  route?.attach(next);
+  seekWhenReady(next, pausedAt);
+  element.removeAttribute('src');
+  element.load();
+  return next;
+};
+
+/** Plays the sentence on a plain element from the tap, optionally routed, resuming with `strategy`. */
+const elementPlayer = (strategy: ResumeStrategy, routed: boolean): Player => {
+  let element = new Audio(sentence);
+  const route = routed ? createRoute() : undefined;
+  route?.attach(element);
+  element.play().catch(() => undefined);
   let pausedAt = 0;
   return {
     finish: () =>
-      ended(element).then(() => {
+      ended(() => element).then(() => {
         element.pause();
-        release();
+        route?.close();
       }),
     pause: () => {
       pausedAt = element.currentTime;
@@ -108,35 +178,11 @@ const elementPlayer = (
     },
     position: () => Math.round(element.currentTime * 1000),
     resume: () => {
-      beforeResume(element, pausedAt);
+      element = strategy(element, pausedAt, route);
       element.play().catch(() => undefined);
     }
   };
 };
-
-/** Routes an element through Web Audio at half volume; returns a function that closes the context. */
-const routeAtHalfVolume = (element: HTMLAudioElement): (() => void) => {
-  const scope = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
-  const Context = scope.AudioContext ?? scope.webkitAudioContext;
-  if (!Context) return (): void => undefined;
-  const context = new Context();
-  void context.resume();
-  const gain = context.createGain();
-  gain.gain.value = 0.5;
-  context.createMediaElementSource(element).connect(gain).connect(context.destination);
-  return (): void => {
-    void context.close();
-  };
-};
-
-/** Starts the sentence on a plain element (from the tap). */
-const playSentence = (): HTMLAudioElement => {
-  const element = new Audio(sentence);
-  element.play().catch(() => undefined);
-  return element;
-};
-
-const noSeek = (): void => undefined;
 
 /** audioq on a queue of its own; `halfVolume` routes it through Web Audio on iOS. */
 const audioqPlayer = (halfVolume: boolean): Player => {
@@ -156,62 +202,77 @@ const audioqPlayer = (halfVolume: boolean): Player => {
   };
 };
 
-const ROUTED_NOTE = 'Routed through Web Audio at half volume, as audioq does on iOS for volumes between 0 and 1';
+interface PauseVariant {
+  description: string;
+  id: string;
+  player: () => Player;
+  title: string;
+}
 
-export const PAUSE_EXPERIMENTS: readonly Experiment[] = [
+const LISTEN = 'Plays “red team lost the base”, pauses after 0.7 s, resumes 1.5 s later.';
+
+const VARIANTS: readonly PauseVariant[] = [
   {
-    description: 'Plays “red team lost the base”, pauses after 0.7 s, resumes 1.5 s later. Listen: is every word heard once?',
+    description: `${LISTEN} Full volume, resumed with play() (round 1: words skipped).`,
     id: 'pause-plain',
-    run: () => runPauseTest('pause-plain', 'Pause: plain element', elementPlayer(playSentence(), noSeek)),
-    title: 'Pause: plain element'
+    player: () => elementPlayer(playAgain, false),
+    title: 'Full volume: play() only'
   },
   {
-    description: `${ROUTED_NOTE}; resumed with play() only.`,
+    description: 'Full volume; on resume, seek back to the position saved at the pause, then play().',
+    id: 'pause-plain-seek',
+    player: () => elementPlayer(seekBack, false),
+    title: 'Full volume: seek back'
+  },
+  {
+    description: 'Full volume; on resume, reload the same element and seek back to the pause.',
+    id: 'pause-plain-reload',
+    player: () => elementPlayer(reload, false),
+    title: 'Full volume: reload, seek back'
+  },
+  {
+    description: 'Full volume; on resume, continue on a new element from the pause position.',
+    id: 'pause-plain-fresh',
+    player: () => elementPlayer(freshElement, false),
+    title: 'Full volume: fresh element'
+  },
+  {
+    description: 'Half volume through Web Audio, resumed with play() (round 1: words repeated).',
     id: 'pause-routed',
-    run: () => {
-      const element = playSentence();
-      const release = routeAtHalfVolume(element);
-      return runPauseTest('pause-routed', 'Pause: Web Audio, no seek', elementPlayer(element, noSeek, release));
-    },
-    title: 'Pause: Web Audio, no seek'
+    player: () => elementPlayer(playAgain, true),
+    title: 'Web Audio: play() only'
   },
   {
-    description: `${ROUTED_NOTE}; on resume, seeks to the position the element reports then (what audioq did on iOS).`,
-    id: 'pause-routed-reseek',
-    run: () => {
-      const element = playSentence();
-      const release = routeAtHalfVolume(element);
-      const reseek = (target: HTMLAudioElement): void => {
-        const position = target.currentTime;
-        target.currentTime = position;
-      };
-      return runPauseTest('pause-routed-reseek', 'Pause: Web Audio, seek to position at resume', elementPlayer(element, reseek, release));
-    },
-    title: 'Pause: Web Audio, seek to position at resume'
+    description: 'Half volume through Web Audio; on resume, reload the same element and seek back.',
+    id: 'pause-routed-reload',
+    player: () => elementPlayer(reload, true),
+    title: 'Web Audio: reload, seek back'
   },
   {
-    description: `${ROUTED_NOTE}; on resume, seeks back to the position saved when pausing.`,
-    id: 'pause-routed-restore',
-    run: () => {
-      const element = playSentence();
-      const release = routeAtHalfVolume(element);
-      const restore = (target: HTMLAudioElement, pausedAt: number): void => {
-        target.currentTime = pausedAt;
-      };
-      return runPauseTest('pause-routed-restore', 'Pause: Web Audio, seek to position at pause', elementPlayer(element, restore, release));
-    },
-    title: 'Pause: Web Audio, seek to position at pause'
+    description: 'Half volume through Web Audio; on resume, continue on a new routed element from the pause position.',
+    id: 'pause-routed-fresh',
+    player: () => elementPlayer(freshElement, true),
+    title: 'Web Audio: fresh element'
   },
   {
-    description: 'audioq pauseChannel / resumeChannel at full volume (what the Pause & Resume tab does with no fade).',
+    description: 'audioq pauseChannel / resumeChannel at full volume (the Pause & Resume tab with no fade).',
     id: 'pause-audioq',
-    run: () => runPauseTest('pause-audioq', 'Pause: audioq, full volume', audioqPlayer(false)),
-    title: 'Pause: audioq, full volume'
+    player: () => audioqPlayer(false),
+    title: 'audioq, full volume'
   },
   {
-    description: 'The same at channel volume 0.5 (routed through Web Audio on iOS, like a ducked channel).',
+    description: 'audioq at channel volume 0.5 (routed through Web Audio on iOS, like a ducked channel).',
     id: 'pause-audioq-routed',
-    run: () => runPauseTest('pause-audioq-routed', 'Pause: audioq, half volume', audioqPlayer(true)),
-    title: 'Pause: audioq, half volume'
+    player: () => audioqPlayer(true),
+    title: 'audioq, half volume'
   }
-].map((experiment) => ({ ...experiment, askWhatYouHeard: true }));
+];
+
+export const PAUSE_EXPERIMENTS: readonly Experiment[] = VARIANTS.map((variant) => ({
+  askWhatYouHeard: true,
+  description: variant.description,
+  id: variant.id,
+  // The player is created inside the tap, so its first sound starts there.
+  run: () => runPauseTest(variant.id, `Pause: ${variant.title}`, variant.player()),
+  title: `Pause: ${variant.title}`
+}));
