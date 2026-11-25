@@ -149,6 +149,18 @@ const reload: ResumeStrategy = (element, pausedAt) => {
   return element;
 };
 
+/**
+ * Reloads, then seeks a little past the pause: iOS lets the last few tens of milliseconds sent to
+ * the speaker finish after pause(), so resuming exactly at the paused position repeats them.
+ */
+const reloadAfter =
+  (offsetMs: number): ResumeStrategy =>
+  (element, pausedAt) => {
+    element.load();
+    seekWhenReady(element, pausedAt + offsetMs / 1000);
+    return element;
+  };
+
 /** Moves to a new element (routed too, if the old one was) positioned at the pause. */
 const freshElement: ResumeStrategy = (element, pausedAt, route) => {
   const next = new Audio(element.src);
@@ -253,6 +265,41 @@ const VARIANTS: readonly PauseVariant[] = [
     id: 'pause-routed-fresh',
     player: () => elementPlayer(freshElement, true),
     title: 'Web Audio: fresh element'
+  },
+  {
+    description:
+      'Calibration, full volume: reload and resume 0 ms after the paused position. Pick the one where nothing repeats and nothing is missing.',
+    id: 'pause-calibrate-0',
+    player: () => elementPlayer(reloadAfter(0), false),
+    title: 'Calibrate: resume +0 ms'
+  },
+  {
+    description:
+      'Calibration, full volume: reload and resume 40 ms after the paused position. Pick the one where nothing repeats and nothing is missing.',
+    id: 'pause-calibrate-40',
+    player: () => elementPlayer(reloadAfter(40), false),
+    title: 'Calibrate: resume +40 ms'
+  },
+  {
+    description:
+      'Calibration, full volume: reload and resume 80 ms after the paused position. Pick the one where nothing repeats and nothing is missing.',
+    id: 'pause-calibrate-80',
+    player: () => elementPlayer(reloadAfter(80), false),
+    title: 'Calibrate: resume +80 ms'
+  },
+  {
+    description:
+      'Calibration, full volume: reload and resume 120 ms after the paused position. Pick the one where nothing repeats and nothing is missing.',
+    id: 'pause-calibrate-120',
+    player: () => elementPlayer(reloadAfter(120), false),
+    title: 'Calibrate: resume +120 ms'
+  },
+  {
+    description:
+      'Calibration, full volume: reload and resume 160 ms after the paused position. Pick the one where nothing repeats and nothing is missing.',
+    id: 'pause-calibrate-160',
+    player: () => elementPlayer(reloadAfter(160), false),
+    title: 'Calibrate: resume +160 ms'
   },
   {
     description: 'audioq pauseChannel / resumeChannel at full volume (the Pause & Resume tab with no fade).',

@@ -12,7 +12,14 @@ const CLIPS: readonly string[] = audioFilesVocalExamples.slice(0, 4);
 const ALL_EXPERIMENTS: readonly Experiment[] = [...EXPERIMENTS, ...PAUSE_EXPERIMENTS];
 
 /** Answers for experiments that ask what was heard. */
-const HEARD: readonly string[] = ['Every word once', 'A word was skipped', 'A word repeated', 'Silence after the pause'];
+const HEARD: readonly string[] = [
+  'Every word once',
+  'A word was skipped',
+  'A word repeated',
+  'Part of a word repeated',
+  'Part of a word missing',
+  'Silence after the pause'
+];
 
 /** Sends the results to the phone server, which saves them under qa-reports/ on the computer. */
 const saveReport = (results: ExperimentResult[]): Promise<SaveState> => postReport({ results });
