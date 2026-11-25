@@ -49,6 +49,7 @@ import { createExamples, DEMO_DUCKING } from './MultiChannelExampleBlock/example
 import { Example, ExampleTabs, ExampleTabRoutes, FadeOption } from './types';
 import AppRoutes from './routes/AppRoutes';
 import { usePageTitle } from './hooks/usePageTitle';
+import { traceProgressBars, traceRequested } from './Diagnostics/progressTrace';
 import { useAudioQueue } from './context/AudioQueueContext';
 import { useAudioQueueActions } from './hooks/useAudioQueueActions';
 import { usePlaylistSettings } from './hooks/usePlaylistSettings';
@@ -292,8 +293,10 @@ function App(): JSX.Element {
       getVisualizer(channelNumber)?.updateProgress(0);
       getVisualizer(channelNumber)?.setPlayingState(true);
       setQueueState(channelNumber, false);
+      // Opened with ?trace (from the diagnostics page): record what the progress bars show.
+      if (channelNumber === 0 && traceRequested()) traceProgressBars(currentExampleTab);
     },
-    [getVisualizer, setQueueState]
+    [currentExampleTab, getVisualizer, setQueueState]
   );
 
   const handleAudioComplete = useCallback(

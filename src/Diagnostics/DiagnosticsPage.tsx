@@ -2,38 +2,20 @@ import audioqPackage from 'audioq/package.json';
 import { type JSX, useState } from 'react';
 import { audioFilesVocalExamples, longTeleportation } from '../audio/audioFilesAndUtils';
 import { EXPERIMENTS, Experiment, ExperimentResult } from './experiments';
+import { PAUSE_EXPERIMENTS } from './pauseExperiments';
+import { postReport, SaveState, withDeviceInfo } from './report';
 import './DiagnosticsPage.css';
 
 /** Short voice clips (1-2 s), like the Queue Management tab. */
 const CLIPS: readonly string[] = audioFilesVocalExamples.slice(0, 4);
 
-type SaveState = { message: string; ok: boolean } | undefined;
+const ALL_EXPERIMENTS: readonly Experiment[] = [...EXPERIMENTS, ...PAUSE_EXPERIMENTS];
 
-/** The report sent to the computer running `npm run phone`. */
-const buildReport = (results: ExperimentResult[]): object => ({
-  audioqVersion: audioqPackage.version,
-  createdAt: new Date().toISOString(),
-  maxTouchPoints: navigator.maxTouchPoints,
-  page: window.location.href,
-  results,
-  userAgent: navigator.userAgent
-});
+/** Answers for experiments that ask what was heard. */
+const HEARD: readonly string[] = ['Every word once', 'A word was skipped', 'A word repeated'];
 
-/** Sends the report to the phone server, which saves it under qa-reports/ on the computer. */
-const saveReport = async (results: ExperimentResult[]): Promise<SaveState> => {
-  try {
-    const response = await fetch(`${process.env.PUBLIC_URL}/__qa`, {
-      body: JSON.stringify(buildReport(results), null, 2),
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST'
-    });
-    if (!response.ok) throw new Error(`HTTP ${String(response.status)}`);
-    return { message: `Saved on your computer: ${await response.text()}`, ok: true };
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : 'unknown error';
-    return { message: `Could not save (${reason}). Serve with npm run phone, or use Download.`, ok: false };
-  }
-};
+/** Sends the results to the phone server, which saves them under qa-reports/ on the computer. */
+const saveReport = (results: ExperimentResult[]): Promise<SaveState> => postReport({ results });
 
 /** Runs device experiments one tap at a time and reports what happened. */
 function DiagnosticsPage(): JSX.Element {
@@ -52,8 +34,14 @@ function DiagnosticsPage(): JSX.Element {
     });
   };
 
+  const recordHeard = async (id: string, heard: string): Promise<void> => {
+    const next = results.map((item) => (item.id === id ? { ...item, heard } : item));
+    setResults(next);
+    setSaved(await saveReport(next));
+  };
+
   const download = (): void => {
-    const blob = new Blob([JSON.stringify(buildReport(results), null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(withDeviceInfo({ results }), null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `audioq-qa-${Date.now()}.json`;
@@ -68,7 +56,7 @@ function DiagnosticsPage(): JSX.Element {
         full report to the computer running <code>npm run phone</code>. Sounds will play; that is expected.
       </p>
       <ol className="diagnostics-list">
-        {EXPERIMENTS.map((experiment) => {
+        {ALL_EXPERIMENTS.map((experiment) => {
           const result = results.find((item) => item.id === experiment.id);
           return (
             <li className="diagnostics-item" key={experiment.id}>
@@ -80,6 +68,22 @@ function DiagnosticsPage(): JSX.Element {
               </div>
               <div className="diagnostics-description">{experiment.description}</div>
               {result && <div className="diagnostics-result">{result.summary}</div>}
+              {result && experiment.askWhatYouHeard === true && (
+                <div className="diagnostics-heard">
+                  What did you hear?
+                  {HEARD.map((answer) => (
+                    <button
+                      className={`button ${result.heard === answer ? 'active' : ''}`}
+                      key={answer}
+                      onClick={() => {
+                        void recordHeard(experiment.id, answer);
+                      }}
+                    >
+                      {answer}
+                    </button>
+                  ))}
+                </div>
+              )}
             </li>
           );
         })}
@@ -88,6 +92,12 @@ function DiagnosticsPage(): JSX.Element {
       <button className="button" disabled={results.length === 0} onClick={download}>
         Download report
       </button>
+      <h3>Progress bar trace</h3>
+      <p>
+        Open the <a href={`${process.env.PUBLIC_URL}/queue-management?trace`}>queue page with tracing on</a> and tap{' '}
+        <strong>Add Sound To End Of Queue (Channel 0)</strong>. For 4 seconds every frame is recorded (audioq’s position and each progress
+        bar’s width), then saved to your computer; a note appears at the top of the page. Do it once or twice.
+      </p>
       <p className="diagnostics-meta">
         audioq {audioqPackage.version} · {navigator.userAgent}
       </p>

@@ -47,3 +47,11 @@
 .diagnostics-unsaved {
   color: #facc15;
 }
+
+.diagnostics-heard {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  gap: var(--space-2);
+}

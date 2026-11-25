@@ -36,13 +36,30 @@ export interface PositionSample {
   wallMs: number;
 }
 
+/** Positions (ms) around one pause and resume, for the pause experiments. */
+export interface PauseRecord {
+  /** When the pause was made. */
+  atPause: number;
+  /** After the pause, just before resuming: it should equal atPause. */
+  beforeResume: number;
+  /** Right after the resume call (and any seek made for it). */
+  atResume: number;
+  /** 100 ms and 300 ms after resuming. */
+  after100: number;
+  after300: number;
+}
+
 export interface ExperimentResult {
   /** Clips of a sequence experiment, in order. */
   clips: ClipRecord[];
   durationMs: number;
+  /** What the tester heard, for experiments that ask. */
+  heard?: string;
   id: string;
   /** audioq's debug log lines (audioq experiments only). */
   log: string[];
+  /** Positions around the pause (pause experiments only). */
+  pause?: PauseRecord;
   /** Position samples (position experiments only). */
   samples: PositionSample[];
   startedAt: string;
@@ -51,6 +68,8 @@ export interface ExperimentResult {
 }
 
 export interface Experiment {
+  /** Ask the tester what they heard once it has run. */
+  askWhatYouHeard?: boolean;
   description: string;
   id: string;
   /** Must start its first sound synchronously: it is called from the tap. */

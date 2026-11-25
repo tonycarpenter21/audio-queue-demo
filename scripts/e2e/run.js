@@ -238,6 +238,47 @@ const check = async (name, run) => {
     require('node:fs').unlinkSync(file);
   });
 
+  const savedReport = async (selector) => {
+    const message = await page.locator(selector).last().innerText();
+    const file = path.join(__dirname, '..', '..', message.replace(/^.*: /, '').trim());
+    const report = JSON.parse(require('node:fs').readFileSync(file, 'utf8'));
+    require('node:fs').unlinkSync(file);
+    return report;
+  };
+
+  await check('diagnostics: pause tests resume where they paused, and record what was heard', async () => {
+    for (const title of ['Pause: plain element', 'Pause: audioq, full volume', 'Pause: audioq, half volume']) {
+      const item = page.locator('.diagnostics-item', { hasText: title });
+      await item.getByRole('button', { name: 'Run' }).click();
+      await item.locator('.diagnostics-result').waitFor({ timeout: 15000 });
+      const [, atPause, , fromPause] =
+        /paused at (\d+) ms.*resumed from (\d+) ms \(([+-]\d+) ms/.exec(await item.locator('.diagnostics-result').innerText()) ?? [];
+      assert.ok(Number(atPause) >= 700, `${title}: paused at ${atPause} ms`);
+      assert.ok(Math.abs(Number(fromPause)) <= 60, `${title}: resumed ${fromPause} ms from the pause`);
+    }
+    await page.locator('.diagnostics-item', { hasText: 'Pause: plain element' }).getByRole('button', { name: 'Every word once' }).click();
+    await page.waitForTimeout(500);
+    const report = await savedReport('.diagnostics-saved');
+    assert.equal(report.results.find((result) => result.id === 'pause-plain').heard, 'Every word once');
+  });
+
+  await check('progress trace: ?trace records the bars for 4 seconds and saves them', async () => {
+    await page.goto(`${BASE}/?trace`);
+    await click('Add Sound To End Of Queue (Channel 0)');
+    const note = page.locator('div', { hasText: /^Saved on your computer: / });
+    await note.last().waitFor({ timeout: 10000 });
+    const message = await note.last().innerText();
+    const file = path.join(__dirname, '..', '..', message.replace(/^.*: /, '').trim());
+    const report = JSON.parse(require('node:fs').readFileSync(file, 'utf8'));
+    require('node:fs').unlinkSync(file);
+    assert.equal(report.kind, 'progress-trace');
+    assert.ok(report.frames.length > 30, `${report.frames.length} frames`);
+    assert.ok(
+      report.frames.some((frame) => (frame.widths.visualQueue ?? 0) > 10),
+      'visual queue bar never moved'
+    );
+  });
+
   await check('no page errors', async () => assert.deepEqual(errors, []));
 
   await browser.close();
