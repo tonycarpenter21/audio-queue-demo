@@ -287,6 +287,9 @@ function App(): JSX.Element {
 
   const handleAudioStart = useCallback(
     (channelNumber: number) => (): void => {
+      // A new item starts at 0: without this the bar keeps the previous item's position until
+      // the new file's duration is known.
+      getVisualizer(channelNumber)?.updateProgress(0);
       getVisualizer(channelNumber)?.setPlayingState(true);
       setQueueState(channelNumber, false);
     },
@@ -311,8 +314,9 @@ function App(): JSX.Element {
     [0, 1].forEach((channelNumber) => {
       const visualizer: AudioQueueVisualizerHandle | null = getVisualizer(channelNumber);
       const info = getCurrentAudioInfo(channelNumber);
-      if (!visualizer || !info || info.duration <= 0) return;
-      visualizer.updateProgress(info.progress);
+      if (!visualizer || !info) return;
+      // Until the duration is known, progress is 0 (not whatever the last item reached).
+      visualizer.updateProgress(info.duration > 0 ? info.progress : 0);
       visualizer.setPlayingState(true);
     });
   }, [getVisualizer]);
