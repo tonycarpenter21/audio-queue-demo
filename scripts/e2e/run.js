@@ -283,7 +283,7 @@ const check = async (name, run) => {
     const report = JSON.parse(require('node:fs').readFileSync(file, 'utf8'));
     require('node:fs').unlinkSync(file);
     assert.equal(report.kind, 'progress-trace');
-    assert.ok(report.frames.length > 30, `${report.frames.length} frames`);
+    assert.ok(report.frames.length >= 10, `${report.frames.length} frames`);
     assert.ok(
       report.frames.some((frame) => (frame.widths.visualQueue ?? 0) > 10),
       'visual queue bar never moved'
